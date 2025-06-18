@@ -1255,7 +1255,7 @@
         const chapterTitle = document.getElementById('chapter-title');
         const storyText = document.getElementById('story-text');
         const characterDialogueBox = document.getElementById('character-dialogue-box');
-        const mcReflectionDisplay = document.getElementById('mc-reflection-display'); 
+        const mcReflectionDisplay = document.getElementById('mc-reflection-display'); // New element for MC reflection
         const choicesContainer = document.getElementById('choices-container');
         const gameSystemDisplay = document.getElementById('game-system-display');
         const systemFlagsDisplay = document.getElementById('system-flags-display'); 
@@ -1283,8 +1283,8 @@
         let selectedMainCharacter = null;
 
         let gameProgress = {
-            chapter: 0, // Current chapter number
-            scene: 0,   // Current scene within the chapter
+            chapter: 0,
+            scene: 0,
             trustPoints: {},
             flags: [],
             pathTracker: null,
@@ -1573,8 +1573,8 @@
 
         startGameBtn.addEventListener('click', () => {
             gameProgress = {
-                chapter: 1, // Start at Chapter 1
-                scene: 0,   // Start at scene 0 for the first chapter
+                chapter: 1,
+                scene: 0,
                 trustPoints: {},
                 flags: [],
                 pathTracker: null,
@@ -1992,7 +1992,6 @@
             const gameContentSchema = {
                 type: "OBJECT",
                 properties: {
-                    "chapterTitle": { "type": "STRING" }, // Added chapterTitle
                     "narrative": { "type": "STRING" },
                     "dialogue": {
                         "type": "ARRAY",
@@ -2023,8 +2022,7 @@
                                         "achievement": { "type": "STRING" },
                                         "nextScene": { "type": "NUMBER" },
                                         "newPathTracker": { "type": "STRING" },
-                                        "mcReflection": { "type": "STRING" }, // MC's internal thought after choice
-                                        "nextChapterTrigger": { "type": "BOOLEAN" } // New: Trigger chapter progression
+                                        "mcReflection": { "type": "STRING" } // New: MC's internal thought after choice
                                     }
                                 }
                             },
@@ -2032,7 +2030,7 @@
                         }
                     }
                 },
-                "required": ["chapterTitle", "narrative", "dialogue", "choices"] // chapterTitle is now required
+                "required": ["narrative", "dialogue", "choices"] 
             };
 
             // PROMPT YANG SANGAT DITINGKATKAN DAN SANGAT SPESIFIK UNTUK MIMIC CHATGPT STYLE
@@ -2041,8 +2039,8 @@
             **SUDUT PANDANG (SANGAT PENTING!):** Selalu tulis narasi dari **sudut pandang orang kedua ('Kamu')**. Pemain *adalah* ${selectedMainCharacter.name}. Deskripsikan apa yang 'Kamu' lihat, dengar, rasakan, dan pikirkan secara internal. Berikan detail sensorik yang kaya, ciptakan suasana.
 
             **KONTEKS CERITA SAAT INI:**
-            - **Judul Cerita Keseluruhan:** "${selectedStoryDetails.title}"
-            - **Deskripsi Cerita Keseluruhan:** "${selectedStoryDetails.description}"
+            - **Judul Cerita:** "${selectedStoryDetails.title}"
+            - **Deskripsi Cerita:** "${selectedStoryDetails.description}"
             - **Kamu (MC):** Nama: ${selectedMainCharacter.name}, Kelas: ${selectedMainCharacter.class}, Sifat: ${selectedMainCharacter.personality}.
             - **Karakter Lain yang Berpotensi Muncul (DETAIL PENTING untuk kepribadian, peran, dan hubungan saat ini):**
             ${generatedCharacters.map(char => {
@@ -2050,36 +2048,31 @@
                 let trust = gameProgress.trustPoints[char.id] !== undefined ? `Trust: ${gameProgress.trustPoints[char.id].toFixed(1)}` : 'Trust: 5.0 (Netral)';
                 return ` - ${char.name} (${char.class}): Sifat: ${char.personality}, Peran: ${char.description}. Status Hubungan dengan MC: ${trust}.`;
             }).filter(Boolean).join('\n') || '- Tidak ada karakter lain yang relevan di adegan ini.'}
-            - **Progres Cerita:** Saat ini sedang berada di **Bab ${gameProgress.chapter}**, Scene ${gameProgress.scene}.
+            - **Progres Cerita:** Chapter ${gameProgress.chapter}, Scene ${gameProgress.scene}.
             - **Status Sistem:** Path Aktif: ${currentPathTracker}. Flags Aktif: ${currentFlags}.
 
             **INSTRUKSI GENERASI KONTEN (PASTIKAN PANJANG, JELAS, DAN SANGAT HUMANIS):**
-            1.  **CHAPTER TITLE (Judul Bab):**
-                * Berikan judul bab yang menarik untuk bagian ini. Format: "Bab ${gameProgress.chapter} – [Judul Singkat]".
-                * Contoh: "Bab 1 – Penghakiman", "Bab 2 – Pemilik Nama yang Dihapuskan".
-
-            2.  **NARASI (Panjang, Minimal 7-10 kalimat):**
+            1.  **NARASI (Panjang, Minimal 7-10 kalimat):**
                 * Mulailah setiap adegan dengan pengenalan suasana yang kuat, menjelaskan di mana 'Kamu' berada dan apa yang 'Kamu' alami.
                 * Narasi harus *mengalir mulus dan logis* dari adegan/pilihan sebelumnya. JANGAN ada lompatan waktu atau lokasi yang tidak dijelaskan. Jika ada perubahan signifikan, jelaskan transisinya.
-                * Untuk **Bab 1, Scene 0 (awal cerita):** Mulailah dari premis cerita yang jelas dan menarik, seperti contoh di awal chat GPT Anda (MC terbangun di suatu tempat asing, menghadapi situasi awal konflik, atau 'dihakimi' seperti contoh Nerisya). Ini adalah pengantar 'Kamu' dan duniamu.
+                * Untuk **Bab 1, Scene 0 (awal cerita):** Mulailah dari premis cerita yang jelas dan menarik. Ini adalah pengantar 'Kamu' dan duniamu. Deskripsikan permulaan konflik atau situasi yang memicu petualangan. (Contoh: MC terbangun di suatu tempat asing, menghadapi situasi awal konflik, atau 'dihakimi' seperti contoh Nerisya).
                 * Sertakan detail sensorik yang kaya (apa yang kamu dengar, lihat, rasakan, bau). Buat pembaca merasa 'Kamu' adalah MC.
 
-            3.  **DIALOG (DETAIL, Variatif, Mencerminkan Karakter, Minimal 3-5 baris per karakter yang relevan):**
+            2.  **DIALOG (DETAIL, Variatif, Mencerminkan Karakter, Minimal 3-5 baris per karakter yang relevan):**
                 * Sertakan dialog dari **minimal 2 karakter lain yang relevan** dengan adegan (jika ada lebih dari 1 karakter selain MC).
-                * **MC DAPAT BERDIALOG:** Sertakan MC sebagai 'character' dalam array dialog (contoh: \`{"character": "${selectedMainCharacter.name}", "line": "Baris dialog MC."}\`). Dialog MC harus singkat, padat, dan mencerminkan sifat/kepribadian MC.
+                * **Jika MC berdialog:** Sertakan MC sebagai 'character' dalam array dialog (contoh: \`{"character": "${selectedMainCharacter.name}", "line": "Baris dialog MC."}\`). Dialog MC harus singkat, padat, dan mencerminkan sifat/kepribadian MC.
                 * Setiap dialog harus **mencerminkan sifat/kepribadian karakter yang berbicara secara KONSISTEN**. (Misal: karakter 'Manipulatif' akan berbicara dengan kata-kata licik/tersirat; 'Penyendiri' akan singkat dan ragu; 'Cerdas' akan logis dan analitis; 'Emosional' akan menggunakan seruan).
                 * **Sangat penting:** Karakter lain harus **sering menyebut NAMA MC (${selectedMainCharacter.name})** dalam percakapan mereka untuk membuat interaksi terasa alami dan personal.
                 * Dialog harus dinamis dan memajukan plot, bukan hanya sekadar basa-basi.
 
-            4.  **PILIHAN (3-4 Opsi, Beragam Tipe Aksi/Pikiran/Ucapan MC, dengan Deskripsi Internal Mendalam):**
+            3.  **PILIHAN (3-4 Opsi, Beragam Tipe Aksi/Pikiran/Ucapan MC, dengan Deskripsi Internal Mendalam):**
                 * Berikan pilihan yang beragam: bisa berupa tindakan fisik (misal: "Lari ke hutan", "Menyerang"), pemikiran internal MC, atau respons verbal.
                 * Setiap pilihan harus memiliki:
                     * \`text\`: Teks singkat dan menarik yang mewakili pilihan (misal: "Terima uluran tangannya", "Aku tak butuh bantuanmu", "Bertanya dulu siapa dia").
-                    * \`description\`: **Deskripsi yang LEBIH PANJANG (minimal 2-3 kalimat)** yang menjelaskan implikasi pilihan, alasan internal MC memilihnya (pemikiran MC), atau gambaran singkat tentang hasil langsung yang dirasakan MC. Ini adalah bagian vital untuk mendalami pilihan MC, mirip dengan bagian \`→\` di contoh Anda.
+                    * \`description\`: **Deskripsi yang LEBIH PANJANG (minimal 2-3 kalimat)** yang menjelaskan implikasi pilihan, alasan internal MC memilihnya (pemikiran MC), atau gambaran singkat tentang hasil langsung yang dirasakan MC. Ini adalah bagian vital untuk mendalami pilihan MC, mirip dengan bagian \`🟡\` di contoh Anda.
                     * \`emoji\`: Satu emoji yang relevan.
                     * \`effects\`: Objek yang mengandung konsekuensi. **HARUS SELALU ADA**, bahkan jika kosong \`{}\`.
                     * \`mcReflection\`: (Opsional, STRING) Sebuah kalimat singkat (1-2 kalimat) yang mewakili *pikiran internal MC* segera setelah pilihan ini diambil, mirip dengan \`🟡\` di contoh Anda. Ini hanya muncul setelah pilihan dan sebelum narasi adegan berikutnya dimuat.
-                    * \`nextChapterTrigger\`: (Opsional, BOOLEAN) Setel ini ke \`true\` jika pilihan ini dimaksudkan untuk mengakhiri bab saat ini dan memulai bab berikutnya. **Hanya setel satu pilihan per bab ke `true` untuk memicu transisi bab.**
 
             Gunakan bahasa ${selectedLanguage === 'id' ? 'Indonesia' : 'Inggris'}. Pastikan konten baru dan tidak repetitif antar adegan. Jaga agar panjang teks seimbang dan masuk akal untuk visual novel. Hasilkan JSON LENGKAP sesuai skema, dan **hanya JSON**, tanpa teks penjelasan di luar JSON. (Random timestamp: ${Date.now()})`;
             
@@ -2087,9 +2080,7 @@
                 const gameContent = await callGeminiAPI(prompt, gameContentSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), null);
 
                 if (gameContent) {
-                    // Set chapter title
-                    chapterTitle.textContent = gameContent.chapterTitle || `${selectedLanguage === 'id' ? 'Bab ' : 'Chapter '}${gameProgress.chapter}: Tanpa Judul`;
-                    
+                    chapterTitle.textContent = `${selectedLanguage === 'id' ? 'Bab ' : 'Chapter '}${gameProgress.chapter}`;
                     storyText.textContent = gameContent.narrative || '';
                     
                     // Display all dialogue lines from other characters AND MC
@@ -2124,7 +2115,6 @@
                                     <span class="choice-description">${choice.description}</span>
                                 </div>
                             `;
-                            // Pass the choice.effects object directly. Use choice.effects || {} to ensure it's an object.
                             choiceBtn.addEventListener('click', () => handleChoice(index, choice.effects || {}, choice.text)); 
                             choicesContainer.appendChild(choiceBtn);
                         });
@@ -2134,7 +2124,7 @@
                         nextBtn.className = 'button button-primary';
                         nextBtn.textContent = selectedLanguage === 'id' ? 'Lanjutkan...' : 'Continue...';
                         nextBtn.addEventListener('click', () => {
-                            gameProgress.scene++; // Normal scene progression if no choices
+                            gameProgress.scene++;
                             generateChapterContentInGame();
                         });
                         choicesContainer.appendChild(nextBtn);
@@ -2213,21 +2203,16 @@
                     }
             }
 
-            // --- Chapter Progression Logic ---
-            if (effects.nextChapterTrigger === true) {
-                gameProgress.chapter++; // Increment chapter
-                gameProgress.scene = 0;   // Reset scene for the new chapter
-                console.log(`Transitioning to Chapter ${gameProgress.chapter}`);
-            } else if (effects.nextScene !== undefined) {
+            if (effects.nextScene !== undefined) {
                 gameProgress.scene = effects.nextScene;
             } else {
-                gameProgress.scene++; // Normal scene progression within the same chapter
+                gameProgress.scene++;
             }
 
-            // A brief delay to allow reflection to show, then load next scene/chapter
+            // A brief delay to allow reflection to show, then load next scene
             setTimeout(() => {
                 generateChapterContentInGame();
-            }, 2000); // Wait 2 seconds before loading next scene/chapter after choice (and reflection if any)
+            }, 2000); // Wait 2 seconds before loading next scene after choice (and reflection if any)
         }
 
         async function endGame(isDead, message) {
