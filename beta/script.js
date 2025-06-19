@@ -43,7 +43,7 @@ const continueToCharacterSelectionBtn = document.getElementById('continue-to-cha
 const backFromAiResultsBtn = document.getElementById('back-from-ai-results-btn');
 
 const characterCreationScreen = document.getElementById('character-creation-screen');
-const numCharactersSelect = document.getElementById('num-characters-select');
+// Removed numCharactersSelect as per request
 const characterClassInput = document.getElementById('character-class-input');
 const nameStyleSelect = document.getElementById('name-style-select'); 
 const generateCharactersBtn = document.getElementById('generate-characters-btn');
@@ -267,7 +267,7 @@ backToStorySelectBtn.addEventListener('click', () => {
         showScreen('ai-generate-form-screen');
     }
     // Reset character creation screen state
-    numCharactersSelect.value = 'ai-recommended';
+    // numCharactersSelect.value = 'ai-recommended'; // Removed this dropdown
     characterClassInput.value = '';
     characterClassInput.style.display = 'none';
     characterResultsDiv.innerHTML = '';
@@ -357,14 +357,8 @@ function updateLanguageText() {
         backFromAiResultsBtn.textContent = "Kembali Cari Cerita Lain";
 
         characterCreationScreen.querySelector('h1').textContent = "Buat Karakter";
-        characterCreationScreen.querySelector('p').textContent = "Anda dapat menentukan jumlah karakter atau membiarkan AI merekomendasikannya.";
-        numCharactersSelect.options[0].textContent = "Pilihan ditentukan dari judul dan deskripsi oleh AI (rekomendasi)";
-        // Dynamically update options for numCharactersSelect
-        for (let i = 0; i < numCharactersSelect.options.length; i++) {
-            if (numCharactersSelect.options[i].value !== 'ai-recommended') {
-                numCharactersSelect.options[i].textContent = `${numCharactersSelect.options[i].value} Karakter`;
-            }
-        }
+        characterCreationScreen.querySelector('p').textContent = "AI akan merekomendasikan karakter untuk cerita Anda, termasuk beberapa kandidat Karakter Utama (MC)."; // Updated text
+        // Removed numCharactersSelect options update
         characterClassInput.placeholder = "Kelas Karakter (opsional, cth: Pahlawan)";
         // Update new name style options
         Array.from(nameStyleSelect.options).forEach(option => {
@@ -443,14 +437,8 @@ function updateLanguageText() {
         backFromAiResultsBtn.textContent = "Go Back, Find Another Story";
 
         characterCreationScreen.querySelector('h1').textContent = "Create Characters";
-        characterCreationScreen.querySelector('p').textContent = "You can determine the number of characters or let AI recommend it.";
-        numCharactersSelect.options[0].textContent = "AI-determined from title and description (recommended)";
-        // Dynamically update options for numCharactersSelect
-        for (let i = 0; i < numCharactersSelect.options.length; i++) {
-            if (numCharactersSelect.options[i].value !== 'ai-recommended') {
-                numCharactersSelect.options[i].textContent = `${numCharactersSelect.options[i].value} Characters`;
-            }
-        }
+        characterCreationScreen.querySelector('p').textContent = "AI will recommend characters for your story, including several Main Character (MC) candidates."; // Updated text
+        // Removed numCharactersSelect options update
         characterClassInput.placeholder = "Character Class (optional, e.g., Hero)";
         // Update new name style options
         Array.from(nameStyleSelect.options).forEach(option => {
@@ -528,8 +516,7 @@ continueToCharacterSelectionBtn.addEventListener('click', () => {
         characterActionButtons.style.display = 'none';
         generatedCharacters = [];
         selectedMainCharacter = null;
-        // Reset select to AI-recommended
-        numCharactersSelect.value = 'ai-recommended'; 
+        // Removed numCharactersSelect related reset
         characterClassInput.value = ''; // Clear optional class input
         characterClassInput.style.display = 'none'; // Ensure it's hidden
     } else {
@@ -549,8 +536,7 @@ continueManualBtn.addEventListener('click', () => {
         characterActionButtons.style.display = 'none';
         generatedCharacters = [];
         selectedMainCharacter = null;
-        // Reset select to AI-recommended
-        numCharactersSelect.value = 'ai-recommended'; 
+        // Removed numCharactersSelect related reset
         characterClassInput.value = ''; // Clear optional class input
         characterClassInput.style.display = 'none'; // Ensure it's hidden
     } else {
@@ -629,17 +615,17 @@ backToMainMenuBtn.addEventListener('click', () => {
     setMainButtonsEnabled(true); 
 });
 
-// Event listener for the new character count select
-numCharactersSelect.addEventListener('change', () => {
-    // If "AI-recommended" is selected, hide the manual character class input
-    if (numCharactersSelect.value === 'ai-recommended') {
-        characterClassInput.style.display = 'none';
-        characterClassInput.value = ''; // Clear input if hidden
-    } else {
-        // Otherwise, show it if they want to manually specify a class for a fixed number of characters
-        characterClassInput.style.display = 'block';
-    }
-});
+// Removed numCharactersSelect event listener as per request
+// numCharactersSelect.addEventListener('change', () => {
+//     // If "AI-recommended" is selected, hide the manual character class input
+//     if (numCharactersSelect.value === 'ai-recommended') {
+//         characterClassInput.style.display = 'none';
+//         characterClassInput.value = ''; // Clear input if hidden
+//     } else {
+//         // Otherwise, show it if they want to manually specify a class for a fixed number of characters
+//         characterClassInput.style.display = 'block';
+//     }
+// });
 
 // Theme toggle button event listener
 themeToggleButton.addEventListener('click', toggleTheme);
@@ -759,7 +745,7 @@ async function generateStoryContent() {
                     "type": "ARRAY",
                     "items": { "type": "STRING" }
                 },
-                "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] } // New: Rating property
+                "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] } // Added 18+
             },
             "required": ["title", "description", "genres", "subgenres", "rating"]
         }
@@ -767,21 +753,20 @@ async function generateStoryContent() {
     
     let prompt = `Generate ${numStories} *new and unique* visual novel story ideas. For each idea, provide:
     - A compelling story title.
-    - A concise and intriguing story description (focus on premise, conflict, or theme).
+    - A concise and intriguing story description (focus on premise, conflict, or theme). Character names CAN be included in the description if relevant.
     - A list of relevant genres, including "${selectedGenre}".
     - A list of relevant subgenres.
-    - An appropriate content rating from these options: "SU", "PG-13", "16+", "21+".
+    - An appropriate content rating from these options: "SU", "PG-13", "16+", "18+", "21+".
     
     Rating Guidelines:
     - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
     - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
     - 16+: Contains mature themes, moderate violence, strong language, and/or suggestive themes.
+    - 18+: Contains mature themes, stronger violence, harsh language, and/or suggestive themes (non-explicit sexual content).
     - 21+: Contains explicit violence, strong language, and mature themes (excluding explicit sexual content).
 
     Explicit sexual content is STRICTLY FORBIDDEN for ALL ratings.
-    Violence and harsh language are permitted only for ratings 16+ and 21+.
-
-    Do NOT include any character names in the title or description, as characters will be generated later.
+    Violence and harsh language are permitted only for ratings 16+, 18+ and 21+.
 
     Ensure the output is in JSON format according to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. (Random seed: ${Math.random()})`;
 
@@ -885,23 +870,13 @@ async function generateCharacters() {
     selectedMainCharacter = null;
     generatedCharacters = []; // Clear previous characters
 
-    let numChars;
-    const selectedNumOption = numCharactersSelect.value;
+    // AI will determine numChars between 3 and 7 automatically
+    const numChars = Math.floor(Math.random() * (7 - 3 + 1)) + 3; // Random between 3 and 7
+    console.log("AI-determined numChars:", numChars);
+
     const charClassHint = characterClassInput.value.trim();
     const nameStyle = nameStyleSelect.value; 
 
-    // Determine numChars based on selection
-    if (selectedNumOption === 'ai-recommended') {
-        numChars = Math.floor(Math.random() * (7 - 3 + 1)) + 3; // Random between 3 and 7 for AI to generate
-        console.log("AI-recommended numChars:", numChars);
-    } else {
-        numChars = parseInt(selectedNumOption);
-    }
-
-    if (isNaN(numChars) || numChars < 3 || numChars > 7) {
-        showMessageBox(selectedLanguage === 'id' ? 'Input Tidak Valid' : 'Invalid Input', selectedLanguage === 'id' ? 'Jumlah karakter harus antara 3 dan 7 atau ditentukan AI.' : 'Number of characters must be between 3 and 7 or AI-determined.');
-        return;
-    }
     if (!selectedStoryDetails) {
          showMessageBox(selectedLanguage === 'id' ? 'Peringatan' : 'Warning', selectedLanguage === 'id' ? 'Silakan pilih cerita terlebih dahulu sebelum membuat karakter.' : 'Please select a story first before generating characters.');
          return;
@@ -955,53 +930,51 @@ async function generateCharacters() {
     prompt += `
     For each character, provide:
     - "id": a short unique string (e.g., "char1", "char2")
-    - "name": full name. MUST NOT be "seseorang misterius" or any generic placeholder. Use actual names.
+    - "name": full name. MUST NOT be "seseorang misterius" or any generic placeholder. Use actual names. Ensure names are unique within this list and are NOT repeated from previous generations.
     - "class": character role/archetype (e.g., Hero, Mage, King, Guard).
     - "personality": 3-5 descriptive keywords (e.g., brave, loyal, cunning, melancholic, resourceful)
     - "description": a brief role/background in the story (e.g., "The exiled prince seeking his throne", "A mysterious mage from the enchanted forest").
     - "role": Assign a *distinct* narrative role from the following list or similar archetypes: ${rolesList.join(', ')}. Ensure roles are varied, relevant to the story, and unique among the generated characters.
-    - "isPotentialMC": boolean. Generate *at least 1 and up to 3* characters where 'isPotentialMC' is true. These characters MUST be highly relevant and suitable as the main protagonist for the story title "${selectedStoryDetails.title}" and description "${selectedStoryDetails.description}". Prioritize roles like Protagonist, Antihero, The Chosen One. The rest should be false.
+    - "isPotentialMC": boolean. Generate *at least 2 and up to 4* characters where 'isPotentialMC' is true. These characters MUST be highly relevant and suitable as the main protagonist for the story title "${selectedStoryDetails.title}" and description "${selectedStoryDetails.description}". Prioritize roles like Protagonist, Antihero, The Chosen One. The rest should be false.
 
-    Ensure names are unique and in Latin alphabet.
     The character descriptions and personalities should be consistent with the story's rating (${selectedStoryDetails.rating}). Avoid generating characters that would lead to content violating the rating restrictions, especially regarding explicit sexual content (forbidden for all ratings).`; // Add rating constraint
 
 
-    if (charClassHint && numCharactersSelect.value !== 'ai-recommended') { // Only add if input is visible and has value
+    if (charClassHint) { // Keep the optional class input
         prompt += ` One character should ideally have the class: "${charClassHint}".`;
-    } else if (numCharactersSelect.value === 'ai-recommended') {
-        prompt += ` Ensure varied character classes are generated automatically by AI.`;
     }
+    
     // Add naming style instruction, making it stricter and with examples
     switch (nameStyle) {
         case 'japanese':
-            prompt += ` Character names MUST sound authentically Japanese (e.g., Akira, Sakura, Kenji, Yui). Strictly use Japanese-sounding names.`;
+            prompt += ` Character names MUST sound authentically Japanese (e.g., Akira, Sakura, Kenji, Yui, Haruki, Saya, Hiroshi, Rin, Takumi, Ami). Strictly use Japanese-sounding names.`;
             break;
         case 'chinese':
-            prompt += ` Character names MUST sound authentically Chinese (e.g., Li Wei, Zhang Min, Wang Fang, Chen Bo). Strictly use Chinese-sounding names.`;
+            prompt += ` Character names MUST sound authentically Chinese (e.g., Li Wei, Zhang Min, Wang Fang, Chen Bo, Liu Yang, Zhou Jie, Wu Fan, Zhao Lihua, Sun Lei, Xu Jing). Strictly use Chinese-sounding names.`;
             break;
         case 'arabic':
-            prompt += ` Character names MUST sound authentically Arabic (e.g., Amir, Fatima, Omar, Layla). Strictly use Arabic-sounding names.`;
+            prompt += ` Character names MUST sound authentically Arabic (e.g., Amir, Fatima, Omar, Layla, Jamal, Samira, Tariq, Zahra, Khalil, Aisha). Strictly use Arabic-sounding names.`;
             break;
         case 'fantasy':
-            prompt += ` Character names MUST sound genuinely fantastical and unique, not like common real-world names (e.g., Elara, Kaelen, Lyra, Thorian, Zephyr). Strictly use fantasy-inspired names.`;
+            prompt += ` Character names MUST sound genuinely fantastical and unique, not like common real-world names (e.g., Elara, Kaelen, Lyra, Thorian, Zephyr, Seraphina, Orion, Aethelred, Faelan, Isolde). Strictly use fantasy-inspired names.`;
             break;
         case 'european_medieval':
-            prompt += ` Character names MUST sound like authentic European Medieval names (e.g., Arthur, Eleanor, Geoffrey, Isolde, Roland). Strictly use European Medieval-sounding names.`;
+            prompt += ` Character names MUST sound like authentic European Medieval names (e.g., Arthur, Eleanor, Geoffrey, Isolde, Roland, Guinevere, Percival, Beatrice, Edmund, Matilda). Strictly use European Medieval-sounding names.`;
             break;
         case 'celtic':
-            prompt += ` Character names MUST sound like authentic Celtic names (e.g., Aoife, Cormac, Deirdre, Eilidh, Ronan). Strictly use Celtic-sounding names.`;
+            prompt += ` Character names MUST sound like authentic Celtic names (e.g., Aoife, Cormac, Deirdre, Eilidh, Ronan, Siobhan, Ciaran, Niamh, Finn, Brigid). Strictly use Celtic-sounding names.`;
             break;
         case 'norse':
-            prompt += ` Character names MUST sound like authentic Norse names (e.g., Bjorn, Freya, Ragnar, Astrid, Erik). Strictly use Norse-sounding names.`;
+            prompt += ` Character names MUST sound like authentic Norse names (e.g., Bjorn, Freya, Ragnar, Astrid, Erik, Ingrid, Leif, Sigrid, Gunnar, Thora). Strictly use Norse-sounding names.`;
             break;
         case 'ancient_egyptian':
-            prompt += ` Character names MUST sound like authentic Ancient Egyptian names (e.g., Nefertari, Ramses, Imhotep, Cleopatra, Akhenaten). Strictly use Ancient Egyptian-sounding names.`;
+            prompt += ` Character names MUST sound like authentic Ancient Egyptian names (e.g., Nefertari, Ramses, Imhotep, Cleopatra, Akhenaten, Hatshepsut, Thutmose, Isis, Osiris, Anubis). Strictly use Ancient Egyptian-sounding names.`;
             break;
         case 'indonesian':
-            prompt += ` Character names MUST sound like common Indonesian names (e.g., Budi, Siti, Rahmat, Indah, Agung). Strictly use Indonesian-sounding names.`;
+            prompt += ` Character names MUST sound like common Indonesian names (e.g., Budi, Siti, Rahmat, Indah, Agung, Ayu, Dani, Dewi, Fitri, Joko). Strictly use Indonesian-sounding names.`;
             break;
         case 'german':
-            prompt += ` Character names MUST sound like common German names (e.g., Hans, Gretel, Klaus, Sofia, Lena). Strictly use German-sounding names.`;
+            prompt += ` Character names MUST sound like common German names (e.g., Hans, Gretel, Klaus, Sofia, Lena, Max, Anna, Felix, Emma, Lukas). Strictly use German-sounding names.`;
             break;
         default: // 'random' or any other default
             prompt += ` Character names should be diverse (e.g., Western, Asian, Middle Eastern, Fantasy-inspired).`;
@@ -1113,7 +1086,7 @@ async function generatePrologue() {
                 "required": ["trustSystem", "deathTrigger", "flagAwal", "pathTracker", "lockedPaths", "notes"]
             },
             "genreDetails": { "type": "STRING", "description": "Example: 😇 Genre, Romantis, Bodyguard Romance" },
-            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] } // New: Rating property
+            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] } // Added 18+
         },
         "required": ["prologueTitle", "prologueText", "prologueQuote", "initialSystems", "genreDetails", "rating"]
     };
@@ -1153,7 +1126,8 @@ async function generatePrologue() {
     
     Rating Considerations:
     - Explicit sexual content: STRICTLY FORBIDDEN.
-    - Violence, harsh language, murder, crime, accusation: Permitted only for 16+ and 21+ ratings, and must be consistent with the ${rating} rating. For SU and PG-13, these themes must be absent or very mild/implied.
+    - Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+ and 21+. For SU and PG-13, these themes must be absent or very mild/implied.
+    - For 18+ rating: Allows stronger violence and harsh language than 16+, but still no explicit sexual content.
     `;
     
     const prologData = await callGeminiAPI(prompt, prologSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), gameLoadingAdditionalText, null);
@@ -1291,7 +1265,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
                     "lockedPathsInfo": { "type": "STRING" }
                 }
             },
-            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] } // New: Rating property
+            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] } // Added 18+
         },
         "required": ["chapterTitle", "chapterMeta", "chapterContent", "choices", "consequenceNote", "rating"]
     };
@@ -1354,7 +1328,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     - A set of 3 choices (dialogue or action) for the player.
     - A "consequenceNote" explaining what the choices will affect.
     - "dynamicUpdates": An object containing updates for various dynamic systems based on the narrative progression and previous choice.
-    - "rating": The determined rating for the chapter content based on the story's overall rating. This must be one of "SU", "PG-13", "16+", "21+".
+    - "rating": The determined rating for the chapter content based on the story's overall rating. This must be one of "SU", "PG-13", "16+", "18+", "21+".
 
     Perkaya narasi dan deskripsi adegan:
     - Tambahkan lebih banyak detail sensorik (apa yang terlihat, terdengar, tercium, terasa) untuk membuat adegan lebih hidup.
@@ -1392,9 +1366,10 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
     - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
     - 16+: Contains mature themes, moderate violence, strong language, and/or suggestive themes.
+    - 18+: Contains mature themes, stronger violence, harsh language, and/or suggestive themes (non-explicit sexual content).
     - 21+: Contains explicit violence, strong language, and mature themes (excluding explicit sexual content).
     Explicit sexual content: STRICTLY FORBIDDEN.
-    Violence, harsh language, murder, crime, accusation: Permitted only for 16+ and 21+ ratings.
+    Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+, and 21+.
     `;
 
     const chapterData = await callGeminiAPI(prompt, chapterSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), gameLoadingAdditionalText, null);

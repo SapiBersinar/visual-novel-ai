@@ -100,7 +100,7 @@
                 <option value="Mythology">Mitologi</option>
                 <option value="Parody">Parodi</option>
                 <option value="Fan-Fiction">Fan-Fiksi</option>
-                <option value="Murim">Murim</option>
+                <option value="Murim">Murim</option> <!-- New Genre -->
                 <option value="Webtoon">Webtoon</option> <!-- New Genre -->
                 <option value="Absurd">Absurd</option> <!-- New Genre -->
                 <option value="Tragedy">Tragedi</option> <!-- New Genre -->
@@ -158,17 +158,9 @@
         <!-- Character Creation Screen -->
         <div id="character-creation-screen" style="display:none;">
             <h1>Buat Karakter</h1>
-            <p class="text-md mb-8 text-center text-gray-700">Anda dapat menentukan jumlah karakter atau membiarkan AI merekomendasikannya.</p>
+            <p class="text-md mb-8 text-center text-gray-700">AI akan merekomendasikan karakter untuk cerita Anda, termasuk beberapa kandidat Karakter Utama (MC).</p>
             
-            <select id="num-characters-select">
-                <option value="ai-recommended">Pilihan ditentukan dari judul dan deskripsi oleh AI (rekomendasi)</option>
-                <option value="3">3 Karakter</option>
-                <option value="4">4 Karakter</option>
-                <option value="5">5 Karakter</option>
-                <option value="6">6 Karakter</option>
-                <option value="7">7 Karakter</option>
-            </select>
-
+            <!-- Removed num-characters-select dropdown -->
             <input type="text" id="character-class-input" placeholder="Kelas Karakter (opsional, cth: Pahlawan)" style="display:none;">
             
             <select id="name-style-select" class="mb-4">
