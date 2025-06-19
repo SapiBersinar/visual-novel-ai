@@ -822,6 +822,22 @@
 </head>
 <body>
     <div class="container">
+        <!-- API Key Input Screen -->
+        <div id="api-key-screen" style="display:none;">
+            <h1>Masukkan Kunci API Gemini Anda</h1>
+            <p class="text-md mb-8 text-center text-gray-700">
+                Untuk menggunakan fitur AI, Anda memerlukan kunci API Gemini.
+                Anda bisa mendapatkannya di:
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline">aistudio.google.com/app/apikey</a>
+            </p>
+            <input type="text" id="api-key-input" placeholder="Masukkan Kunci API Gemini Anda">
+            <button class="button button-primary" id="save-api-key-btn">Simpan Kunci API</button>
+            <button class="button button-secondary" id="clear-api-key-btn">Hapus Kunci API</button>
+            <p class="text-xs mt-4 text-red-500">
+                Peringatan: Menyimpan kunci API di browser tidak disarankan untuk aplikasi produksi.
+            </p>
+        </div>
+
         <div id="main-screen">
             <h1>Cerita Komik Interaktif</h1>
             <p class="text-md mb-8 text-center text-gray-700">Dapatkan ide cerita baru atau masukkan cerita Anda sendiri.</p>
@@ -890,6 +906,7 @@
                 <option value="Mythology">Mitologi</option>
                 <option value="Parody">Parodi</option>
                 <option value="Fan-Fiction">Fan-Fiksi</option>
+                <option value="Murim">Murim</option> <!-- New Genre -->
                 <option value="other">Lainnya...</option>
             </select>
             <input type="text" id="other-genre-input" placeholder="Masukkan Genre Lainnya" style="display:none;">
@@ -960,6 +977,8 @@
                 <option value="celtic">Nama Ala Celtic</option>
                 <option value="norse">Nama Ala Norse</option>
                 <option value="ancient_egyptian">Nama Ala Mesir Kuno</option>
+                <option value="indonesian">Nama Ala Indonesia</option> <!-- New Name Style -->
+                <option value="german">Nama Ala Jerman</option> <!-- New Name Style -->
             </select>
             
             <div class="button-group-spacing">
@@ -1062,10 +1081,15 @@
     </div>
 
     <script>
-        // API key for Gemini. Remember to keep this secure in a real application.
-        const API_KEY = ""; // Leave this empty, Canvas will provide it at runtime.
+        // --- API Key Handling ---
+        let API_KEY = ""; // This will be loaded from localStorage or set by user
 
         // --- DOM Elements ---
+        const apiKeyScreen = document.getElementById('api-key-screen');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const clearApiKeyBtn = document.getElementById('clear-api-key-btn');
+
         const mainScreen = document.getElementById('main-screen');
         const manualInputBtn = document.getElementById('manual-input-btn');
         const aiGenerateBtn = document.getElementById('ai-generate-btn');
@@ -1172,7 +1196,7 @@
 
         // --- Helper Functions ---
         function showScreen(screenId) {
-            const screens = [mainScreen, manualInputScreen, aiGenerateFormScreen, aiResultsScreen, characterCreationScreen, summaryScreen, gameScreen, gameOverScreen];
+            const screens = [apiKeyScreen, mainScreen, manualInputScreen, aiGenerateFormScreen, aiResultsScreen, characterCreationScreen, summaryScreen, gameScreen, gameOverScreen];
             screens.forEach(screen => {
                 if (screen) { 
                     if (screen.id === screenId) {
@@ -1196,7 +1220,40 @@
             aiGenerateBtn.disabled = !enabled;
         }
 
+        // --- API Key Management ---
+        function getApiKey() {
+            return localStorage.getItem('geminiApiKey');
+        }
+
+        function saveApiKey(key) {
+            localStorage.setItem('geminiApiKey', key);
+            API_KEY = key; // Update the global API_KEY variable
+        }
+
+        function clearApiKey() {
+            localStorage.removeItem('geminiApiKey');
+            API_KEY = ""; // Clear global API_KEY
+            showMessageBox(selectedLanguage === 'id' ? 'Kunci API Dihapus' : 'API Key Cleared', selectedLanguage === 'id' ? 'Kunci API telah dihapus dari browser Anda. Silakan masukkan kunci baru.' : 'API Key has been cleared from your browser. Please enter a new key.');
+            // Reload or redirect to API key input screen
+            location.reload(); 
+        }
+
         // --- Event Listeners ---
+        // API Key Screen Events
+        saveApiKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                saveApiKey(key);
+                showScreen('main-screen');
+                setMainButtonsEnabled(true);
+            } else {
+                showMessageBox(selectedLanguage === 'id' ? 'Kunci API Kosong' : 'Empty API Key', selectedLanguage === 'id' ? 'Mohon masukkan kunci API Anda.' : 'Please enter your API key.');
+            }
+        });
+
+        clearApiKeyBtn.addEventListener('click', clearApiKey);
+
+
         manualInputBtn.addEventListener('click', () => {
             showScreen('manual-input-screen');
             setMainButtonsEnabled(false); 
@@ -1306,7 +1363,9 @@
                 languageRadios[0].nextSibling.textContent = " Bahasa Indonesia";
                 languageRadios[1].nextSibling.textContent = " English";
                 genreSelect.options[0].textContent = "Pilih Genre";
-                genreSelect.options[genreSelect.options.length - 1].textContent = "Lainnya..."; // "other" option
+                // Update "Other" option for genre select
+                const otherGenreOption = Array.from(genreSelect.options).find(opt => opt.value === 'other');
+                if (otherGenreOption) otherGenreOption.textContent = "Lainnya...";
                 otherGenreInput.placeholder = "Masukkan Genre Lainnya";
                 subgenreSelect.options[0].textContent = "Pilih Subgenre";
                 subgenreManualInput.placeholder = "Masukkan Subgenre Lainnya";
@@ -1331,15 +1390,22 @@
                     }
                 }
                 characterClassInput.placeholder = "Kelas Karakter (opsional, cth: Pahlawan)";
-                nameStyleSelect.options[0].textContent = "Nama Acak AI";
-                nameStyleSelect.options[1].textContent = "Nama Ala Jepang";
-                nameStyleSelect.options[2].textContent = "Nama Ala Tiongkok";
-                nameStyleSelect.options[3].textContent = "Nama Ala Arab";
-                nameStyleSelect.options[4].textContent = "Nama Ala Fantasi";
-                nameStyleSelect.options[5].textContent = "Nama Ala Eropa Abad Pertengahan";
-                nameStyleSelect.options[6].textContent = "Nama Ala Celtic";
-                nameStyleSelect.options[7].textContent = "Nama Ala Norse";
-                nameStyleSelect.options[8].textContent = "Nama Ala Mesir Kuno";
+                // Update new name style options
+                Array.from(nameStyleSelect.options).forEach(option => {
+                    switch (option.value) {
+                        case 'random': option.textContent = "Nama Acak AI"; break;
+                        case 'japanese': option.textContent = "Nama Ala Jepang"; break;
+                        case 'chinese': option.textContent = "Nama Ala Tiongkok"; break;
+                        case 'arabic': option.textContent = "Nama Ala Arab"; break;
+                        case 'fantasy': option.textContent = "Nama Ala Fantasi"; break;
+                        case 'european_medieval': option.textContent = "Nama Ala Eropa Abad Pertengahan"; break;
+                        case 'celtic': option.textContent = "Nama Ala Celtic"; break;
+                        case 'norse': option.textContent = "Nama Ala Norse"; break;
+                        case 'ancient_egyptian': option.textContent = "Nama Ala Mesir Kuno"; break;
+                        case 'indonesian': option.textContent = "Nama Ala Indonesia"; break; // New
+                        case 'german': option.textContent = "Nama Ala Jerman"; break; // New
+                    }
+                });
                 generateCharactersBtn.textContent = "Generate Karakter";
                 backToStorySelectBtn.textContent = "Kembali ke Pemilihan Cerita";
                 loadingCharsText.textContent = "Menciptakan karakter Anda...";
@@ -1383,7 +1449,9 @@
                 languageRadios[0].nextSibling.textContent = " Indonesian";
                 languageRadios[1].nextSibling.textContent = " English";
                 genreSelect.options[0].textContent = "Select Genre";
-                genreSelect.options[genreSelect.options.length - 1].textContent = "Other...";
+                // Update "Other" option for genre select
+                const otherGenreOption = Array.from(genreSelect.options).find(opt => opt.value === 'other');
+                if (otherGenreOption) otherGenreOption.textContent = "Other...";
                 otherGenreInput.placeholder = "Enter Other Genre";
                 subgenreSelect.options[0].textContent = "Select Subgenre";
                 subgenreManualInput.placeholder = "Enter Other Subgenre";
@@ -1408,15 +1476,22 @@
                     }
                 }
                 characterClassInput.placeholder = "Character Class (optional, e.g., Hero)";
-                nameStyleSelect.options[0].textContent = "Random AI Name";
-                nameStyleSelect.options[1].textContent = "Japanese Style Name";
-                nameStyleSelect.options[2].textContent = "Chinese Style Name";
-                nameStyleSelect.options[3].textContent = "Arabic Style Name";
-                nameStyleSelect.options[4].textContent = "Fantasy Style Name";
-                nameStyleSelect.options[5].textContent = "European Medieval Name";
-                nameStyleSelect.options[6].textContent = "Celtic Style Name";
-                nameStyleSelect.options[7].textContent = "Norse Style Name";
-                nameStyleSelect.options[8].textContent = "Ancient Egyptian Name";
+                // Update new name style options
+                Array.from(nameStyleSelect.options).forEach(option => {
+                    switch (option.value) {
+                        case 'random': option.textContent = "Random AI Name"; break;
+                        case 'japanese': option.textContent = "Japanese Style Name"; break;
+                        case 'chinese': option.textContent = "Chinese Style Name"; break;
+                        case 'arabic': option.textContent = "Arabic Style Name"; break;
+                        case 'fantasy': option.textContent = "Fantasy Style Name"; break;
+                        case 'european_medieval': option.textContent = "European Medieval Name"; break;
+                        case 'celtic': option.textContent = "Celtic Style Name"; break;
+                        case 'norse': option.textContent = "Norse Style Name"; break;
+                        case 'ancient_egyptian': option.textContent = "Ancient Egyptian Name"; break;
+                        case 'indonesian': option.textContent = "Indonesian Style Name"; break; // New
+                        case 'german': option.textContent = "German Style Name"; break; // New
+                    }
+                });
                 generateCharactersBtn.textContent = "Generate Characters";
                 backToStorySelectBtn.textContent = "Back to Story Selection";
                 loadingCharsText.textContent = "Creating your characters...";
@@ -1590,6 +1665,12 @@
         // --- Gemini API Integration ---
 
         async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtElement, loadingAdditionalElement = null, buttonToDisable) {
+            // Check if API_KEY is available
+            if (!API_KEY) {
+                showMessageBox(selectedLanguage === 'id' ? 'Kunci API Hilang' : 'API Key Missing', selectedLanguage === 'id' ? 'Mohon masukkan kunci API Gemini Anda terlebih dahulu.' : 'Please enter your Gemini API key first.');
+                return null;
+            }
+
             loadingElement.style.display = 'flex';
             if (buttonToDisable) buttonToDisable.disabled = true;
             
@@ -1915,6 +1996,12 @@
                     break;
                 case 'ancient_egyptian':
                     prompt += ` Character names should sound like Ancient Egyptian names (e.g., Nefertari, Ramses, Imhotep).`;
+                    break;
+                case 'indonesian': // New
+                    prompt += ` Character names should sound like common Indonesian names (e.g., Budi, Siti, Rahmat, Indah).`;
+                    break;
+                case 'german': // New
+                    prompt += ` Character names should sound like common German names (e.g., Hans, Gretel, Klaus, Sofia).`;
                     break;
                 default: // 'random' or any other default
                     prompt += ` Character names should be diverse (e.g., Western, Asian, Middle Eastern, Fantasy-inspired).`;
@@ -2576,9 +2663,19 @@
             await generateChapter(gameProgress.currentChapter, choice.text);
         }
         
-        // Initialize screen
-        showScreen('main-screen');
-        updateLanguageText();
+        // --- Initialization ---
+        // On page load, check for API key
+        window.onload = () => {
+            API_KEY = getApiKey();
+            if (API_KEY) {
+                showScreen('main-screen');
+                setMainButtonsEnabled(true);
+            } else {
+                showScreen('api-key-screen');
+                setMainButtonsEnabled(false); // Disable main buttons until API key is entered
+            }
+            updateLanguageText();
+        };
 
     </script>
 </body>
