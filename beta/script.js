@@ -266,8 +266,7 @@ backToStorySelectBtn.addEventListener('click', () => {
     } else {
         showScreen('ai-generate-form-screen');
     }
-    // Reset character creation screen state
-    // numCharactersSelect.value = 'ai-recommended'; // Removed this dropdown
+    // Removed numCharactersSelect related reset
     characterClassInput.value = '';
     characterClassInput.style.display = 'none';
     characterResultsDiv.innerHTML = '';
@@ -357,8 +356,7 @@ function updateLanguageText() {
         backFromAiResultsBtn.textContent = "Kembali Cari Cerita Lain";
 
         characterCreationScreen.querySelector('h1').textContent = "Buat Karakter";
-        characterCreationScreen.querySelector('p').textContent = "AI akan merekomendasikan karakter untuk cerita Anda, termasuk beberapa kandidat Karakter Utama (MC)."; // Updated text
-        // Removed numCharactersSelect options update
+        characterCreationScreen.querySelector('p').textContent = "AI akan membuat seluruh karakter untuk cerita Anda, termasuk memilih 2-4 kandidat Karakter Utama (MC)."; // Updated text
         characterClassInput.placeholder = "Kelas Karakter (opsional, cth: Pahlawan)";
         // Update new name style options
         Array.from(nameStyleSelect.options).forEach(option => {
@@ -437,8 +435,7 @@ function updateLanguageText() {
         backFromAiResultsBtn.textContent = "Go Back, Find Another Story";
 
         characterCreationScreen.querySelector('h1').textContent = "Create Characters";
-        characterCreationScreen.querySelector('p').textContent = "AI will recommend characters for your story, including several Main Character (MC) candidates."; // Updated text
-        // Removed numCharactersSelect options update
+        characterCreationScreen.querySelector('p').textContent = "AI will create all characters for your story, including selecting 2-4 Main Character (MC) candidates."; // Updated text
         characterClassInput.placeholder = "Character Class (optional, e.g., Hero)";
         // Update new name style options
         Array.from(nameStyleSelect.options).forEach(option => {
@@ -762,10 +759,11 @@ async function generateStoryContent() {
     - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
     - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
     - 16+: Contains mature themes, moderate violence, strong language, and/or suggestive themes.
-    - 18+: Contains mature themes, stronger violence, harsh language, and/or suggestive themes (non-explicit sexual content).
+    - 18+: Contains mature themes, stronger violence, harsh language, and/or **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
     - 21+: Contains explicit violence, strong language, and mature themes (excluding explicit sexual content).
 
-    Explicit sexual content is STRICTLY FORBIDDEN for ALL ratings.
+    Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse) is STRICTLY FORBIDDEN for ALL ratings.
+    Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
     Violence and harsh language are permitted only for ratings 16+, 18+ and 21+.
 
     Ensure the output is in JSON format according to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. (Random seed: ${Math.random()})`;
@@ -870,9 +868,9 @@ async function generateCharacters() {
     selectedMainCharacter = null;
     generatedCharacters = []; // Clear previous characters
 
-    // AI will determine numChars between 3 and 7 automatically
-    const numChars = Math.floor(Math.random() * (7 - 3 + 1)) + 3; // Random between 3 and 7
-    console.log("AI-determined numChars:", numChars);
+    // AI will determine numChars for the *total* cast (e.g., 6 to 10 characters)
+    const totalNumChars = Math.floor(Math.random() * (10 - 6 + 1)) + 6; // Random between 6 and 10 total characters
+    console.log("AI-determined totalNumChars:", totalNumChars);
 
     const charClassHint = characterClassInput.value.trim();
     const nameStyle = nameStyleSelect.value; 
@@ -915,7 +913,7 @@ async function generateCharacters() {
     const potentialMCRoles = ["Protagonis", "Antihero", "The Chosen One", "The Outcast", "The Rebel", "The Avenger", "The Legend"];
 
 
-    let prompt = `Generate exactly ${numChars} *new and distinct* characters for a visual novel based on the following story:
+    let prompt = `Generate exactly ${totalNumChars} *new and distinct* characters for a visual novel based on the following story:
     Title: "${selectedStoryDetails.title}"
     Description: "${selectedStoryDetails.description}".`;
 
@@ -937,7 +935,7 @@ async function generateCharacters() {
     - "role": Assign a *distinct* narrative role from the following list or similar archetypes: ${rolesList.join(', ')}. Ensure roles are varied, relevant to the story, and unique among the generated characters.
     - "isPotentialMC": boolean. Generate *at least 2 and up to 4* characters where 'isPotentialMC' is true. These characters MUST be highly relevant and suitable as the main protagonist for the story title "${selectedStoryDetails.title}" and description "${selectedStoryDetails.description}". Prioritize roles like Protagonist, Antihero, The Chosen One. The rest should be false.
 
-    The character descriptions and personalities should be consistent with the story's rating (${selectedStoryDetails.rating}). Avoid generating characters that would lead to content violating the rating restrictions, especially regarding explicit sexual content (forbidden for all ratings).`; // Add rating constraint
+    The character descriptions and personalities should be consistent with the story's rating (${selectedStoryDetails.rating}). Avoid generating characters that would lead to content violating the rating restrictions, especially regarding explicit sexual content (forbidden for all ratings). Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.`; // Add rating constraint
 
 
     if (charClassHint) { // Keep the optional class input
@@ -981,7 +979,7 @@ async function generateCharacters() {
             break;
     }
     prompt += ` Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language for personality, description, class, and role values.`;
-    prompt += ` Ensure the output is a JSON array containing exactly ${numChars} character objects.`;
+    prompt += ` Ensure the output is a JSON array containing exactly ${totalNumChars} character objects.`;
     prompt += ` (Timestamp: ${Date.now()})`;
 
 
@@ -992,7 +990,7 @@ async function generateCharacters() {
         // Ensure we only use the number of characters explicitly requested or randomly determined by us
         // We keep all generated characters in `generatedCharacters` global variable
         // but only display potential MCs
-        generatedCharacters = generatedCharacters.slice(0, numChars); // Trim if AI generates more than requested/randomly chosen
+        generatedCharacters = generatedCharacters.slice(0, totalNumChars); // Trim if AI generates more than requested/randomly chosen
 
         const potentialMCs = generatedCharacters.filter(char => char.isPotentialMC);
         // No need to separate otherCharacters for display on this screen. They are in generatedCharacters.
@@ -1125,9 +1123,10 @@ async function generatePrologue() {
     Make sure the initial Flag Awal is relevant to the MC's personality and the story premise.
     
     Rating Considerations:
-    - Explicit sexual content: STRICTLY FORBIDDEN.
+    - Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse): STRICTLY FORBIDDEN.
+    - Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
     - Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+ and 21+. For SU and PG-13, these themes must be absent or very mild/implied.
-    - For 18+ rating: Allows stronger violence and harsh language than 16+, but still no explicit sexual content.
+    - For 18+ rating: Allows stronger violence and harsh language than 16+, and **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
     `;
     
     const prologData = await callGeminiAPI(prompt, prologSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), gameLoadingAdditionalText, null);
@@ -1366,9 +1365,10 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
     - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
     - 16+: Contains mature themes, moderate violence, strong language, and/or suggestive themes.
-    - 18+: Contains mature themes, stronger violence, harsh language, and/or suggestive themes (non-explicit sexual content).
+    - 18+: Contains mature themes, stronger violence, harsh language, and/or **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
     - 21+: Contains explicit violence, strong language, and mature themes (excluding explicit sexual content).
-    Explicit sexual content: STRICTLY FORBIDDEN.
+    Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse): STRICTLY FORBIDDEN.
+    Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
     Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+, and 21+.
     `;
 
