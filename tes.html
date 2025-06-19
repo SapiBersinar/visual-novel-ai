@@ -1,0 +1,2683 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerita Komik Interaktif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0; /* White background */
+            color: #333; /* Dark text color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        /* Main Container */
+        .container {
+            background-color: #ffffff; /* White container background */
+            padding: 40px;
+            border-radius: 8px; /* Slightly rounded corners */
+            box-shadow: 8px 8px 0px 0px #333; /* Thick black shadow */
+            width: 100%;
+            max-width: 600px; /* Wider max-width */
+            text-align: center;
+            border: 2px solid #333; /* Thick black border */
+            position: relative; /* For overlay */
+        }
+
+        /* Title Styling */
+        h1 {
+            font-size: 2.8rem; /* Larger size */
+            font-weight: 800;
+            margin-bottom: 30px;
+            color: #222; /* Darker title color */
+            text-shadow: 3px 3px 0px #ccc; /* Simple text shadow */
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #333;
+            text-shadow: 2px 2px 0px #eee;
+        }
+
+        /* Input Fields and Textareas */
+        input[type="text"],
+        textarea,
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            background-color: #ffffff;
+            color: #333;
+            font-size: 1.05rem;
+            outline: none;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 3px 3px 0px 0px #888; /* Shadow on input */
+            text-align: center;
+        }
+        
+        input::placeholder,
+        textarea::placeholder {
+            text-align: center;
+            color: #777;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        input[type="number"]:focus {
+            border-color: #555;
+            box-shadow: 5px 5px 0px 0px #555; /* Shadow on focus */
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        /* Select styling for genre/subgenre - similar to input */
+        select {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            background-color: #ffffff;
+            color: #333;
+            font-size: 1.05rem;
+            outline: none;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            position: relative;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 40px; /* Space for custom arrow */
+            box-sizing: border-box; /* Include padding in width calculation */
+            text-align: center; /* Center selected option text */
+            text-align-last: center; /* For the dropdown itself */
+        }
+        select option {
+            text-align: center; /* Ensure options are centered in dropdown */
+        }
+
+        select:focus {
+            border-color: #555;
+            box-shadow: 5px 5px 0px 0px #555;
+        }
+
+        /* Hide spin buttons for number input */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* Adjust margins for specific elements to create desired spacing */
+        #genre-select, #subgenre-select, #num-stories {
+            margin-bottom: 25px;
+        }
+
+
+        /* Button Styling */
+        .button {
+            width: 100%;
+            padding: 18px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            margin-bottom: 18px;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 5px 5px 0px 0px #888; /* Button shadow */
+        }
+        .button-primary {
+            background-color: #333;
+            color: #ffffff;
+        }
+        .button-primary:hover {
+            transform: translate(-2px, -2px); /* 'Lift' effect */
+            box-shadow: 7px 7px 0px 0px #555; /* Deeper hover shadow */
+            background-color: #555;
+        }
+        
+        .button-success {
+            background-color: #28a745; /* Green for success/positive action */
+            color: white;
+            box-shadow: 5px 5px 0px 0px #1e7e34;
+        }
+        .button-success:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px 0px #1c7430;
+            background-color: #218838;
+        }
+
+        .button-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .button-secondary:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px 0px #aaa;
+            background-color: #e0e0e0;
+        }
+
+        /* Button group spacing */
+        .button-group-spacing {
+            margin-top: 25px;
+            margin-bottom: 0;
+        }
+        .button-group-spacing .button:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Radio Group Styling */
+        .radio-group {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.05rem;
+            color: #555;
+            transition: color 0.3s;
+        }
+        .radio-group label:hover {
+            color: #333;
+        }
+        .radio-group input[type="radio"] {
+            margin-right: 10px;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            display: grid;
+            place-content: center;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            background-color: #ffffff;
+        }
+        .radio-group input[type="radio"]::before {
+            content: "";
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em #333;
+        }
+        .radio-group input[type="radio"]:checked::before {
+            transform: scale(1);
+        }
+        .radio-group input[type="radio"]:focus-visible {
+            outline: 2px solid #333;
+            outline-offset: 2px;
+        }
+
+        /* Loading Indicator & Spinner (General) */
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column; /* To stack text and spinner */
+            margin-top: 30px;
+            font-size: 1.2rem;
+            color: #555;
+            font-weight: 600;
+            animation: fadeInOut 2s ease-in-out infinite;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        /* CSS Spinner (General) */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #333;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 15px; /* Space between spinner and text */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-additional-text {
+            font-size: 0.85rem;
+            color: #777;
+            margin-top: 5px;
+            display: none; /* Hidden by default */
+        }
+
+        /* Story Card Styling */
+        .story-card, .summary-section {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+            box-shadow: 5px 5px 0px 0px #888;
+            border: 2px solid #333;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+        }
+        .story-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0px 0px #555;
+        }
+        .story-card.selected {
+            border-color: #000;
+            box-shadow: 8px 8px 0px 0px #000, 0 0 0 3px rgba(0, 0, 0, 0.2);
+        }
+        .story-card h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .story-card p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .story-card .genre {
+            font-style: italic;
+            color: #777;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: block;
+        }
+        .story-card .select-story-btn {
+            margin-top: 20px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            width: auto;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #333;
+            color: white;
+            border-radius: 4px;
+            box-shadow: 3px 3px 0px 0px #888;
+            transition: all 0.2s ease-in-out;
+        }
+        .story-card .select-story-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px 0px #555;
+        }
+
+
+        /* Selected Story Display */
+        #selected-story-display {
+            display: none;
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+            box-shadow: 5px 5px 0px 0px #888;
+            border: 2px solid #333;
+        }
+        #selected-story-display h2 {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        #selected-story-display p {
+            margin-bottom: 10px;
+            color: #555;
+            text-align: center;
+        }
+        #selected-story-display .genre {
+            text-align: center;
+        }
+
+
+        /* Custom Message Box */
+        .message-box {
+            display: none;
+            background-color: #ffffff;
+            color: #333;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: center;
+            box-shadow: 8px 8px 0px 0px #333;
+            border: 2px solid #333;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            z-index: 1000;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .message-box h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #333;
+            text-shadow: 1px 1px 0px #ccc;
+        }
+        .message-box p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        .message-box button {
+            background-color: #333;
+            color: white;
+            padding: 10px 25px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 3px 3px 0px 0px #888;
+        }
+        .message-box button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px 0px #555;
+        }
+
+        /* Footer text styling */
+        .footer-text {
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 30px;
+        }
+
+        /* Character Creation Specific Styles */
+        .character-card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 5px 5px 0px 0px #888;
+            border: 2px solid #333;
+            transition: all 0.2s ease-in-out; /* Adjusted for background color transition */
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .character-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0px 0px #555;
+        }
+        .character-card.selected-mc {
+            border-color: #000;
+            background-color: #e0e0e0; /* Changed background color on selection */
+            box-shadow: 8px 8px 0px 0px #000, 0 0 0 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .character-card h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+        .character-card h2 .icon-placeholder {
+            font-size: 1.5rem;
+        }
+        .character-card h2 .selected-angel-icon { /* New class for the selected angel icon */
+            font-size: 1.5rem;
+            margin-right: 5px;
+        }
+        .character-card p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 0;
+            text-align: center;
+        }
+        .character-card .char-detail {
+            font-weight: 500;
+            color: #333;
+        }
+        .character-options {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        #character-class-input {
+            margin-bottom: 25px;
+        }
+        #num-characters-select { /* Updated ID for the new select */
+            margin-bottom: 25px;
+        }
+
+        /* Summary Screen Styles */
+        #summary-screen {
+            display: none;
+            text-align: center;
+        }
+        #summary-screen .summary-section {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 5px 5px 0px 0px #888;
+            border: 2px solid #333;
+            text-align: center;
+        }
+        #summary-screen .summary-section h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        #summary-screen .summary-section p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        #summary-screen .summary-section .char-detail {
+            font-weight: 500;
+            color: #333;
+        }
+        #summary-screen .summary-section .emoji-icon {
+            font-size: 1.8rem;
+            margin-right: 10px;
+        }
+        #summary-screen .summary-section .selected-angel-icon { /* New class for angel icon in summary */
+            font-size: 1.8rem;
+            margin-right: 10px;
+        }
+
+        /* Game Screen Styles */
+        #game-screen {
+            display: none;
+            text-align: center;
+            position: relative;
+            min-height: 500px; /* Ensure space for content */
+        }
+        /* Overlay Loading Game */
+        #game-loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            color: #333;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-radius: 8px;
+        }
+        #game-loading-overlay .spinner {
+            width: 50px;
+            height: 50px;
+            border-width: 6px;
+            margin-bottom: 20px;
+            border-top: 6px solid #333;
+            border-left: 6px solid #333;
+            border-bottom: 6px solid #888;
+            border-right: 6px solid #888;
+        }
+
+        /* Game Play Screen Styles */
+        #game-play-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: left;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 5px 5px 0px 0px #888;
+            border: 2px solid #333;
+        }
+
+        /* New: Chapter Header Card */
+        .chapter-header-card {
+            background-color: #f0f0f0; /* Light gray */
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 4px 4px 0px 0px #ccc;
+            border: 1px solid #bbb;
+            width: 100%;
+            text-align: center;
+        }
+        .chapter-header-card h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #222;
+            text-shadow: none; /* Remove text-shadow for cleaner look in card */
+        }
+        .chapter-header-card .chapter-meta {
+            font-style: italic;
+            color: #666;
+            font-size: 0.95rem;
+            margin-top: 5px;
+            margin-bottom: 0;
+        }
+
+        /* Narrative and Dialogue Content Styling */
+        .narrative-content {
+            width: 100%; /* Ensure it takes full width for flex alignment */
+        }
+        .narrative-content p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #444;
+            text-align: justify;
+            padding: 0 10px;
+        }
+        .narrative-content .prolog-quote, .narrative-content .chapter-quote {
+            font-style: italic;
+            font-weight: 500;
+            color: #666;
+            margin: 20px 0;
+            padding: 0 20px;
+            border-left: 4px solid #ccc;
+            text-align: center;
+        }
+
+        /* Base Dialogue Card */
+        .character-dialogue-card {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #333;
+            width: fit-content; /* Adjust width to content */
+            max-width: 80%; /* Limit max width */
+            box-shadow: 2px 2px 0px 0px #ccc;
+            border: 1px solid #eee;
+            clear: both; /* Clear floats for proper stacking */
+        }
+        .character-dialogue-card strong.speaker-name {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        /* MC Dialogue (Right Aligned) */
+        .mc-dialogue-card {
+            background-color: #dcf8c6; /* Light green for MC */
+            border: 1px solid #aed581;
+            margin-left: auto; /* Push to right */
+            margin-right: 10px; /* Small margin from right edge */
+            text-align: right;
+            border-top-right-radius: 0; /* Flat top right corner */
+            clear: both;
+        }
+        .mc-dialogue-card strong.speaker-name {
+            color: #388e3c; /* Darker green for MC name */
+        }
+
+        /* Other Character Dialogue (Left Aligned) */
+        .other-dialogue-card {
+            background-color: #e6f7ff; /* Lighter blue for others */
+            border: 1px solid #b3e0ff;
+            margin-right: auto; /* Push to left */
+            margin-left: 10px; /* Small margin from left edge */
+            text-align: left;
+            border-top-left-radius: 0; /* Flat top left corner */
+            clear: both;
+        }
+        .other-dialogue-card strong.speaker-name {
+            color: #007bff; /* Blue for other character names */
+        }
+
+
+        #dynamic-systems-display {
+            width: 100%;
+            background-color: #f9f9f9;
+            border: 1px dashed #ccc;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        #dynamic-systems-display h3 {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #333;
+            text-align: center;
+        }
+        #dynamic-systems-display p {
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+            color: #555;
+            text-align: left;
+            line-height: 1.5;
+        }
+        #dynamic-systems-display .system-title {
+            font-weight: 600;
+            color: #222;
+        }
+        .trust-update-item, .dna-item, .achievement-item, .flag-item, .time-event-item {
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px dotted #eee;
+            color: #555;
+            font-size: 0.95rem;
+        }
+        .trust-update-item:last-child, .dna-item:last-child, .achievement-item:last-child, .flag-item:last-child, .time-event-item:last-child {
+            border-bottom: none;
+        }
+        .trust-update-item .positive { color: #28a745; font-weight: 600; }
+        .trust-update-item .negative { color: #dc3545; font-weight: 600; }
+        .trust-update-item .neutral { color: #ffc107; font-weight: 600; } /* Changed to yellow for neutral/warning */
+        
+        #choice-container {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+        .choice-card {
+            background-color: #f0f8ff; /* Light blue background for choices */
+            padding: 18px 20px;
+            border-radius: 8px;
+            border: 2px solid #6cbafa; /* Blue border */
+            box-shadow: 4px 4px 0px 0px #9dd4ff; /* Lighter blue shadow */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            text-align: left;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .choice-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 6px 6px 0px 0px #6cbafa; /* Deeper blue shadow on hover */
+            background-color: #e6f3ff;
+        }
+        .choice-card .choice-emote {
+            font-size: 1.2rem;
+        }
+
+        /* Game Over Screen */
+        #game-over-screen {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        /* Responsive adjustments for small screens */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            .container {
+                padding: 25px;
+                border-radius: 6px;
+                box-shadow: 6px 6px 0px 0px #333;
+            }
+            .button {
+                padding: 15px;
+                font-size: 1rem;
+            }
+            input[type="text"],
+            textarea,
+            select,
+            input[type="number"] {
+                padding: 12px;
+                font-size: 0.95rem;
+            }
+            .radio-group {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .story-card h2, .character-card h2, #summary-screen .summary-section h2 {
+                font-size: 1.4rem;
+            }
+            .story-card p, .character-card p, #summary-screen .summary-section p {
+                font-size: 0.9rem;
+            }
+             .message-box {
+                padding: 20px;
+                border-radius: 6px;
+                box-shadow: 6px 6px 0px 0px #333;
+            }
+            .message-box h3 {
+                font-size: 1.3rem;
+            }
+            .message-box p {
+                font-size: 0.95rem;
+            }
+            #game-loading-overlay .spinner {
+                width: 40px;
+                height: 40px;
+                border-width: 5px;
+            }
+            #game-loading-overlay span {
+                font-size: 1.2rem;
+            }
+
+            .chapter-header-card h2 {
+                font-size: 1.8rem;
+            }
+            .narrative-content p, .character-dialogue-card {
+                font-size: 1rem;
+                padding: 0 5px;
+            }
+            .choice-card {
+                font-size: 0.95rem;
+                padding: 15px;
+            }
+            .mc-dialogue-card, .other-dialogue-card {
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- API Key Input Screen -->
+        <div id="api-key-screen" style="display:none;">
+            <h1>Masukkan Kunci API Gemini Anda</h1>
+            <p class="text-md mb-8 text-center text-gray-700">
+                Untuk menggunakan fitur AI, Anda memerlukan kunci API Gemini.
+                Anda bisa mendapatkannya di:
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline">aistudio.google.com/app/apikey</a>
+            </p>
+            <input type="text" id="api-key-input" placeholder="Masukkan Kunci API Gemini Anda">
+            <button class="button button-primary" id="save-api-key-btn">Simpan Kunci API</button>
+            <button class="button button-secondary" id="clear-api-key-btn">Hapus Kunci API</button>
+            <p class="text-xs mt-4 text-red-500">
+                Peringatan: Menyimpan kunci API di browser tidak disarankan untuk aplikasi produksi.
+            </p>
+        </div>
+
+        <div id="main-screen">
+            <h1>Cerita Komik Interaktif</h1>
+            <p class="text-md mb-8 text-center text-gray-700">Dapatkan ide cerita baru atau masukkan cerita Anda sendiri.</p>
+            <button class="button button-primary" id="manual-input-btn">Masukkan Judul & Deskripsi Manual</button>
+            <button class="button button-success" id="ai-generate-btn">Hasilkan Cerita dengan AI</button>
+        </div>
+
+        <div id="manual-input-screen" style="display:none;">
+            <h1>Masukkan Cerita Anda</h1>
+            <input type="text" id="manual-title" placeholder="Judul Cerita">
+            <textarea id="manual-description" placeholder="Deskripsi Cerita (fokus pada premis & konflik)" rows="6"></textarea>
+            <button class="button button-primary" id="continue-manual-btn">Lanjutkan ke Pembuatan Karakter</button>
+            <button class="button button-secondary" id="back-from-manual-btn">Kembali</button>
+        </div>
+
+        <div id="ai-generate-form-screen" style="display:none;">
+            <h1>Hasilkan Cerita dengan AI</h1>
+            <p class="text-md mb-8 text-center text-gray-700">AI akan membuat ide cerita berdasarkan preferensi Anda.</p>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="language" value="id" checked> Bahasa Indonesia
+                </label>
+                <label>
+                    <input type="radio" name="language" value="en"> English
+                </label>
+            </div>
+            
+            <select id="genre-select">
+                <option value="">Pilih Genre</option>
+                <option value="Fantasy">Fantasi</option>
+                <option value="Sci-Fi">Fiksi Ilmiah</option>
+                <option value="Romance">Romansa</option>
+                <option value="Mystery">Misteri</option>
+                <option value="Adventure">Petualangan</option>
+                <option value="Thriller">Thriller</option>
+                <option value="Horror">Horor</option>
+                <option value="Comedy">Komedi</option>
+                <option value="Drama">Drama</option>
+                <option value="Historical">Sejarah</option>
+                <option value="Slice of Life">Slice of Life</option>
+                <option value="Action">Aksi</option>
+                <option value="Supernatural">Supernatural</option>
+                <option value="Psychological">Psikologis</option>
+                <option value="Dystopian">Distopia</option>
+                <option value="Utopian">Utopia</option>
+                <option value="Steampunk">Steampunk</option>
+                <option value="Cyberpunk">Cyberpunk</option>
+                <option value="Post-Apocalyptic">Pascabencana</option>
+                <option value="Legal">Legal</option>
+                <option value="Medical">Medis</option>
+                <option value="Sports">Olahraga</option>
+                <option value="War">Perang</option>
+                <option value="Western">Western</option>
+                <option value="Crime">Kriminal</option>
+                <option value="Coming-of-Age">Coming-of-Age</option>
+                <option value="Young Adult">Young Adult</option>
+                <option value="New Adult">New Adult</option>
+                <option value="Children">Anak-anak</option>
+                <option value="Biographical">Biografi</option>
+                <option value="Magical Realism">Realism Magis</option>
+                <option value="Philosophical">Filosofis</option>
+                <option value="Satire">Satir</option>
+                <option value="Gothic">Gotik</option>
+                <option value="Noir">Noir</option>
+                <option value="Faerie Tale">Dongeng</option>
+                <option value="Mythology">Mitologi</option>
+                <option value="Parody">Parodi</option>
+                <option value="Fan-Fiction">Fan-Fiksi</option>
+                <option value="Murim">Murim</option> <!-- New Genre -->
+                <option value="other">Lainnya...</option>
+            </select>
+            <input type="text" id="other-genre-input" placeholder="Masukkan Genre Lainnya" style="display:none;">
+
+            <select id="subgenre-select" style="display:none;">
+                <option value="">Pilih Subgenre</option>
+            </select>
+            <input type="text" id="subgenre-manual-input" placeholder="Masukkan Subgenre Lainnya" style="display:none;">
+
+            <input type="number" id="num-stories" placeholder="Jumlah Cerita (1-5)" min="1" max="5" value="1">
+            
+            <div class="button-group-spacing">
+                <button class="button button-success" id="generate-ai-btn">Hasilkan Cerita</button>
+                <button class="button button-secondary" id="back-from-ai-form-btn">Kembali</button>
+            </div>
+            
+            <div class="loading-indicator" id="loading-ai" style="display:none;">
+                <div class="spinner"></div>
+                <span id="loading-text">Sedang menulis kisah Anda...</span>
+                <span id="loading-additional-text" class="loading-additional-text">Mohon tunggu sebentar, AI sedang memproses.</span>
+            </div>
+        </div>
+
+        <div id="ai-results-screen" style="display:none;">
+            <h1>Pilih Cerita Anda</h1>
+            <p class="text-md mb-8 text-center text-gray-700">Pilih salah satu cerita yang dihasilkan AI.</p>
+            <div id="story-list-container">
+                <!-- AI generated stories will be added here -->
+            </div>
+
+            <!-- This div will act as the selected story summary, displayed after a story is chosen -->
+            <div id="selected-story-display" style="display:none;">
+                <h2 id="display-title" class="text-center font-bold text-xl mb-2"></h2>
+                <p id="display-description" class="text-center text-gray-700 mb-4"></p>
+                <p class="genre text-center">✨ Genre: <span id="display-genres"></span></p>
+                <p class="genre text-center">✨ Subgenre: <span id="display-subgenres"></span></p>
+            </div>
+
+            <div class="button-group-spacing">
+                 <button class="button button-primary" id="continue-to-character-selection-btn" style="display:none;">Lanjutkan ke Pemilihan Karakter</button>
+                 <button class="button button-secondary" id="back-from-ai-results-btn">Kembali Cari Cerita Lain</button>
+            </div>
+        </div>
+
+        <!-- Character Creation Screen -->
+        <div id="character-creation-screen" style="display:none;">
+            <h1>Buat Karakter</h1>
+            <p class="text-md mb-8 text-center text-gray-700">Anda dapat menentukan jumlah karakter atau membiarkan AI merekomendasikannya.</p>
+            
+            <select id="num-characters-select">
+                <option value="ai-recommended">Pilihan ditentukan dari judul dan deskripsi oleh AI (rekomendasi)</option>
+                <option value="3">3 Karakter</option>
+                <option value="4">4 Karakter</option>
+                <option value="5">5 Karakter</option>
+                <option value="6">6 Karakter</option>
+                <option value="7">7 Karakter</option>
+            </select>
+
+            <input type="text" id="character-class-input" placeholder="Kelas Karakter (opsional, cth: Pahlawan)" style="display:none;">
+            
+            <select id="name-style-select" class="mb-4">
+                <option value="random">Nama Acak AI</option>
+                <option value="japanese">Nama Ala Jepang</option>
+                <option value="chinese">Nama Ala Tiongkok</option>
+                <option value="arabic">Nama Ala Arab</option>
+                <option value="fantasy">Nama Ala Fantasi</option>
+                <option value="european_medieval">Nama Ala Eropa Abad Pertengahan</option>
+                <option value="celtic">Nama Ala Celtic</option>
+                <option value="norse">Nama Ala Norse</option>
+                <option value="ancient_egyptian">Nama Ala Mesir Kuno</option>
+                <option value="indonesian">Nama Ala Indonesia</option> <!-- New Name Style -->
+                <option value="german">Nama Ala Jerman</option> <!-- New Name Style -->
+            </select>
+            
+            <div class="button-group-spacing">
+                <button class="button button-success" id="generate-characters-btn">Generate Karakter</button>
+                <button class="button button-secondary" id="back-to-story-select-btn">Kembali ke Pemilihan Cerita</button>
+            </div>
+
+            <div class="loading-indicator" id="loading-characters" style="display:none;">
+                <div class="spinner"></div>
+                <span id="loading-chars-text">Menciptakan karakter Anda...</span>
+                <span id="loading-additional-text-chars" class="loading-additional-text">Mohon tunggu sebentar, AI sedang memproses.</span>
+            </div>
+
+            <h2 class="text-xl font-bold mt-8 mb-4 text-center text-gray-800" id="mc-selection-heading" style="display:none;">Pilih Karakter Utama (MC):</h2>
+            <div id="character-results" class="character-options">
+                <!-- Generated characters will be added here -->
+            </div>
+            
+            <div class="button-group-spacing" id="character-action-buttons" style="display:none;">
+                <button class="button button-primary" id="continue-to-game-btn">Lanjutkan Cerita</button>
+                <button class="button button-secondary" id="regenerate-characters-btn">Cari Karakter Lagi</button>
+            </div>
+        </div>
+
+        <!-- Summary screen before starting the game -->
+        <div id="summary-screen" style="display:none;">
+            <h1>Ringkasan Cerita Anda</h1>
+            <p class="text-md mb-8 text-center text-gray-700">Ini adalah ringkasan cerita dan karakter yang akan Anda mainkan.</p>
+            <div class="summary-section">
+                <h2>Judul Cerita</h2>
+                <p id="final-summary-title"></p>
+                <h2>Deskripsi Cerita</h2>
+                <p id="final-summary-description"></p>
+                <p class="genre">✨ Genre: <span id="final-summary-genres"></span></p>
+                <p class="genre">✨ Subgenre: <span id="final-summary-subgenres"></span></p>
+            </div>
+
+            <div class="summary-section">
+                <h2>Karakter Utama (MC)</h2>
+                <h2 id="final-mc-name-class"></h2>
+                <p><span class="char-detail">Sifat:</span> <span id="final-mc-personality"></span></p>
+                <p><span class="char-detail">Tentang:</span> <span id="final-mc-description"></span></p>
+            </div>
+
+            <div class="button-group-spacing">
+                <button class="button button-primary" id="start-game-btn">Mulai Game</button>
+                <button class="button button-secondary" id="back-from-summary-btn">Kembali</button>
+            </div>
+        </div>
+        
+        <!-- Game Screen (Main Visual Novel Display) -->
+        <div id="game-screen" style="display:none;">
+            <div id="game-loading-overlay" style="display:none;">
+                <div class="spinner"></div>
+                <span>Memuat cerita...</span>
+                <span id="game-loading-additional-text" class="loading-additional-text">Mohon tunggu sebentar, AI sedang memproses.</span>
+            </div>
+
+            <div id="game-play-screen" style="display:none;">
+                <div id="prolog-content-display">
+                    <!-- Prolog content generated by AI -->
+                </div>
+
+                <div id="chapter-content-display" style="display:none;">
+                    <!-- Chapter content generated by AI -->
+                </div>
+
+                <div id="dynamic-systems-display">
+                    <h3>🎮 Sistem Aktif:</h3>
+                    <!-- Dynamic systems will be displayed here -->
+                </div>
+
+                <div id="choice-container">
+                    <!-- Choices will be displayed here -->
+                </div>
+
+                <button class="button button-primary mt-8" id="start-real-story-btn" style="display:none;">Mulai ke cerita sebenarnya</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen (currently hidden) -->
+        <div id="game-over-screen" style="display:none;">
+            <h1>💀 GAME OVER 💀</h1>
+            <p class="game-over-text" id="game-over-message"></p>
+            <div class="analysis-text" id="game-over-analysis"></div>
+            <div class="button-group-spacing">
+                <button class="button button-primary" id="retry-game-btn">Coba Lagi</button>
+                <button class="button button-secondary" id="back-to-main-menu-btn">Kembali ke Menu Utama</button>
+            </div>
+        </div>
+
+        <p class="text-xs mt-8 opacity-75 footer-text">Katakanlah: Sesungguhnya aku takut akan azab hari yang besar jika aku durhaka kepada Tuhanku. (QS. Az-Zumar: 13)</p>
+
+        <!-- Custom Message Box -->
+        <div id="custom-message-box" class="message-box">
+            <h3 id="message-box-title"></h3>
+            <p id="message-box-content"></p>
+            <button id="message-box-ok-btn">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // --- API Key Handling ---
+        let API_KEY = ""; // This will be loaded from localStorage or set by user
+
+        // --- DOM Elements ---
+        const apiKeyScreen = document.getElementById('api-key-screen');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const clearApiKeyBtn = document.getElementById('clear-api-key-btn');
+
+        const mainScreen = document.getElementById('main-screen');
+        const manualInputBtn = document.getElementById('manual-input-btn');
+        const aiGenerateBtn = document.getElementById('ai-generate-btn');
+
+        const manualInputScreen = document.getElementById('manual-input-screen');
+        const manualTitleInput = document.getElementById('manual-title');
+        const manualDescriptionInput = document.getElementById('manual-description');
+        const continueManualBtn = document.getElementById('continue-manual-btn');
+        const backFromManualBtn = document.getElementById('back-from-manual-btn');
+
+        const aiGenerateFormScreen = document.getElementById('ai-generate-form-screen');
+        const languageRadios = document.querySelectorAll('input[name="language"]');
+        const genreSelect = document.getElementById('genre-select');
+        const otherGenreInput = document.getElementById('other-genre-input');
+        const subgenreSelect = document.getElementById('subgenre-select');
+        const subgenreManualInput = document.getElementById('subgenre-manual-input');
+        const numStoriesInput = document.getElementById('num-stories');
+        const generateAiBtn = document.getElementById('generate-ai-btn');
+        const backFromAiFormBtn = document.getElementById('back-from-ai-form-btn');
+        const loadingAi = document.getElementById('loading-ai');
+        const loadingText = document.getElementById('loading-text');
+        const loadingAdditionalText = document.getElementById('loading-additional-text'); // New
+
+        const aiResultsScreen = document.getElementById('ai-results-screen');
+        const storyListContainer = document.getElementById('story-list-container');
+        const selectedStoryDisplay = document.getElementById('selected-story-display');
+        const displayTitle = document.getElementById('display-title');
+        const displayDescription = document.getElementById('display-description');
+        const displayGenres = document.getElementById('display-genres');
+        const displaySubgenres = document.getElementById('display-subgenres');
+
+        const continueToCharacterSelectionBtn = document.getElementById('continue-to-character-selection-btn');
+        const backFromAiResultsBtn = document.getElementById('back-from-ai-results-btn');
+
+        const characterCreationScreen = document.getElementById('character-creation-screen');
+        const numCharactersSelect = document.getElementById('num-characters-select');
+        const characterClassInput = document.getElementById('character-class-input');
+        const nameStyleSelect = document.getElementById('name-style-select'); 
+        const generateCharactersBtn = document.getElementById('generate-characters-btn');
+        const backToStorySelectBtn = document.getElementById('back-to-story-select-btn');
+        const loadingCharacters = document.getElementById('loading-characters');
+        const loadingCharsText = document.getElementById('loading-chars-text');
+        const loadingAdditionalTextChars = document.getElementById('loading-additional-text-chars'); // New
+        const characterResultsDiv = document.getElementById('character-results');
+        const mcSelectionHeading = document.getElementById('mc-selection-heading');
+        const characterActionButtons = document.getElementById('character-action-buttons');
+        const continueToGameBtn = document.getElementById('continue-to-game-btn');
+        const regenerateCharactersBtn = document.getElementById('regenerate-characters-btn');
+
+        const summaryScreen = document.getElementById('summary-screen');
+        const finalSummaryTitle = document.getElementById('final-summary-title');
+        const finalSummaryDescription = document.getElementById('final-summary-description');
+        const finalSummaryGenres = document.getElementById('final-summary-genres');
+        const finalSummarySubgenres = document.getElementById('final-summary-subgenres');
+        const finalMcNameClass = document.getElementById('final-mc-name-class');
+        const finalMcPersonality = document.getElementById('final-mc-personality');
+        const finalMcDescription = document.getElementById('final-mc-description');
+        const startGameBtn = document.getElementById('start-game-btn');
+        const backFromSummaryBtn = document.getElementById('back-from-summary-btn');
+
+        const gameScreen = document.getElementById('game-screen');
+        const gameLoadingOverlay = document.getElementById('game-loading-overlay');
+        const gameLoadingAdditionalText = document.getElementById('game-loading-additional-text'); // New
+        const gamePlayScreen = document.getElementById('game-play-screen');
+        const prologContentDisplay = document.getElementById('prolog-content-display');
+        const chapterContentDisplay = document.getElementById('chapter-content-display');
+        const dynamicSystemsDisplay = document.getElementById('dynamic-systems-display');
+        const choiceContainer = document.getElementById('choice-container');
+        const startRealStoryBtn = document.getElementById('start-real-story-btn');
+
+
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const gameOverMessage = document.getElementById('game-over-message');
+        const gameOverAnalysis = document.getElementById('game-over-analysis');
+        const retryGameBtn = document.getElementById('retry-game-btn');
+        const backToMainMenuBtn = document.getElementById('back-to-main-menu-btn');
+
+        const customMessageBox = document.getElementById('custom-message-box');
+        const messageBoxTitle = document.getElementById('message-box-title');
+        const messageBoxContent = document.getElementById('message-box-content');
+        const messageBoxOkBtn = document.getElementById('message-box-ok-btn');
+
+        // --- Game State Variables ---
+        let selectedLanguage = 'id';
+        let selectedStoryDetails = null;
+        let generatedCharacters = []; // This will hold ALL generated characters
+        let selectedMainCharacter = null;
+
+        // Game progress state to store dynamic system data
+        let gameProgress = {
+            currentChapter: 0,
+            currentScene: 0,
+            trustPoints: {}, // {characterId: value}
+            flagAwal: {}, // {flagName: boolean}
+            pathTracker: null,
+            lockedPaths: [],
+            achievements: [],
+            traumaSystem: {}, // {characterId: boolean}
+            relationshipLabels: {}, // {characterId: label}
+            timeSystem: {day: 1, partOfDay: "pagi", countdown: null, activeEvents: []},
+            dnaProfile: {moral: "Netral", honesty: "Netral", empathy: "Netral", style: "Observasi"},
+            playerChoices: [] // Stores objects like {chapter: 1, choiceIndex: 0, choiceText: "..."}
+        };
+
+        // --- Helper Functions ---
+        function showScreen(screenId) {
+            const screens = [apiKeyScreen, mainScreen, manualInputScreen, aiGenerateFormScreen, aiResultsScreen, characterCreationScreen, summaryScreen, gameScreen, gameOverScreen];
+            screens.forEach(screen => {
+                if (screen) { 
+                    if (screen.id === screenId) {
+                        screen.style.display = 'block';
+                    } else {
+                        screen.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function showMessageBox(title, message) {
+            messageBoxTitle.textContent = title;
+            messageBoxContent.textContent = message;
+            customMessageBox.style.display = 'block';
+        }
+
+        // Enable/disable main buttons
+        function setMainButtonsEnabled(enabled) {
+            manualInputBtn.disabled = !enabled;
+            aiGenerateBtn.disabled = !enabled;
+        }
+
+        // --- API Key Management ---
+        function getApiKey() {
+            return localStorage.getItem('geminiApiKey');
+        }
+
+        function saveApiKey(key) {
+            localStorage.setItem('geminiApiKey', key);
+            API_KEY = key; // Update the global API_KEY variable
+        }
+
+        function clearApiKey() {
+            localStorage.removeItem('geminiApiKey');
+            API_KEY = ""; // Clear global API_KEY
+            showMessageBox(selectedLanguage === 'id' ? 'Kunci API Dihapus' : 'API Key Cleared', selectedLanguage === 'id' ? 'Kunci API telah dihapus dari browser Anda. Silakan masukkan kunci baru.' : 'API Key has been cleared from your browser. Please enter a new key.');
+            // Reload or redirect to API key input screen
+            location.reload(); 
+        }
+
+        // --- Event Listeners ---
+        // API Key Screen Events
+        saveApiKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                saveApiKey(key);
+                showScreen('main-screen');
+                setMainButtonsEnabled(true);
+            } else {
+                showMessageBox(selectedLanguage === 'id' ? 'Kunci API Kosong' : 'Empty API Key', selectedLanguage === 'id' ? 'Mohon masukkan kunci API Anda.' : 'Please enter your API key.');
+            }
+        });
+
+        clearApiKeyBtn.addEventListener('click', clearApiKey);
+
+
+        manualInputBtn.addEventListener('click', () => {
+            showScreen('manual-input-screen');
+            setMainButtonsEnabled(false); 
+        });
+        aiGenerateBtn.addEventListener('click', () => {
+            showScreen('ai-generate-form-screen');
+            setMainButtonsEnabled(false); 
+        });
+
+        backFromManualBtn.addEventListener('click', () => {
+            showScreen('main-screen');
+            setMainButtonsEnabled(true); 
+        });
+        backFromAiFormBtn.addEventListener('click', () => {
+            showScreen('main-screen');
+            setMainButtonsEnabled(true); 
+        });
+
+        backFromAiResultsBtn.addEventListener('click', () => {
+            selectedStoryDetails = null;
+            continueToCharacterSelectionBtn.style.display = 'none';
+            selectedStoryDisplay.style.display = 'none';
+            storyListContainer.innerHTML = '';
+            storyListContainer.style.display = 'block';
+            showScreen('ai-generate-form-screen');
+        });
+
+        backToStorySelectBtn.addEventListener('click', () => {
+            showScreen('ai-results-screen');
+            if (selectedStoryDetails) {
+                selectedStoryDisplay.style.display = 'block';
+                storyListContainer.style.display = 'none';
+                continueToCharacterSelectionBtn.style.display = 'block';
+            } else {
+                showScreen('ai-generate-form-screen');
+            }
+            // Reset character creation screen state
+            numCharactersSelect.value = 'ai-recommended';
+            characterClassInput.value = '';
+            characterClassInput.style.display = 'none';
+            characterResultsDiv.innerHTML = '';
+            mcSelectionHeading.style.display = 'none';
+            characterActionButtons.style.display = 'none';
+            generatedCharacters = [];
+            selectedMainCharacter = null;
+        });
+
+        backFromSummaryBtn.addEventListener('click', () => {
+            showScreen('character-creation-screen');
+            // Re-display only potential MCs if they were generated before
+            const potentialMCs = generatedCharacters.filter(char => char.isPotentialMC);
+            if (potentialMCs.length > 0) {
+                mcSelectionHeading.style.display = 'block';
+                characterActionButtons.style.display = 'flex';
+                characterResultsDiv.innerHTML = ''; // Clear current display
+                potentialMCs.forEach(char => {
+                    const charCard = document.createElement('div');
+                    charCard.className = 'character-card potential-mc';
+                    charCard.dataset.characterId = char.id;
+                    charCard.innerHTML = `
+                        <h2><span class="icon-placeholder">✨</span> ${char.name}</h2>
+                        <p><span class="char-detail">${selectedLanguage === 'id' ? 'Kelas' : 'Class'}:</span> ${char.class}</p>
+                        <p><span class="char-detail">${selectedLanguage === 'id' ? 'Peran' : 'Role'}:</span> ${char.role}</p>
+                        <p><span class="char-detail">${selectedLanguage === 'id' ? 'Sifat' : 'Personality'}:</span> ${char.personality}</p>
+                        <p><span class="char-detail">${selectedLanguage === 'id' ? 'Tentang' : 'About'}:</span> ${char.description}</p>
+                    `;
+                    characterResultsDiv.appendChild(charCard);
+                    addCharacterCardEventListener(charCard, char);
+
+                    // Re-apply selected state if this character was the MC
+                    if (selectedMainCharacter && selectedMainCharacter.id === char.id) {
+                        charCard.classList.add('selected-mc');
+                        charCard.style.backgroundColor = '#e0e0e0';
+                        const iconSpan = charCard.querySelector('.icon-placeholder');
+                        if (iconSpan) iconSpan.textContent = '😇';
+                    }
+                });
+            }
+        });
+
+        messageBoxOkBtn.addEventListener('click', () => customMessageBox.style.display = 'none');
+
+        languageRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                selectedLanguage = event.target.value;
+                updateLanguageText();
+            });
+        });
+
+        // Function to update language-dependent texts
+        function updateLanguageText() {
+            if (selectedLanguage === 'id') {
+                document.title = "Cerita Komik Interaktif";
+                mainScreen.querySelector('h1').textContent = "Cerita Komik Interaktif";
+                mainScreen.querySelector('p').textContent = "Dapatkan ide cerita baru atau masukkan cerita Anda sendiri.";
+                manualInputBtn.textContent = "Masukkan Judul & Deskripsi Manual";
+                aiGenerateBtn.textContent = "Hasilkan Cerita dengan AI";
+
+                manualInputScreen.querySelector('h1').textContent = "Masukkan Cerita Anda";
+                manualTitleInput.placeholder = "Judul Cerita";
+                manualDescriptionInput.placeholder = "Deskripsi Cerita (fokus pada premis & konflik)";
+                continueManualBtn.textContent = "Lanjutkan ke Pembuatan Karakter";
+                backFromManualBtn.textContent = "Kembali";
+
+                aiGenerateFormScreen.querySelector('h1').textContent = "Hasilkan Cerita dengan AI";
+                aiGenerateFormScreen.querySelector('p').textContent = "AI akan membuat ide cerita berdasarkan preferensi Anda.";
+                languageRadios[0].nextSibling.textContent = " Bahasa Indonesia";
+                languageRadios[1].nextSibling.textContent = " English";
+                genreSelect.options[0].textContent = "Pilih Genre";
+                // Update "Other" option for genre select
+                const otherGenreOption = Array.from(genreSelect.options).find(opt => opt.value === 'other');
+                if (otherGenreOption) otherGenreOption.textContent = "Lainnya...";
+                otherGenreInput.placeholder = "Masukkan Genre Lainnya";
+                subgenreSelect.options[0].textContent = "Pilih Subgenre";
+                subgenreManualInput.placeholder = "Masukkan Subgenre Lainnya";
+                numStoriesInput.placeholder = "Jumlah Cerita (1-5)";
+                generateAiBtn.textContent = "Hasilkan Cerita";
+                backFromAiFormBtn.textContent = "Kembali";
+                loadingText.textContent = "Sedang menulis kisah Anda...";
+                loadingAdditionalText.textContent = "Mohon tunggu sebentar, AI sedang memproses.";
+
+                aiResultsScreen.querySelector('h1').textContent = "Pilih Cerita Anda";
+                aiResultsScreen.querySelector('p').textContent = "Pilih salah satu cerita yang dihasilkan AI.";
+                continueToCharacterSelectionBtn.textContent = "Lanjutkan ke Pemilihan Karakter";
+                backFromAiResultsBtn.textContent = "Kembali Cari Cerita Lain";
+
+                characterCreationScreen.querySelector('h1').textContent = "Buat Karakter";
+                characterCreationScreen.querySelector('p').textContent = "Anda dapat menentukan jumlah karakter atau membiarkan AI merekomendasikannya.";
+                numCharactersSelect.options[0].textContent = "Pilihan ditentukan dari judul dan deskripsi oleh AI (rekomendasi)";
+                // Dynamically update options for numCharactersSelect
+                for (let i = 0; i < numCharactersSelect.options.length; i++) {
+                    if (numCharactersSelect.options[i].value !== 'ai-recommended') {
+                        numCharactersSelect.options[i].textContent = `${numCharactersSelect.options[i].value} Karakter`;
+                    }
+                }
+                characterClassInput.placeholder = "Kelas Karakter (opsional, cth: Pahlawan)";
+                // Update new name style options
+                Array.from(nameStyleSelect.options).forEach(option => {
+                    switch (option.value) {
+                        case 'random': option.textContent = "Nama Acak AI"; break;
+                        case 'japanese': option.textContent = "Nama Ala Jepang"; break;
+                        case 'chinese': option.textContent = "Nama Ala Tiongkok"; break;
+                        case 'arabic': option.textContent = "Nama Ala Arab"; break;
+                        case 'fantasy': option.textContent = "Nama Ala Fantasi"; break;
+                        case 'european_medieval': option.textContent = "Nama Ala Eropa Abad Pertengahan"; break;
+                        case 'celtic': option.textContent = "Nama Ala Celtic"; break;
+                        case 'norse': option.textContent = "Nama Ala Norse"; break;
+                        case 'ancient_egyptian': option.textContent = "Nama Ala Mesir Kuno"; break;
+                        case 'indonesian': option.textContent = "Nama Ala Indonesia"; break; // New
+                        case 'german': option.textContent = "Nama Ala Jerman"; break; // New
+                    }
+                });
+                generateCharactersBtn.textContent = "Generate Karakter";
+                backToStorySelectBtn.textContent = "Kembali ke Pemilihan Cerita";
+                loadingCharsText.textContent = "Menciptakan karakter Anda...";
+                loadingAdditionalTextChars.textContent = "Mohon tunggu sebentar, AI sedang memproses.";
+                mcSelectionHeading.textContent = "Pilih Karakter Utama (MC):";
+                continueToGameBtn.textContent = "Lanjutkan Cerita";
+                regenerateCharactersBtn.textContent = "Cari Karakter Lagi";
+
+                summaryScreen.querySelector('h1').textContent = "Ringkasan Cerita Anda";
+                summaryScreen.querySelector('p').textContent = "Ini adalah ringkasan cerita dan karakter yang akan Anda mainkan.";
+                summaryScreen.querySelector('.summary-section:nth-of-type(1) h2').textContent = "Judul Cerita";
+                summaryScreen.querySelector('.summary-section:nth-of-type(1) p:nth-of-type(2)').previousElementSibling.textContent = "Deskripsi Cerita";
+                summaryScreen.querySelector('.summary-section:nth-of-type(2) h2').textContent = "Karakter Utama (MC)";
+                startGameBtn.textContent = "Mulai Game";
+                backFromSummaryBtn.textContent = "Kembali";
+
+                gameLoadingOverlay.querySelector('span').textContent = "Memuat cerita...";
+                gameLoadingAdditionalText.textContent = "Mohon tunggu sebentar, AI sedang memproses.";
+                startRealStoryBtn.textContent = "Mulai ke cerita sebenarnya";
+
+
+                gameOverScreen.querySelector('h1').textContent = "💀 GAME OVER 💀";
+                retryGameBtn.textContent = "Coba Lagi";
+                backToMainMenuBtn.textContent = "Kembali ke Menu Utama";
+
+            } else { // English
+                document.title = "Interactive Comic Story";
+                mainScreen.querySelector('h1').textContent = "Interactive Comic Story";
+                mainScreen.querySelector('p').textContent = "Get new story ideas or input your own story.";
+                manualInputBtn.textContent = "Enter Title & Description Manually";
+                aiGenerateBtn.textContent = "Generate Story with AI";
+
+                manualInputScreen.querySelector('h1').textContent = "Enter Your Story";
+                manualTitleInput.placeholder = "Story Title";
+                manualDescriptionInput.placeholder = "Story Description (focus on premise & conflict)";
+                continueManualBtn.textContent = "Proceed to Character Creation";
+                backFromManualBtn.textContent = "Back";
+
+                aiGenerateFormScreen.querySelector('h1').textContent = "Generate Story with AI";
+                aiGenerateFormScreen.querySelector('p').textContent = "AI will create story ideas based on your preferences.";
+                languageRadios[0].nextSibling.textContent = " Indonesian";
+                languageRadios[1].nextSibling.textContent = " English";
+                genreSelect.options[0].textContent = "Select Genre";
+                // Update "Other" option for genre select
+                const otherGenreOption = Array.from(genreSelect.options).find(opt => opt.value === 'other');
+                if (otherGenreOption) otherGenreOption.textContent = "Other...";
+                otherGenreInput.placeholder = "Enter Other Genre";
+                subgenreSelect.options[0].textContent = "Select Subgenre";
+                subgenreManualInput.placeholder = "Enter Other Subgenre";
+                numStoriesInput.placeholder = "Number of Stories (1-5)";
+                generateAiBtn.textContent = "Generate Story";
+                backFromAiFormBtn.textContent = "Back";
+                loadingText.textContent = "Crafting your story...";
+                loadingAdditionalText.textContent = "Please wait, AI is processing.";
+
+                aiResultsScreen.querySelector('h1').textContent = "Select Your Story";
+                aiResultsScreen.querySelector('p').textContent = "Select one of the AI generated stories.";
+                continueToCharacterSelectionBtn.textContent = "Proceed to Character Selection";
+                backFromAiResultsBtn.textContent = "Go Back, Find Another Story";
+
+                characterCreationScreen.querySelector('h1').textContent = "Create Characters";
+                characterCreationScreen.querySelector('p').textContent = "You can determine the number of characters or let AI recommend it.";
+                numCharactersSelect.options[0].textContent = "AI-determined from title and description (recommended)";
+                // Dynamically update options for numCharactersSelect
+                for (let i = 0; i < numCharactersSelect.options.length; i++) {
+                    if (numCharactersSelect.options[i].value !== 'ai-recommended') {
+                        numCharactersSelect.options[i].textContent = `${numCharactersSelect.options[i].value} Characters`;
+                    }
+                }
+                characterClassInput.placeholder = "Character Class (optional, e.g., Hero)";
+                // Update new name style options
+                Array.from(nameStyleSelect.options).forEach(option => {
+                    switch (option.value) {
+                        case 'random': option.textContent = "Random AI Name"; break;
+                        case 'japanese': option.textContent = "Japanese Style Name"; break;
+                        case 'chinese': option.textContent = "Chinese Style Name"; break;
+                        case 'arabic': option.textContent = "Arabic Style Name"; break;
+                        case 'fantasy': option.textContent = "Fantasy Style Name"; break;
+                        case 'european_medieval': option.textContent = "European Medieval Name"; break;
+                        case 'celtic': option.textContent = "Celtic Style Name"; break;
+                        case 'norse': option.textContent = "Norse Style Name"; break;
+                        case 'ancient_egyptian': option.textContent = "Ancient Egyptian Name"; break;
+                        case 'indonesian': option.textContent = "Indonesian Style Name"; break; // New
+                        case 'german': option.textContent = "German Style Name"; break; // New
+                    }
+                });
+                generateCharactersBtn.textContent = "Generate Characters";
+                backToStorySelectBtn.textContent = "Back to Story Selection";
+                loadingCharsText.textContent = "Creating your characters...";
+                loadingAdditionalTextChars.textContent = "Please wait, AI is processing.";
+                mcSelectionHeading.textContent = "Select Main Character (MC):";
+                continueToGameBtn.textContent = "Continue Story";
+                regenerateCharactersBtn.textContent = "Find Other Characters";
+
+                summaryScreen.querySelector('h1').textContent = "Your Story Summary";
+                summaryScreen.querySelector('p').textContent = "Here is the summary of your story and characters.";
+                summaryScreen.querySelector('.summary-section:nth-of-type(1) h2').textContent = "Story Title";
+                summaryScreen.querySelector('.summary-section:nth-of-type(1) p:nth-of-type(2)').previousElementSibling.textContent = "Story Description";
+                summaryScreen.querySelector('.summary-section:nth-of-type(2) h2').textContent = "Main Character (MC)";
+                startGameBtn.textContent = "Start Game";
+                backFromSummaryBtn.textContent = "Back";
+
+                gameLoadingOverlay.querySelector('span').textContent = "Loading story...";
+                gameLoadingAdditionalText.textContent = "Please wait, AI is processing.";
+                startRealStoryBtn.textContent = "Start the real story";
+                
+                gameOverScreen.querySelector('h1').textContent = "💀 GAME OVER 💀";
+                retryGameBtn.textContent = "Retry";
+                backToMainMenuBtn.textContent = "Back to Main Menu";
+            }
+        }
+
+
+        genreSelect.addEventListener('change', () => {
+            if (genreSelect.value === 'other') {
+                otherGenreInput.style.display = 'block';
+                subgenreSelect.style.display = 'none';
+                subgenreManualInput.style.display = 'none';
+            } else if (genreSelect.value !== '') {
+                otherGenreInput.style.display = 'none';
+                generateSubgenres(genreSelect.value);
+                subgenreSelect.style.display = 'block';
+            } else {
+                otherGenreInput.style.display = 'none';
+                subgenreSelect.style.display = 'none';
+                subgenreManualInput.style.display = 'none';
+            }
+        });
+
+        subgenreSelect.addEventListener('change', () => {
+            if (subgenreSelect.value === 'other') {
+                subgenreManualInput.style.display = 'block';
+            } else {
+                subgenreManualInput.style.display = 'none';
+            }
+        });
+
+        continueToCharacterSelectionBtn.addEventListener('click', () => {
+            if (selectedStoryDetails) {
+                showScreen('character-creation-screen');
+                characterResultsDiv.innerHTML = '';
+                mcSelectionHeading.style.display = 'none';
+                characterActionButtons.style.display = 'none';
+                generatedCharacters = [];
+                selectedMainCharacter = null;
+                // Reset select to AI-recommended
+                numCharactersSelect.value = 'ai-recommended'; 
+                characterClassInput.value = ''; // Clear optional class input
+                characterClassInput.style.display = 'none'; // Ensure it's hidden
+            } else {
+                showMessageBox(selectedLanguage === 'id' ? 'Peringatan' : 'Warning', selectedLanguage === 'id' ? 'Silakan pilih cerita terlebih dahulu.' : 'Please select a story first.');
+            }
+        });
+
+        continueManualBtn.addEventListener('click', () => {
+            const title = manualTitleInput.value.trim();
+            const description = manualDescriptionInput.value.trim();
+            if (title && description) {
+                selectedStoryDetails = { title, description, genres: [], subgenres: [] };
+                showScreen('character-creation-screen');
+                characterResultsDiv.innerHTML = '';
+                mcSelectionHeading.style.display = 'none';
+                characterActionButtons.style.display = 'none';
+                generatedCharacters = [];
+                selectedMainCharacter = null;
+                // Reset select to AI-recommended
+                numCharactersSelect.value = 'ai-recommended'; 
+                characterClassInput.value = ''; // Clear optional class input
+                characterClassInput.style.display = 'none'; // Ensure it's hidden
+            } else {
+                showMessageBox(selectedLanguage === 'id' ? 'Input Tidak Lengkap' : 'Incomplete Input', selectedLanguage === 'id' ? 'Mohon isi Judul Cerita dan Deskripsi Cerita.' : 'Please fill in both Story Title and Story Description.');
+            }
+        });
+
+        generateAiBtn.addEventListener('click', generateStoryContent);
+        generateCharactersBtn.addEventListener('click', generateCharacters);
+        regenerateCharactersBtn.addEventListener('click', generateCharacters);
+        
+        continueToGameBtn.addEventListener('click', () => {
+            if (selectedMainCharacter) {
+                finalSummaryTitle.textContent = selectedStoryDetails.title;
+                finalSummaryDescription.textContent = selectedStoryDetails.description;
+                finalSummaryGenres.textContent = selectedStoryDetails.genres.join(', ');
+                finalSummarySubgenres.textContent = selectedStoryDetails.subgenres.join(', ');
+
+                finalMcNameClass.innerHTML = `<span class="selected-angel-icon">😇</span> ${selectedMainCharacter.name} (${selectedMainCharacter.class})`;
+                finalMcPersonality.textContent = selectedMainCharacter.personality;
+                finalMcDescription.textContent = selectedMainCharacter.description;
+
+                showScreen('summary-screen');
+            } else {
+                showMessageBox(selectedLanguage === 'id' ? 'Peringatan' : 'Warning', selectedLanguage === 'id' ? 'Mohon pilih minimal 1 Karakter Utama (MC).' : 'Please select at least 1 Main Character (MC).');
+            }
+        });
+
+        startGameBtn.addEventListener('click', startGame);
+
+        startRealStoryBtn.addEventListener('click', startChapter1); // New event listener for the "Start Real Story" button
+
+        // These buttons are for the full game functionality which is not included in this iteration
+        retryGameBtn.addEventListener('click', () => {
+            selectedStoryDetails = null;
+            generatedCharacters = [];
+            selectedMainCharacter = null;
+            gameProgress = {
+                currentChapter: 0,
+                currentScene: 0,
+                trustPoints: {},
+                flagAwal: {},
+                pathTracker: null,
+                lockedPaths: [],
+                achievements: [],
+                traumaSystem: {},
+                relationshipLabels: {},
+                timeSystem: {day: 1, partOfDay: "pagi", countdown: null, activeEvents: []},
+                dnaProfile: {moral: "Netral", honesty: "Netral", empathy: "Netral", style: "Observasi"},
+                playerChoices: []
+            };
+            showScreen('main-screen');
+            setMainButtonsEnabled(true); 
+        });
+
+        backToMainMenuBtn.addEventListener('click', () => {
+            selectedStoryDetails = null;
+            generatedCharacters = [];
+            selectedMainCharacter = null;
+            gameProgress = {
+                currentChapter: 0,
+                currentScene: 0,
+                trustPoints: {},
+                flagAwal: {},
+                pathTracker: null,
+                lockedPaths: [],
+                achievements: [],
+                traumaSystem: {},
+                relationshipLabels: {},
+                timeSystem: {day: 1, partOfDay: "pagi", countdown: null, activeEvents: []},
+                dnaProfile: {moral: "Netral", honesty: "Netral", empathy: "Netral", style: "Observasi"},
+                playerChoices: []
+            };
+            showScreen('main-screen');
+            setMainButtonsEnabled(true); 
+        });
+
+        // Event listener for the new character count select
+        numCharactersSelect.addEventListener('change', () => {
+            // If "AI-recommended" is selected, hide the manual character class input
+            if (numCharactersSelect.value === 'ai-recommended') {
+                characterClassInput.style.display = 'none';
+                characterClassInput.value = ''; // Clear input if hidden
+            } else {
+                // Otherwise, show it if they want to manually specify a class for a fixed number of characters
+                characterClassInput.style.display = 'block';
+            }
+        });
+
+        // --- Gemini API Integration ---
+
+        async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtElement, loadingAdditionalElement = null, buttonToDisable) {
+            // Check if API_KEY is available
+            if (!API_KEY) {
+                showMessageBox(selectedLanguage === 'id' ? 'Kunci API Hilang' : 'API Key Missing', selectedLanguage === 'id' ? 'Mohon masukkan kunci API Gemini Anda terlebih dahulu.' : 'Please enter your Gemini API key first.');
+                return null;
+            }
+
+            loadingElement.style.display = 'flex';
+            if (buttonToDisable) buttonToDisable.disabled = true;
+            
+            let loadingTimeout;
+            if (loadingAdditionalElement) {
+                loadingAdditionalElement.style.display = 'none'; // Hide initially
+                loadingTimeout = setTimeout(() => {
+                    loadingAdditionalElement.style.display = 'block';
+                }, 6000); // Show message after 6 seconds
+            }
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+            let payload = { contents: chatHistory };
+
+            if (schema) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: schema
+                };
+            }
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+            console.log("Mengirim prompt ke Gemini API:", prompt); // Debugging: log prompt
+            console.log("Payload:", payload); // Debugging: log payload
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("Respons Error API:", errorData); // Debugging: log full error
+                    throw new Error(`Kesalahan API: ${response.status} - ${errorData.error.message}`);
+                }
+
+                const result = await response.json();
+                console.log("Hasil Mentah API:", result); // Debugging: log raw result
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    console.log("Teks Respons API:", text); // Debugging: log response text
+                    try {
+                        const parsed = schema ? JSON.parse(text) : text;
+                        console.log("Hasil Parsing API:", parsed); // Debugging: log parsed result
+                        return parsed;
+                    } catch (parseError) {
+                        console.error("Kesalahan mem-parsing respons API:", parseError, "Teks:", text);
+                        showMessageBox(selectedLanguage === 'id' ? 'Kesalahan Parsing Data' : 'Error Parsing Data', `${selectedLanguage === 'id' ? 'Terjadi kesalahan saat memproses data AI.' : 'Error processing AI data.'} ${selectedLanguage === 'id' ? 'Coba lagi.' : 'Please try again.'}`);
+                        return null;
+                    }
+                } else {
+                    throw new Error(selectedLanguage === 'id' ? "Tidak ada konten yang diterima dari API atau struktur respons tidak terduga." : "No content received from API atau struktur respons tidak terduga.");
+                }
+            } catch (error) {
+                console.error("Kesalahan memanggil Gemini API:", error);
+                showMessageBox(selectedLanguage === 'id' ? 'Kesalahan API' : 'API Error', `${selectedLanguage === 'id' ? 'Terjadi kesalahan saat memanggil API Gemini:' : 'Error calling Gemini API:'} ${error.message}`);
+                return null;
+            } finally {
+                 loadingElement.style.display = 'none';
+                 if (buttonToDisable) buttonToDisable.disabled = false;
+                 if (loadingAdditionalElement) clearTimeout(loadingTimeout); // Clear timeout on completion
+                 if (loadingAdditionalElement) loadingAdditionalElement.style.display = 'none'; // Hide if shown
+            }
+        }
+
+        async function generateStoryContent() {
+            storyListContainer.innerHTML = '';
+            selectedStoryDisplay.style.display = 'none';
+            continueToCharacterSelectionBtn.style.display = 'none';
+            selectedStoryDetails = null;
+
+            const numStories = parseInt(numStoriesInput.value);
+            const selectedGenre = genreSelect.value === 'other' ? otherGenreInput.value.trim() : genreSelect.value;
+            const selectedSubgenre = subgenreSelect.value === 'other' ? subgenreManualInput.value.trim() : subgenreSelect.value;
+
+            if (!selectedGenre) {
+                showMessageBox(selectedLanguage === 'id' ? 'Input Tidak Lengkap' : 'Incomplete Input', selectedLanguage === 'id' ? 'Mohon pilih atau masukkan genre.' : 'Please select or enter a genre.');
+                return;
+            }
+            if (numStories < 1 || numStories > 5) {
+                showMessageBox(selectedLanguage === 'id' ? 'Input Tidak Valid' : 'Invalid Input', selectedLanguage === 'id' ? 'Jumlah cerita harus antara 1 dan 5.' : 'Number of stories must be between 1 and 5.');
+                return;
+            }
+
+            const storySchema = {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        "title": { "type": "STRING" },
+                        "description": { "type": "STRING" },
+                        "genres": {
+                            "type": "ARRAY",
+                            "items": { "type": "STRING" }
+                        },
+                        "subgenres": {
+                            "type": "ARRAY",
+                            "items": { "type": "STRING" }
+                        }
+                    },
+                    "required": ["title", "description", "genres", "subgenres"]
+                }
+            };
+            
+            let prompt = `Generate ${numStories} *new and unique* visual novel story ideas. For each idea, provide:
+            - A compelling story title.
+            - A concise and intriguing story description (focus on premise, conflict, or theme).
+            - A list of relevant genres, including "${selectedGenre}".
+            - A list of relevant subgenres.
+            IMPORTANT: Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes.
+            Ensure the output is in JSON format according to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. (Random seed: ${Math.random()})`;
+
+
+            if (selectedSubgenre && selectedSubgenre !== (selectedLanguage === 'id' ? 'Pilih Subgenre' : 'Select Subgenre')) {
+                prompt += ` Prioritize subgenre "${selectedSubgenre}" if relevant.`;
+            }
+
+            const stories = await callGeminiAPI(prompt, storySchema, loadingAi, loadingText, loadingAdditionalText, generateAiBtn);
+
+            if (stories && stories.length > 0) {
+                const filteredStories = stories.slice(0, numStories);
+
+                showScreen('ai-results-screen');
+                storyListContainer.style.display = 'block';
+                
+                filteredStories.forEach((story) => {
+                    const storyCard = document.createElement('div');
+                    storyCard.className = 'story-card';
+                    storyCard.dataset.story = JSON.stringify(story);
+                    storyCard.innerHTML = `
+                        <h2>${story.title}</h2>
+                        <p>${story.description}</p>
+                        <p class="genre">✨ ${selectedLanguage === 'id' ? 'Genre' : 'Genre'}: ${story.genres.join(', ')}</p>
+                        <p class="genre">✨ ${selectedLanguage === 'id' ? 'Subgenre' : 'Subgenre'}: ${story.subgenres.join(', ')}</p>
+                        <button class="button select-story-btn">${selectedLanguage === 'id' ? 'Pilih Ini' : 'Select This'}</button>
+                    `;
+                    storyListContainer.appendChild(storyCard);
+
+                    storyCard.querySelector('.select-story-btn').addEventListener('click', (event) => {
+                        event.stopPropagation();
+
+                        document.querySelectorAll('.story-card').forEach(card => card.classList.remove('selected'));
+                        storyCard.classList.add('selected');
+
+                        selectedStoryDetails = JSON.parse(storyCard.dataset.story);
+                        
+                        displayTitle.textContent = selectedStoryDetails.title;
+                        displayDescription.textContent = selectedStoryDetails.description;
+                        displayGenres.textContent = selectedStoryDetails.genres.join(', ');
+                        displaySubgenres.textContent = selectedStoryDetails.subgenres.join(', ');
+                        
+                        storyListContainer.style.display = 'none';
+                        selectedStoryDisplay.style.display = 'block'; 
+                        continueToCharacterSelectionBtn.style.display = 'block'; 
+                    });
+                });
+            } else {
+                 showMessageBox(selectedLanguage === 'id' ? 'Tidak Ada Cerita' : 'No Stories', selectedLanguage === 'id' ? 'AI tidak dapat menghasilkan cerita. Coba lagi dengan prompt yang berbeda.' : 'AI could not generate stories. Please try again with a different prompt.');
+            }
+        }
+
+        async function generateSubgenres(mainGenre) {
+            subgenreSelect.innerHTML = `<option value="">${selectedLanguage === 'id' ? 'Pilih Subgenre' : 'Select Subgenre'}</option>`;
+            subgenreSelect.style.display = 'none';
+            otherGenreInput.style.display = 'none';
+            subgenreManualInput.style.display = 'none';
+            loadingAi.style.display = 'flex';
+            generateAiBtn.disabled = true; 
+
+            const subgenreSchema = {
+                type: "ARRAY",
+                items: { "type": "STRING" }
+            };
+            
+            const prompt = `Provide a list of 5-10 relevant subgenres for the main genre "${mainGenre}". Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language.`;
+            try {
+                const subgenres = await callGeminiAPI(prompt, subgenreSchema, loadingAi, loadingText, loadingAdditionalText, generateAiBtn);
+
+                if (subgenres && subgenres.length > 0) {
+                    subgenres.forEach(sub => {
+                        const option = document.createElement('option');
+                        option.value = sub;
+                        option.textContent = sub;
+                        subgenreSelect.appendChild(option);
+                    });
+                    const otherOption = document.createElement('option');
+                    otherOption.value = 'other';
+                    otherOption.textContent = selectedLanguage === 'id' ? 'Lainnya...' : 'Other...';
+                    subgenreSelect.appendChild(otherOption);
+                    subgenreSelect.style.display = 'block';
+                } else {
+                    const otherOption = document.createElement('option');
+                    otherOption.value = 'other';
+                    otherOption.textContent = selectedLanguage === 'id' ? 'Lainnya...' : 'Other...';
+                    subgenreSelect.appendChild(otherOption);
+                    subgenreSelect.style.display = 'block';
+                }
+            } finally {
+                loadingAi.style.display = 'none';
+                generateAiBtn.disabled = false; 
+            }
+        }
+
+        async function generateCharacters() {
+            characterResultsDiv.innerHTML = '';
+            mcSelectionHeading.style.display = 'none';
+            characterActionButtons.style.display = 'none';
+            selectedMainCharacter = null;
+            generatedCharacters = []; // Clear previous characters
+
+            let numChars;
+            const selectedNumOption = numCharactersSelect.value;
+            const charClassHint = characterClassInput.value.trim();
+            const nameStyle = nameStyleSelect.value; 
+
+            // Determine numChars based on selection
+            if (selectedNumOption === 'ai-recommended') {
+                numChars = Math.floor(Math.random() * (7 - 3 + 1)) + 3; // Random between 3 and 7 for AI to generate
+                console.log("AI-recommended numChars:", numChars);
+            } else {
+                numChars = parseInt(selectedNumOption);
+            }
+
+            if (isNaN(numChars) || numChars < 3 || numChars > 7) {
+                showMessageBox(selectedLanguage === 'id' ? 'Input Tidak Valid' : 'Invalid Input', selectedLanguage === 'id' ? 'Jumlah karakter harus antara 3 dan 7 atau ditentukan AI.' : 'Number of characters must be between 3 and 7 or AI-determined.');
+                return;
+            }
+            if (!selectedStoryDetails) {
+                 showMessageBox(selectedLanguage === 'id' ? 'Peringatan' : 'Warning', selectedLanguage === 'id' ? 'Silakan pilih cerita terlebih dahulu sebelum membuat karakter.' : 'Please select a story first before generating characters.');
+                 return;
+            }
+
+            const charSchema = {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        "id": { "type": "STRING" },
+                        "name": { "type": "STRING" },
+                        "class": { "type": "STRING" },
+                        "personality": { "type": "STRING" },
+                        "description": { "type": "STRING" },
+                        "role": { "type": "STRING" }, // New: Role of the character
+                        "isPotentialMC": { "type": "BOOLEAN" } // New: Is it a potential Main Character?
+                    },
+                    "required": ["id", "name", "class", "personality", "description", "role", "isPotentialMC"]
+                }
+            };
+
+            const rolesList = [
+                "Protagonis", "Antagonis", "Deuteragonis", "Tritagonis", "Mentor", "Sidekick", "Love Interest", "Foil",
+                "Antihero", "Villain", "Narrator", "Confidant", "Comic Relief", "Shapeshifter", "Threshold Guardian",
+                "Background/Extras", "The Chosen One", "The Outcast", "The Rival", "The Trickster", "The Redeemed",
+                "The Sacrificial Lamb", "The Puppetmaster", "The Innocent", "The Observer/Outsider", "The Catalyst",
+                "The Guardian", "The Monster/Beast", "The Doppelgänger", "The Seer/Oracle", "The Witness", "The Herald",
+                "The Fallen Hero", "The Cynic", "The Moral Compass", "The Martyr", "The Fake Ally", "The Loyal Beast",
+                "The Healer", "The Joker/Agent of Chaos", "The Reincarnated", "The Traumatized", "The Puppet",
+                "The Secret Royalty", "The Wild Card", "The Strategist", "The Rebel", "The Spy", "The Innocent Criminal",
+                "The Double Agent", "The Survivor", "The Prophet", "The Lost Soul", "The Seducer", "The Judge",
+                "The Peacemaker", "The Mercenary", "The Manipulator", "The Avenger", "The Legend"
+            ];
+            // Potential MC roles for AI to prioritize assigning isPotentialMC: true
+            const potentialMCRoles = ["Protagonis", "Antihero", "The Chosen One", "The Outcast", "The Rebel", "The Avenger", "The Legend"];
+
+
+            let prompt = `Generate exactly ${numChars} *new and distinct* characters for a visual novel based on the following story:
+            Title: "${selectedStoryDetails.title}"
+            Description: "${selectedStoryDetails.description}".`;
+
+            if (selectedStoryDetails.genres.length > 0) {
+                prompt += ` Main genres: ${selectedStoryDetails.genres.join(', ')}.`;
+            }
+            if (selectedStoryDetails.subgenres.length > 0) {
+                prompt += ` Subgenres: ${selectedStoryDetails.subgenres.join(', ')}.`;
+            }
+
+            prompt += `
+            For each character, provide:
+            - "id": a short unique string (e.g., "char1", "char2")
+            - "name": full name. MUST NOT be "seseorang misterius" or any generic placeholder. Use actual names.
+            - "class": character role/archetype (e.g., Hero, Mage, King, Guard).
+            - "personality": 3-5 descriptive keywords (e.g., brave, loyal, cunning, melancholic, resourceful)
+            - "description": a brief role/background in the story (e.g., "The exiled prince seeking his throne", "A mysterious mage from the enchanted forest").
+            - "role": Assign a *distinct* narrative role from the following list or similar archetypes: ${rolesList.join(', ')}. Ensure roles are varied, relevant to the story, and unique among the generated characters.
+            - "isPotentialMC": boolean. Set to true for 1 to 3 characters that would make a good main protagonist for the story. These characters MUST be highly relevant and suitable as the main protagonist for the story title "${selectedStoryDetails.title}" and description "${selectedStoryDetails.description}". Prioritize roles like Protagonist, Antihero, The Chosen One. The rest should be false.
+
+            Ensure names are unique and in Latin alphabet.`;
+
+            if (charClassHint && numCharactersSelect.value !== 'ai-recommended') { // Only add if input is visible and has value
+                prompt += ` One character should ideally have the class: "${charClassHint}".`;
+            } else if (numCharactersSelect.value === 'ai-recommended') {
+                prompt += ` Ensure varied character classes are generated automatically by AI.`;
+            }
+            // Add naming style instruction
+            switch (nameStyle) {
+                case 'japanese':
+                    prompt += ` Character names should sound Japanese.`;
+                    break;
+                case 'chinese':
+                    prompt += ` Character names should sound Chinese (e.g., Zhuo Jong).`;
+                    break;
+                case 'arabic':
+                    prompt += ` Character names should sound Arabic.`;
+                    break;
+                case 'fantasy':
+                    prompt += ` Character names should sound genuinely fantastical, unique, and not like common real-world or Indonesian names. For example, use names like 'Elara', 'Kaelen', 'Thorian', 'Lyra', 'Zephyr'.`;
+                    break;
+                case 'european_medieval':
+                    prompt += ` Character names should sound like European Medieval names (e.g., Arthur, Eleanor, Geoffrey).`;
+                    break;
+                case 'celtic':
+                    prompt += ` Character names should sound like Celtic names (e.g., Aoife, Cormac, Deirdre).`;
+                    break;
+                case 'norse':
+                    prompt += ` Character names should sound like Norse names (e.g., Bjorn, Freya, Ragnar).`;
+                    break;
+                case 'ancient_egyptian':
+                    prompt += ` Character names should sound like Ancient Egyptian names (e.g., Nefertari, Ramses, Imhotep).`;
+                    break;
+                case 'indonesian': // New
+                    prompt += ` Character names should sound like common Indonesian names (e.g., Budi, Siti, Rahmat, Indah).`;
+                    break;
+                case 'german': // New
+                    prompt += ` Character names should sound like common German names (e.g., Hans, Gretel, Klaus, Sofia).`;
+                    break;
+                default: // 'random' or any other default
+                    prompt += ` Character names should be diverse (e.g., Western, Asian, Middle Eastern, Fantasy-inspired).`;
+                    break;
+            }
+            prompt += ` Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language for personality, description, class, and role values.`;
+            prompt += ` Ensure the output is a JSON array containing exactly ${numChars} character objects.`;
+            prompt += ` (Timestamp: ${Date.now()})`;
+
+
+            generatedCharacters = await callGeminiAPI(prompt, charSchema, loadingCharacters, loadingCharsText, loadingAdditionalTextChars, generateCharactersBtn);
+
+
+            if (generatedCharacters && generatedCharacters.length > 0) {
+                // Ensure we only use the number of characters explicitly requested or randomly determined by us
+                // We keep all generated characters in `generatedCharacters` global variable
+                // but only display potential MCs
+                generatedCharacters = generatedCharacters.slice(0, numChars); // Trim if AI generates more than requested/randomly chosen
+
+                const potentialMCs = generatedCharacters.filter(char => char.isPotentialMC);
+                // No need to separate otherCharacters for display on this screen. They are in generatedCharacters.
+
+                mcSelectionHeading.style.display = 'block';
+                characterActionButtons.style.display = 'flex';
+                characterResultsDiv.innerHTML = ''; // Clear previous display
+
+
+                if (potentialMCs.length > 0) {
+                    const mcCandidatesTitle = document.createElement('h3');
+                    mcCandidatesTitle.className = 'text-xl font-bold mt-4 mb-3 text-center text-gray-700';
+                    mcCandidatesTitle.textContent = selectedLanguage === 'id' ? 'Pilih Karakter Utama Anda:' : 'Select Your Main Character:';
+                    characterResultsDiv.appendChild(mcCandidatesTitle);
+
+                    potentialMCs.forEach(char => {
+                        const charCard = document.createElement('div');
+                        charCard.className = 'character-card potential-mc'; // Add a class for styling potential MCs
+                        charCard.dataset.characterId = char.id;
+                        charCard.innerHTML = `
+                            <h2><span class="icon-placeholder">✨</span> ${char.name}</h2>
+                            <p><span class="char-detail">${selectedLanguage === 'id' ? 'Kelas' : 'Class'}:</span> ${char.class}</p>
+                            <p><span class="char-detail">${selectedLanguage === 'id' ? 'Peran Awal' : 'Initial Role'}:</span> ${char.role}</p>
+                            <p><span class="char-detail">${selectedLanguage === 'id' ? 'Sifat' : 'Personality'}:</span> ${char.personality}</p>
+                            <p><span class="char-detail">${selectedLanguage === 'id' ? 'Tentang' : 'About'}:</span> ${char.description}</p>
+                        `;
+                        characterResultsDiv.appendChild(charCard);
+                        addCharacterCardEventListener(charCard, char);
+                    });
+                } else {
+                    // Fallback if no potential MCs were generated (shouldn't happen with good prompt)
+                    showMessageBox(selectedLanguage === 'id' ? 'Tidak Ada Kandidat MC' : 'No MC Candidates', selectedLanguage === 'id' ? 'AI tidak dapat mengidentifikasi kandidat karakter utama. Coba lagi atau sesuaikan prompt.' : 'AI could not identify main character candidates. Try again or adjust the prompt.');
+                }
+
+            } else {
+                 showMessageBox(selectedLanguage === 'id' ? 'Tidak Ada Karakter' : 'No Characters', selectedLanguage === 'id' ? 'AI tidak dapat menghasilkan karakter. Coba lagi.' : 'AI could not generate characters. Please try again.');
+            }
+        }
+
+        // Centralized function for adding event listeners to character cards
+        function addCharacterCardEventListener(charCard, charData) {
+            charCard.addEventListener('click', () => {
+                // Reset all cards' styles
+                document.querySelectorAll('.character-card').forEach(card => {
+                    card.classList.remove('selected-mc');
+                    card.style.backgroundColor = '#ffffff'; // Reset background color
+                    const iconSpan = card.querySelector('.icon-placeholder');
+                    // Reset icon for all cards to '✨' since only potential MCs are displayed
+                    if (iconSpan) iconSpan.textContent = '✨'; 
+                });
+                
+                // Apply selected style to the clicked card
+                charCard.classList.add('selected-mc');
+                charCard.style.backgroundColor = '#e0e0e0'; // Set background color for selected card
+                selectedMainCharacter = charData;
+                console.log("Selected MC:", selectedMainCharacter);
+
+                // Change icon for the selected character
+                const selectedIconSpan = charCard.querySelector('.icon-placeholder');
+                if (selectedIconSpan) selectedIconSpan.textContent = '😇'; // Change to angel icon
+            });
+        }
+
+        // --- Game Play Functions ---
+        async function startGame() {
+            showScreen('game-screen');
+            gameLoadingOverlay.style.display = 'flex';
+            gamePlayScreen.style.display = 'none'; // Hide game play screen until content loads
+
+            await generatePrologue();
+        }
+
+        async function generatePrologue() {
+            const prologSchema = {
+                type: "OBJECT",
+                properties: {
+                    "prologueTitle": { "type": "STRING" },
+                    "prologueText": { "type": "STRING" },
+                    "prologueQuote": { "type": "STRING", "description": "An optional, evocative quote to end the prolog" },
+                    "initialSystems": {
+                        "type": "OBJECT",
+                        "properties": {
+                            "trustSystem": { "type": "STRING", "description": "Example: Trust System (active)" },
+                            "deathTrigger": { "type": "STRING", "description": "Example: Death Trigger (active)" },
+                            "flagAwal": { "type": "STRING", "description": "Example: Kamu menganggap permaisuri hanya beban yang harus diamati" },
+                            "pathTracker": { "type": "STRING", "description": "Example: Bayangan di Atas Takhta" },
+                            "lockedPaths": { "type": "ARRAY", "items": { "type": "STRING" }, "description": "Example: [\"🗡️ Ciuman Pengkhianat\", \"👑 Ikrar di Ujung Senja\"]" },
+                            "notes": { "type": "STRING", "description": "Example: MC bisa membunuh atau menyelamatkan sang permaisuri tergantung pilihan dan trust" }
+                        },
+                        "required": ["trustSystem", "deathTrigger", "flagAwal", "pathTracker", "lockedPaths", "notes"]
+                    },
+                    "genreDetails": { "type": "STRING", "description": "Example: 😇 Genre, Romantis, Bodyguard Romance" }
+                },
+                "required": ["prologueTitle", "prologueText", "prologueQuote", "initialSystems", "genreDetails"]
+            };
+
+            const mcName = selectedMainCharacter.name;
+            const mcClass = selectedMainCharacter.class;
+            const mcPersonality = selectedMainCharacter.personality;
+            const storyTitle = selectedStoryDetails.title;
+            const storyDescription = selectedStoryDetails.description;
+            const genres = selectedStoryDetails.genres.join(', ');
+            const subgenres = selectedStoryDetails.subgenres.join(', ');
+
+            let prompt = `Generate a compelling visual novel prologue for the story "${storyTitle}" (Description: "${storyDescription}") focusing on the main character ${mcName} (${mcClass}, Personality: ${mcPersonality}). The prologue should set the scene, introduce the MC's initial perspective, and hint at the main conflict. Ensure the narrative flows smoothly and connects logically.
+
+            After the narrative, include the following dynamic systems' initial states as described by the user:
+            ---
+            🎮 SISTEM DINAMIS VISUAL NOVEL
+            ---
+            🧠 1. Trust System: Setiap karakter memiliki poin kepercayaan terhadap MC. Trust bisa naik atau turun tergantung pilihan, dialog, atau tindakan. Trust tinggi membuka rahasia, jalur unik, atau ending positif. Trust rendah bisa memicu pengkhianatan, kematian karakter, atau ending buruk.
+            🩸 2. Death Trigger: MC atau karakter penting bisa mati jika pemain mengambil pilihan tertentu. Kematian bisa bersifat langsung atau karena efek berantai. Jika MC mati, cerita dianggap gagal.
+            🎭 3. Flag Awal: Karakter membawa kondisi tersembunyi sejak awal (contoh: pernah dikhianati, menyimpan rahasia, trauma). Flag ini bisa terpicu oleh kata, tindakan, atau waktu tertentu. Pengaruh besar terhadap sikap awal karakter terhadap MC.
+            🔒 4. Path Tracker: Menampilkan jalur besar cerita yang sedang ditempuh MC (contoh: “Bayangan Di Antara Dua Mahkota”). Jalur ini bisa berganti tergantung keputusan kunci. Path bisa berisi sub-jalur tersembunyi.
+            🕊️ 5. Jalur Cerita Terkunci Potensial: Beberapa jalur hanya terbuka jika pemain memenuhi syarat tertentu: Trust tinggi/rendah, Flag terbuka, Tindakan rahasia, DNA Keputusan khusus.
+            🎯 Catatan: [Peringatan atau info penting]
+            
+            Format the output strictly as JSON according to the provided schema. The prologue should be in ${selectedLanguage === 'id' ? 'Indonesian' : 'English'}.
+
+            Example Prologue Start Format:
+            ---
+            🌹 Prolog Cerita: Sang Penjaga Permaisuri
+
+            😇 Genre, Romantis, Bodyguard Romance
+            ---
+            Kau hidup dalam bayangan.
+            Bukan karena takut pada cahaya, tapi karena dari situlah kau bisa melihat semuanya.
+            Sebagai penjaga rahasia, tugasmu bukan sekadar melindungi—tapi mengamati, mencurigai, dan jika perlu… menyusup.
+            Permaisuri yang baru naik takhta itu masih muda. Lugu. Cantik, tentu saja. Tapi lemah. Dan kelemahan adalah undangan bagi kudeta.
+            Kau ditugaskan sebagai mata dan telinga istana. Untuk memastikan sang permaisuri tak tersandung langkahnya sendiri.
+            Tapi semakin kau mengawasinya, semakin sulit membedakan antara kelemahan dan keberanian...
+            Dan rasa benci yang kau simpan, perlahan berubah menjadi sesuatu yang jauh lebih berbahaya.
+
+            > Saat badai politik mulai mengancam istana, dan musuh mengintai di balik senyuman bangsawan...
+            Siapa yang akan lebih dulu melukai hati sang penjaga: musuh, atau permaisurinya sendiri?
+            ---
+            🎮 Sistem Aktif:
+            🧠 Trust System
+            🩸 Death Trigger
+            🎭 Flag Awal: Kamu menganggap permaisuri hanya beban yang harus diamati
+            🔒 Path Tracker: Bayangan di Atas Takhta
+            🕊️ Jalur Cerita Terkunci Potensial: "🗡️ Ciuman Pengkhianat" dan "👑 Ikrar di Ujung Senja"
+            🎯 Catatan: MC bisa membunuh atau menyelamatkan sang permaisuri tergantung pilihan dan trust
+
+            When referencing MC, use "${mcName}" instead of "MC".
+            Make sure the initial Flag Awal is relevant to the MC's personality and the story premise.
+            `;
+            
+            const prologData = await callGeminiAPI(prompt, prologSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), gameLoadingAdditionalText, null);
+
+            if (prologData) {
+                displayPrologue(prologData);
+                gameLoadingOverlay.style.display = 'none';
+                gamePlayScreen.style.display = 'flex'; // Show game play screen
+                gamePlayScreen.scrollIntoView({ behavior: 'smooth', block: 'start' }); // Scroll to top
+            } else {
+                showMessageBox(selectedLanguage === 'id' ? 'Kesalahan Prolog' : 'Prologue Error', selectedLanguage === 'id' ? 'Tidak dapat menghasilkan prolog. Coba lagi.' : 'Could not generate prologue. Please try again.');
+                showScreen('summary-screen'); // Go back to summary
+            }
+        }
+
+        function displayPrologue(prologData) {
+            prologContentDisplay.innerHTML = `
+                <div class="chapter-header-card">
+                    <h2>🌹 ${prologData.prologueTitle}</h2>
+                    <p class="chapter-meta">${prologData.genreDetails}</p>
+                </div>
+                <div class="narrative-content">
+                    ${prologData.prologueText.split('\n').filter(Boolean).map(p => {
+                        // Check for quotes in narrative blocks (now correctly handling quotes)
+                        if (p.trim().startsWith('> ')) {
+                            return `<p class="prolog-quote">${p.trim().substring(2)}</p>`; // Remove the "> " from the text
+                        }
+                        return `<p>${p.trim()}</p>`;
+                    }).join('')}
+                </div>
+            `;
+            prologContentDisplay.style.display = 'block';
+            chapterContentDisplay.style.display = 'none'; // Hide chapter content
+
+            // Initialize gameProgress with initial systems from prologue
+            gameProgress.pathTracker = prologData.initialSystems.pathTracker;
+            gameProgress.lockedPaths = prologData.initialSystems.lockedPaths;
+            gameProgress.flagAwal = prologData.initialSystems.flagAwal; // Store as string for now
+            
+            // Render initial dynamic systems
+            renderDynamicSystems(prologData.initialSystems, true); // True for initial display
+            
+            choiceContainer.innerHTML = ''; // Clear choices
+            startRealStoryBtn.style.display = 'block'; // Show "Mulai Cerita Sebenarnya" button
+        }
+
+        async function startChapter1() {
+            gameProgress.currentChapter = 1;
+            gameProgress.currentScene = 1;
+
+            prologContentDisplay.style.display = 'none';
+            startRealStoryBtn.style.display = 'none'; // Hide this button
+            gameLoadingOverlay.style.display = 'flex'; // Show loading for chapter
+
+            await generateChapter(gameProgress.currentChapter);
+        }
+
+        async function generateChapter(chapterNum, previousChoiceText = null) {
+            const chapterSchema = {
+                type: "OBJECT",
+                properties: {
+                    "chapterTitle": { "type": "STRING" },
+                    "chapterMeta": {
+                        "type": "OBJECT",
+                        "properties": {
+                            "mcDisplay": { "type": "STRING", "description": "Example: MC: Renessa – Penjaga Bayangan" },
+                            "activePath": { "type": "STRING", "description": "Example: Jalur Aktif: Bayangan di Atas Takhta" }
+                        },
+                        "required": ["mcDisplay", "activePath"]
+                    },
+                    "chapterContent": {
+                        "type": "ARRAY",
+                        "items": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "type": { "type": "STRING", "enum": ["narrative", "dialogue"] },
+                                "speaker": { "type": "STRING", "description": "The name of the character speaking. Required if type is 'dialogue'. MUST be a specific character name (e.g., 'Permaisuri', 'Kapten Drevan', or the MC's actual name like 'Aldi Saputra'), NOT 'seseorang misterius' or any generic placeholder." },
+                                "text": { "type": "STRING", "description": "The dialogue content. This text should ONLY contain the dialogue itself, without 'Nama MC [Aku]:' or 'Nama Karakter:'. This prefix will be added by the client-side code. Quotes starting with '> ' can be part of any text block." }
+                            },
+                            "required": ["type", "text"]
+                        }
+                    },
+                    "choices": {
+                        "type": "ARRAY",
+                        "items": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "id": { "type": "STRING" },
+                                "text": { "type": "STRING" },
+                                "emote": { "type": "STRING", "description": "The actual emote character (e.g., '💬', '🦶', '🧊'), NOT descriptive words like 'confused' or 'question'." }
+                            },
+                            "required": ["id", "text", "emote"]
+                        }
+                    },
+                    "consequenceNote": { "type": "STRING", "description": "Note about what choices will affect" },
+                    "dynamicUpdates": {
+                        "type": "OBJECT",
+                        "properties": {
+                            "trustUpdates": {
+                                "type": "ARRAY",
+                                "items": {
+                                    "type": "OBJECT",
+                                    "properties": {
+                                        "character": { "type": "STRING" },
+                                        "change": { "type": "NUMBER" },
+                                        "reason": { "type": "STRING" }
+                                    },
+                                    "required": ["character", "change"]
+                                }
+                            },
+                            "flagsTriggered": { "type": "ARRAY", "items": { "type": "STRING" } },
+                            "newAchievements": {
+                                "type": "ARRAY",
+                                "items": {
+                                    "type": "OBJECT",
+                                    "properties": {
+                                        "title": { "type": "STRING" },
+                                        "description": { "type": "STRING" }
+                                    },
+                                    "required": ["title", "description"]
+                                }
+                            },
+                            "dnaProfileChanges": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "moral": { "type": "STRING" },
+                                    "honesty": { "type": "STRING" },
+                                    "empathy": { "type": "STRING" },
+                                    "style": { "type": "STRING" }
+                                }
+                            },
+                            "timeUpdate": { "type": "STRING" },
+                            "activeEvents": { "type": "ARRAY", "items": { "type": "STRING" } },
+                            "pathTrackerChange": { "type": "STRING" },
+                            "lockedPathsInfo": { "type": "STRING" }
+                        }
+                    }
+                },
+                "required": ["chapterTitle", "chapterMeta", "chapterContent", "choices", "consequenceNote"]
+            };
+
+            const mcName = selectedMainCharacter.name;
+            const mcClass = selectedMainCharacter.class;
+            const storyTitle = selectedStoryDetails.title;
+
+            // Get all character names (including MC) to ensure distinctness and personality matching
+            const allCharacterNames = generatedCharacters.map(c => ({
+                name: c.name,
+                personality: c.personality,
+                role: c.role,
+                isMC: c.id === selectedMainCharacter.id
+            }));
+
+            // Prepare current game state for AI
+            const currentGameStateForAI = {
+                mc: {
+                    name: mcName,
+                    class: mcClass,
+                    personality: selectedMainCharacter.personality,
+                    description: selectedMainCharacter.description
+                },
+                story: {
+                    title: storyTitle,
+                    description: selectedStoryDetails.description,
+                    genres: selectedStoryDetails.genres,
+                    subgenres: selectedStoryDetails.subgenres
+                },
+                allCharactersInStory: allCharacterNames, // Pass all characters with their personalities
+                gameProgress: {
+                    currentChapter: gameProgress.currentChapter,
+                    currentScene: gameProgress.currentScene,
+                    trustPoints: JSON.stringify(gameProgress.trustPoints), // Send as string to avoid schema issues
+                    flagAwal: gameProgress.flagAwal, // Send as string
+                    pathTracker: gameProgress.pathTracker,
+                    lockedPaths: gameProgress.lockedPaths,
+                    achievements: gameProgress.achievements,
+                    traumaSystem: JSON.stringify(gameProgress.traumaSystem),
+                    relationshipLabels: JSON.stringify(gameProgress.relationshipLabels),
+                    timeSystem: JSON.stringify(gameProgress.timeSystem),
+                    dnaProfile: JSON.stringify(gameProgress.dnaProfile),
+                    playerChoices: gameProgress.playerChoices.map(c => c.choiceText).join("; ") // Summarize past choices
+                },
+                previousChoice: previousChoiceText
+            };
+
+            let prompt = `Continue the visual novel story. The current game state is: ${JSON.stringify(currentGameStateForAI)}.
+            
+            Generate the content for Chapter ${chapterNum}, including:
+            - A concise chapter title.
+            - "chapterMeta": An object containing "mcDisplay" (e.g., "MC: Renessa – Penjaga Bayangan") and "activePath" (e.g., "Jalur Aktif: Bayangan di Atas Takhta").
+            - "chapterContent": An ordered array of narrative and dialogue blocks.
+                - For narrative blocks, use type "narrative" and include the text. **Ensure narrative flows logically from the previous scene/prologue and does not jump.**
+                - For dialogue blocks, use type "dialogue", explicitly include the "speaker" name (e.g., "Permaisuri", "Kapten Drevan", or "${mcName}" for the MC). The speaker's name MUST be a concrete character name from 'allCharactersInStory' and NEVER a generic placeholder like "seseorang misterius".
+                - The "text" of their dialogue. This text should ONLY contain the dialogue itself, without "Nama MC [Aku]:" or "Nama Karakter:". This prefix will be added by the client-side code. **IMPORTANT: Ensure the dialogue sounds natural and is consistent with the speaker's personality and role as defined in 'allCharactersInStory'. Avoid stiff or unnatural phrasing.** Quotes starting with '> ' can be part of any text block.
+            - A set of 3 choices (dialogue or action) for the player.
+            - A "consequenceNote" explaining what the choices will affect.
+            - "dynamicUpdates": An object containing updates for various dynamic systems based on the narrative progression and previous choice.
+            
+            The dynamic systems are:
+            1. Trust System: Each character has trust points towards MC. Trust can increase or decrease. High trust unlocks secrets, unique paths, or positive endings. Low trust can trigger betrayal, character death, or bad endings.
+            2. Death Trigger: MC or important characters can die based on choices. Death can be immediate or chain reaction. If MC dies, game over.
+            3. Flag Awal: Characters have hidden conditions from the start (e.g., betrayed before, secret, trauma). Triggered by words, actions, or time. Greatly influences initial attitude towards MC.
+            4. Path Tracker: Shows main story path (e.g., “Shadows Between Two Crowns”). Changes based on key decisions. Can contain hidden sub-paths.
+            5. Locked Story Paths: Some paths open only if certain conditions met (high/low trust, flags triggered, secret actions, specific DNA Profile).
+            6. Trust Dynamic Update: Only appears for significant changes. Format: 🔸 Althea: +2.1, 🟡 Kael: -1.2 → “You broke it again?”, ⚠️ Shadow Guild: -4.0 → [Considers you a threat].
+            7. Title / Achievement System: Player gets titles based on moral choices, play style, and ending. Example: 🗡️ Bloody Hand, 👑 Forgiving Hero, 🕷️ Master Deceiver. Titles can unlock unique dialogues or hidden paths.
+            8. Inner Wound / Trauma System: Heavy decisions/events can trigger trauma on MC/characters. Effects: trust changes, locking choices, different emotional dialogues.
+            9. Dynamic Character Dialogue: Adjusts based on Trust, Relationship Label, interaction history. Characters remember past actions.
+            10. Character Relationship Label System: Stores labels like: Friend, Old Enemy, Hidden Love, Former Alliance. Changes based on choices and trust. Affects special dialogues, exclusive events, betrayal/sacrifice potential.
+            11. Dynamic Time Event System: Events tied to time (morning, noon, night, specific hour). Each action advances time. Some events only appear at certain times. Format: 🕒 Time: Day 3, Night; ⏳ Countdown: 1 time left before South Gate closes; 📍 Active Event: Kael's Execution (terjadi saat fajar).
+            12. Choice DNA / Decision Root System: Tracks player's moral patterns: Moral, Honesty, Empati, Decision Style. Format: 🧬 Decision Profile: - Moral: High, - Honesty: Low, - Empati: Netral, - Gaya: Manipulator Emosional. This DNA affects: secret paths, automatic trust, hidden endings.
+            13. MC Dialogue Choice System: MC speaks with characters. Dialogue can trigger trust changes, emotions, or story paths. Choices are provided. Example: 💬 What will you say to Kael? a. “I promise to return” b. “If you die, it's not my business.” c. (Remain silent).
+            14. Action / Behavior Choice System: Not all choices are dialogue. Some are direct actions. Actions can trigger new scenes, paths, or flags. Example: 🧭 What will you do? a. Go investigate the dungeon b. Report to the General c. Hide and observe from afar. Can be combined with dialogue.
+            
+            Format the output strictly as JSON according to the provided schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} for all content.
+            
+            For the "choices" emotes, ONLY use these specific characters: '💬' (dialogue), '🦶' (action/movement), '🧊' (silence/inaction), '✨' (magic/supernatural), '🗡️' (combat/threat), '❤️' (affection/emotion), '🧠' (thought/analysis), '🔍' (investigation/discovery), '⏳' (time-related action), '📜' (reading/lore). Do NOT use descriptive words like 'confused', 'question', 'silent'.
+            Make sure all numerical trust changes are represented with positive or negative values like "+2.1" or "-1.2".
+            Include at least 3 choices per step.
+            Focus on creating a compelling and interactive story with clear progression. **Ensure narrative continuity, building directly on the previous chapter's events and the previous choice made. Avoid jumping in plot or introducing unrelated elements. The story must progress naturally from where it left off.**
+            If a character dies, the AI should indicate "MC mati" (MC died) or a specific character's death in the narrative/notes, which will trigger the game over logic.
+            Do NOT include the "🎮 Sistem Aktif:" block in the chapter output, only provide the individual dynamic updates in the "dynamicUpdates" object.
+            Always provide a "consequenceNote" explaining what the choices will affect (e.g., Kepercayaan sang Permaisuri, Jalur cerita aktif, DNA Pilihan).
+            `;
+
+            const chapterData = await callGeminiAPI(prompt, chapterSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), gameLoadingAdditionalText, null);
+
+            if (chapterData) {
+                renderGameContent(chapterData);
+                gameLoadingOverlay.style.display = 'none';
+                chapterContentDisplay.style.display = 'block';
+                gamePlayScreen.scrollIntoView({ behavior: 'smooth', block: 'start' }); // Scroll to top
+            } else {
+                showMessageBox(selectedLanguage === 'id' ? 'Kesalahan Bab' : 'Chapter Error', selectedLanguage === 'id' ? 'Tidak dapat menghasilkan bab. Coba lagi.' : 'Could not generate chapter. Please try again.');
+                showScreen('game-over-screen'); // Or go back to a safe state
+            }
+        }
+
+        function renderGameContent(chapterData) {
+            // Clear previous chapter content
+            chapterContentDisplay.innerHTML = '';
+
+            // Render Chapter Header Card
+            const chapterHeaderCard = document.createElement('div');
+            chapterHeaderCard.className = 'chapter-header-card';
+            chapterHeaderCard.innerHTML = `
+                <h2>🩸 ${chapterData.chapterTitle}</h2>
+                <p class="chapter-meta">
+                    <span class="font-bold">🎭 MC:</span> ${chapterData.chapterMeta.mcDisplay} <br>
+                    <span class="font-bold">🔒 Jalur Aktif:</span> ${chapterData.chapterMeta.activePath}
+                </p>
+            `;
+            chapterContentDisplay.appendChild(chapterHeaderCard);
+
+            // Render Chapter Content (Narrative and Dialogues)
+            const narrativeContainer = document.createElement('div');
+            narrativeContainer.className = 'narrative-content';
+            chapterContentDisplay.appendChild(narrativeContainer);
+
+
+            chapterData.chapterContent.forEach(block => {
+                if (block.type === 'narrative') {
+                    const p = document.createElement('p');
+                    p.innerHTML = block.text.split('\n').filter(Boolean).map(line => {
+                        // Check for quotes in narrative blocks (now correctly handling quotes)
+                        if (line.trim().startsWith('> ')) {
+                            return `<p class="chapter-quote">${line.trim().substring(2)}</p>`; // Remove the "> " from the text
+                        }
+                        return `<p>${line.trim()}</p>`;
+                    }).join('');
+                    narrativeContainer.appendChild(p);
+                } else if (block.type === 'dialogue') {
+                    const dialogueCard = document.createElement('div');
+                    let speakerNameDisplay = block.speaker;
+                    let dialogueText = block.text;
+
+                    if (block.speaker === selectedMainCharacter.name) {
+                        dialogueCard.className = 'character-dialogue-card mc-dialogue-card';
+                        speakerNameDisplay = `${selectedMainCharacter.name} [Aku]`; // Add [Aku] for MC
+                    } else {
+                        dialogueCard.className = 'character-dialogue-card other-dialogue-card';
+                    }
+                    
+                    dialogueCard.innerHTML = `
+                        <strong class="speaker-name">${speakerNameDisplay}:</strong>
+                        <span>${dialogueText}</span>
+                    `;
+                    narrativeContainer.appendChild(dialogueCard);
+                }
+            });
+
+
+            // Update game progress based on dynamic updates
+            if (chapterData.dynamicUpdates) {
+                const updates = chapterData.dynamicUpdates;
+
+                // Update Trust Points (simple simulation: just display for now)
+                if (updates.trustUpdates) {
+                    updates.trustUpdates.forEach(tu => {
+                        if (!gameProgress.trustPoints[tu.character]) {
+                            gameProgress.trustPoints[tu.character] = 0; // Initialize if not present
+                        }
+                        gameProgress.trustPoints[tu.character] += tu.change;
+                    });
+                }
+
+                // Update Flags Triggered
+                if (updates.flagsTriggered) {
+                    updates.flagsTriggered.forEach(flag => {
+                        if (!gameProgress.flagAwal[flag]) {
+                            gameProgress.flagAwal[flag] = true;
+                        }
+                    });
+                }
+
+                // Update Achievements
+                if (updates.newAchievements) {
+                    updates.newAchievements.forEach(achievement => {
+                        if (!gameProgress.achievements.some(a => a.title === achievement.title)) {
+                            gameProgress.achievements.push(achievement);
+                        }
+                    });
+                }
+
+                // Update DNA Profile
+                if (updates.dnaProfileChanges) {
+                    gameProgress.dnaProfile = { ...gameProgress.dnaProfile, ...updates.dnaProfileChanges };
+                }
+
+                // Update Time System
+                if (updates.timeUpdate) {
+                    gameProgress.timeSystem.display = updates.timeUpdate; 
+                }
+
+                // Update Active Events
+                if (updates.activeEvents) {
+                    gameProgress.timeSystem.activeEvents = updates.activeEvents;
+                }
+
+                // Update Path Tracker
+                if (updates.pathTrackerChange) {
+                    gameProgress.pathTracker = updates.pathTrackerChange;
+                }
+
+                // Update Locked Paths Info (AI provides a string, store as such)
+                if (updates.lockedPathsInfo) {
+                    // This is more of a note, not a true state change for lockedPaths array
+                    // For a full system, you'd have conditions to add/remove from gameProgress.lockedPaths
+                }
+            }
+
+            renderDynamicSystems(chapterData.dynamicUpdates); // Render updates to UI
+
+            // Render choices
+            choiceContainer.innerHTML = '';
+            chapterData.choices.forEach(choice => {
+                const choiceCard = document.createElement('div');
+                choiceCard.className = 'choice-card';
+                choiceCard.innerHTML = `<span class="choice-emote">${choice.emote}</span> ${choice.text}`;
+                choiceCard.addEventListener('click', () => handleChoice(choice));
+                choiceContainer.appendChild(choiceCard);
+            });
+
+            // Add consequence note
+            if (chapterData.consequenceNote) {
+                const consequenceP = document.createElement('p');
+                consequenceP.className = 'text-sm mt-4 text-gray-600 text-center italic';
+                consequenceP.textContent = chapterData.consequenceNote;
+                choiceContainer.appendChild(consequenceP);
+            }
+        }
+
+        function renderDynamicSystems(updates, isInitial = false) {
+            dynamicSystemsDisplay.innerHTML = `<h3>🎮 Sistem Aktif:</h3>`;
+            
+            const appendSystemLine = (icon, title, value) => {
+                if (value) { // Only append if value is not empty/null
+                    const p = document.createElement('p');
+                    p.innerHTML = `<span class="system-title">${icon} ${title}:</span> ${value}`;
+                    dynamicSystemsDisplay.appendChild(p);
+                }
+            };
+
+            // Always display core systems from gameProgress state
+            appendSystemLine('🧠', 'Trust System', selectedLanguage === 'id' ? 'Setiap karakter memiliki poin kepercayaan terhadap MC.' : 'Each character has trust points towards MC.');
+            appendSystemLine('🩸', 'Death Trigger', selectedLanguage === 'id' ? 'MC atau karakter penting bisa mati jika pemain mengambil pilihan tertentu.' : 'MC or important characters can die based on choices.');
+            
+            // Display initial flag from gameProgress.flagAwal (which stores the string from prologue)
+            if (gameProgress.flagAwal) {
+                // Check if flagAwal is an object with properties
+                if (typeof gameProgress.flagAwal === 'object' && Object.keys(gameProgress.flagAwal).length > 0) {
+                    const flagStrings = Object.keys(gameProgress.flagAwal).map(key => `${key}`); // Adjust if you want to show value too
+                    appendSystemLine('🎭', 'Flag Awal', flagStrings.join(', '));
+                } else if (typeof gameProgress.flagAwal === 'string' && gameProgress.flagAwal.trim() !== "") {
+                    appendSystemLine('🎭', 'Flag Awal', gameProgress.flagAwal);
+                }
+            }
+            if (gameProgress.pathTracker) {
+                appendSystemLine('🔒', 'Path Tracker', gameProgress.pathTracker);
+            }
+            if (gameProgress.lockedPaths && gameProgress.lockedPaths.length > 0) {
+                appendSystemLine('🕊️', 'Jalur Cerita Terkunci Potensial', gameProgress.lockedPaths.join(', '));
+            }
+            
+            // Display current time/events if any
+            if (gameProgress.timeSystem.display) {
+                appendSystemLine('⏳', 'Waktu & Event', gameProgress.timeSystem.display);
+            } else if (gameProgress.timeSystem.day) { // Default display if AI didn't provide specific string
+                appendSystemLine('⏳', 'Waktu', `${selectedLanguage === 'id' ? 'Hari ke-' : 'Day '}${gameProgress.timeSystem.day}, ${gameProgress.timeSystem.partOfDay}`);
+            }
+
+            // Display current DNA Profile
+            if (gameProgress.dnaProfile) {
+                const dnaText = `Moral: ${gameProgress.dnaProfile.moral}, Kejujuran: ${gameProgress.dnaProfile.honesty}, Empati: ${gameProgress.dnaProfile.empathy}, Gaya: ${gameProgress.dnaProfile.style}`;
+                appendSystemLine('🧬', 'Profil Keputusan', dnaText);
+            }
+
+            // Display trust updates received from the *current* chapter generation
+            if (updates && updates.trustUpdates && updates.trustUpdates.length > 0) {
+                const trustUpdateTitle = document.createElement('p');
+                trustUpdateTitle.className = 'system-title mt-2';
+                trustUpdateTitle.textContent = 'Trust Update:';
+                dynamicSystemsDisplay.appendChild(trustUpdateTitle);
+
+                updates.trustUpdates.forEach(tu => {
+                    const trustItem = document.createElement('p');
+                    let icon = '🟡'; // Default neutral/warning
+                    let textColorClass = 'neutral';
+                    if (tu.change > 0) { icon = '🔸'; textColorClass = 'positive'; }
+                    else if (tu.change < 0) { icon = '⚠️'; textColorClass = 'negative'; }
+                    
+                    trustItem.className = `trust-update-item ${textColorClass}`;
+                    trustItem.innerHTML = `${icon} ${tu.character}: ${tu.change > 0 ? '+' : ''}${tu.change}${tu.reason ? ` → "${tu.reason}"` : ''}`;
+                    dynamicSystemsDisplay.appendChild(trustItem);
+                });
+            }
+
+            // Display flags triggered in the *current* chapter
+            if (updates && updates.flagsTriggered && updates.flagsTriggered.length > 0) {
+                 const flagTriggeredTitle = document.createElement('p');
+                 flagTriggeredTitle.className = 'system-title mt-2';
+                 flagTriggeredTitle.textContent = 'Flag Terpicu:';
+                 dynamicSystemsDisplay.appendChild(flagTriggeredTitle);
+
+                 updates.flagsTriggered.forEach(flag => {
+                    const flagItem = document.createElement('p');
+                    flagItem.className = 'flag-item';
+                    flagItem.textContent = `🧩 ${flag}`;
+                    dynamicSystemsDisplay.appendChild(flagItem);
+                 });
+            }
+
+            // Display new achievements
+            if (updates && updates.newAchievements && updates.newAchievements.length > 0) {
+                const achievementTitle = document.createElement('p');
+                achievementTitle.className = 'system-title mt-2';
+                achievementTitle.textContent = '🎖️ Gelar Baru:';
+                dynamicSystemsDisplay.appendChild(achievementTitle);
+
+                updates.newAchievements.forEach(ach => {
+                    const achievementItem = document.createElement('p');
+                    achievementItem.className = 'achievement-item';
+                    achievementItem.innerHTML = `<strong>${ach.title}</strong>: ${ach.description}`;
+                    dynamicSystemsDisplay.appendChild(achievementItem);
+                });
+            }
+
+            // Note section only for prologue
+            if (isInitial && updates && updates.notes) {
+                const notesP = document.createElement('p');
+                notesP.className = 'system-title mt-2';
+                notesP.textContent = `🎯 Catatan: ${updates.notes}`;
+                dynamicSystemsDisplay.appendChild(notesP);
+            }
+        }
+
+
+        async function handleChoice(choice) {
+            // Record the choice
+            gameProgress.playerChoices.push({
+                chapter: gameProgress.currentChapter,
+                scene: gameProgress.currentScene,
+                choiceId: choice.id,
+                choiceText: choice.text
+            });
+
+            // Increment scene/chapter (simple progression for now)
+            gameProgress.currentScene++;
+
+            // Clear choices and show loading
+            choiceContainer.innerHTML = '';
+            gameLoadingOverlay.style.display = 'flex';
+
+            // Generate next chapter/scene
+            await generateChapter(gameProgress.currentChapter, choice.text);
+        }
+        
+        // --- Initialization ---
+        // On page load, check for API key
+        window.onload = () => {
+            API_KEY = getApiKey();
+            if (API_KEY) {
+                showScreen('main-screen');
+                setMainButtonsEnabled(true);
+            } else {
+                showScreen('api-key-screen');
+                setMainButtonsEnabled(false); // Disable main buttons until API key is entered
+            }
+            updateLanguageText();
+        };
+
+    </script>
+</body>
+</html>
+
