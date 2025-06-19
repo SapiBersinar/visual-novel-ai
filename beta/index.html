@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerita Komik Interaktif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css"> <!-- Link ke file CSS terpisah -->
+</head>
+<body class="light-theme"> <!-- Default theme -->
+    <button id="theme-toggle" class="theme-toggle-button">
+        <i class="fas fa-moon"></i> <span id="theme-toggle-text">Mode Gelap</span>
+    </button>
+
+    <div class="container">
+        <!-- API Key Input Screen -->
+        <div id="api-key-screen" style="display:none;">
+            <h1>Masukkan Kunci API Gemini Anda</h1>
+            <p class="text-md mb-8 text-center text-gray-700">
+                Untuk menggunakan fitur AI, Anda memerlukan kunci API Gemini.
+                Anda bisa mendapatkannya di:
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline">aistudio.google.com/app/apikey</a>
+            </p>
+            <input type="text" id="api-key-input" placeholder="Masukkan Kunci API Gemini Anda">
+            <button class="button button-primary" id="save-api-key-btn">Simpan Kunci API</button>
+            <button class="button button-secondary" id="clear-api-key-btn">Hapus Kunci API</button>
+            <p class="text-xs mt-4 text-red-500">
+                Peringatan: Menyimpan kunci API di browser tidak disarankan untuk aplikasi produksi.
+            </p>
+        </div>
+
+        <div id="main-screen">
+            <h1>Cerita Komik Interaktif</h1>
+            <p class="text-md mb-8 text-center text-gray-700">Dapatkan ide cerita baru atau masukkan cerita Anda sendiri.</p>
+            <button class="button button-primary" id="manual-input-btn">Masukkan Judul & Deskripsi Manual</button>
+            <button class="button button-success" id="ai-generate-btn">Hasilkan Cerita dengan AI</button>
+        </div>
+
+        <div id="manual-input-screen" style="display:none;">
+            <h1>Masukkan Cerita Anda</h1>
+            <input type="text" id="manual-title" placeholder="Judul Cerita">
+            <textarea id="manual-description" placeholder="Deskripsi Cerita (fokus pada premis & konflik)" rows="6"></textarea>
+            <button class="button button-primary" id="continue-manual-btn">Lanjutkan ke Pembuatan Karakter</button>
+            <button class="button button-secondary" id="back-from-manual-btn">Kembali</button>
+        </div>
+
+        <div id="ai-generate-form-screen" style="display:none;">
+            <h1>Hasilkan Cerita dengan AI</h1>
+            <p class="text-md mb-8 text-center text-gray-700">AI akan membuat ide cerita berdasarkan preferensi Anda.</p>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="language" value="id" checked> Bahasa Indonesia
+                </label>
+                <label>
+                    <input type="radio" name="language" value="en"> English
+                </label>
+            </div>
+            
+            <select id="genre-select">
+                <option value="">Pilih Genre</option>
+                <option value="Fantasy">Fantasi</option>
+                <option value="Sci-Fi">Fiksi Ilmiah</option>
+                <option value="Romance">Romansa</option>
+                <option value="Mystery">Misteri</option>
+                <option value="Adventure">Petualangan</option>
+                <option value="Thriller">Thriller</option>
+                <option value="Horror">Horor</option>
+                <option value="Comedy">Komedi</option>
+                <option value="Drama">Drama</option>
+                <option value="Historical">Sejarah</option>
+                <option value="Slice of Life">Slice of Life</option>
+                <option value="Action">Aksi</option>
+                <option value="Supernatural">Supernatural</option>
+                <option value="Psychological">Psikologis</option>
+                <option value="Dystopian">Distopia</option>
+                <option value="Utopian">Utopia</option>
+                <option value="Steampunk">Steampunk</option>
+                <option value="Cyberpunk">Cyberpunk</option>
+                <option value="Post-Apocalyptic">Pascabencana</option>
+                <option value="Legal">Legal</option>
+                <option value="Medical">Medis</option>
+                <option value="Sports">Olahraga</option>
+                <option value="War">Perang</option>
+                <option value="Western">Western</option>
+                <option value="Crime">Kriminal</option>
+                <option value="Coming-of-Age">Coming-of-Age</option>
+                <option value="Young Adult">Young Adult</option>
+                <option value="New Adult">New Adult</option>
+                <option value="Children">Anak-anak</option>
+                <option value="Biographical">Biografi</option>
+                <option value="Magical Realism">Realism Magis</option>
+                <option value="Philosophical">Filosofis</option>
+                <option value="Satire">Satir</option>
+                <option value="Gothic">Gotik</option>
+                <option value="Noir">Noir</option>
+                <option value="Faerie Tale">Dongeng</option>
+                <option value="Mythology">Mitologi</option>
+                <option value="Parody">Parodi</option>
+                <option value="Fan-Fiction">Fan-Fiksi</option>
+                <option value="Murim">Murim</option>
+                <option value="Webtoon">Webtoon</option> <!-- New Genre -->
+                <option value="Absurd">Absurd</option> <!-- New Genre -->
+                <option value="Tragedy">Tragedi</option> <!-- New Genre -->
+                <option value="other">Lainnya...</option>
+            </select>
+            <input type="text" id="other-genre-input" placeholder="Masukkan Genre Lainnya" style="display:none;">
+
+            <select id="subgenre-select" style="display:none;">
+                <option value="">Pilih Subgenre</option>
+            </select>
+            <input type="text" id="subgenre-manual-input" placeholder="Masukkan Subgenre Lainnya" style="display:none;">
+
+            <input type="number" id="num-stories" placeholder="Jumlah Cerita (1-5)" min="1" max="5" value="1">
+            
+            <div class="button-group-spacing">
+                <button class="button button-success" id="generate-ai-btn">Hasilkan Cerita</button>
+                <button class="button button-secondary" id="back-from-ai-form-btn">Kembali</button>
+            </div>
+            
+            <div class="loading-indicator" id="loading-ai" style="display:none;">
+                <div class="spinner"></div>
+                <span id="loading-text">Sedang menulis kisah Anda...</span>
+                <span id="loading-additional-text" class="loading-additional-text">Mohon tunggu sebentar, AI sedang memproses.</span>
+            </div>
+        </div>
+
+        <div id="ai-results-screen" style="display:none;">
+            <h1>Pilih Cerita Anda</h1>
+            <p class="text-md mb-8 text-center text-gray-700">Pilih salah satu cerita yang dihasilkan AI.</p>
+            <div id="story-list-container">
+                <!-- AI generated stories will be added here -->
+            </div>
+
+            <!-- This div will act as the selected story summary, displayed after a story is chosen -->
+            <div id="selected-story-display" style="display:none;">
+                <h2 id="display-title" class="text-center font-bold text-xl mb-2"></h2>
+                <p id="display-description" class="text-center text-gray-700 mb-4"></p>
+                <p class="genre text-center">✨ Genre: <span id="display-genres"></span></p>
+                <p class="genre text-center">✨ Subgenre: <span id="display-subgenres"></span></p>
+            </div>
+
+            <div class="button-group-spacing">
+                 <button class="button button-primary" id="continue-to-character-selection-btn" style="display:none;">Lanjutkan ke Pemilihan Karakter</button>
+                 <button class="button button-secondary" id="back-from-ai-results-btn">Kembali Cari Cerita Lain</button>
+            </div>
+        </div>
+
+        <!-- Character Creation Screen -->
+        <div id="character-creation-screen" style="display:none;">
+            <h1>Buat Karakter</h1>
+            <p class="text-md mb-8 text-center text-gray-700">Anda dapat menentukan jumlah karakter atau membiarkan AI merekomendasikannya.</p>
+            
+            <select id="num-characters-select">
+                <option value="ai-recommended">Pilihan ditentukan dari judul dan deskripsi oleh AI (rekomendasi)</option>
+                <option value="3">3 Karakter</option>
+                <option value="4">4 Karakter</option>
+                <option value="5">5 Karakter</option>
+                <option value="6">6 Karakter</option>
+                <option value="7">7 Karakter</option>
+            </select>
+
+            <input type="text" id="character-class-input" placeholder="Kelas Karakter (opsional, cth: Pahlawan)" style="display:none;">
+            
+            <select id="name-style-select" class="mb-4">
+                <option value="random">Nama Acak AI</option>
+                <option value="japanese">Nama Ala Jepang</option>
+                <option value="chinese">Nama Ala Tiongkok</option>
+                <option value="arabic">Nama Ala Arab</option>
+                <option value="fantasy">Nama Ala Fantasi</option>
+                <option value="european_medieval">Nama Ala Eropa Abad Pertengahan</option>
+                <option value="celtic">Nama Ala Celtic</option>
+                <option value="norse">Nama Ala Norse</option>
+                <option value="ancient_egyptian">Nama Ala Mesir Kuno</option>
+                <option value="indonesian">Nama Ala Indonesia</option>
+                <option value="german">Nama Ala Jerman</option>
+            </select>
+            
+            <div class="button-group-spacing">
+                <button class="button button-success" id="generate-characters-btn">Generate Karakter</button>
+                <button class="button button-secondary" id="back-to-story-select-btn">Kembali ke Pemilihan Cerita</button>
+            </div>
+
+            <div class="loading-indicator" id="loading-characters" style="display:none;">
+                <div class="spinner"></div>
+                <span id="loading-chars-text">Menciptakan karakter Anda...</span>
+                <span id="loading-additional-text-chars" class="loading-additional-text">Mohon tunggu sebentar, AI sedang memproses.</span>
+            </div>
+
+            <h2 class="text-xl font-bold mt-8 mb-4 text-center text-gray-800" id="mc-selection-heading" style="display:none;">Pilih Karakter Utama (MC):</h2>
+            <div id="character-results" class="character-options">
+                <!-- Generated characters will be added here -->
+            </div>
+            
+            <div class="button-group-spacing" id="character-action-buttons" style="display:none;">
+                <button class="button button-primary" id="continue-to-game-btn">Lanjutkan Cerita</button>
+                <button class="button button-secondary" id="regenerate-characters-btn">Cari Karakter Lagi</button>
+            </div>
+        </div>
+
+        <!-- Summary screen before starting the game -->
+        <div id="summary-screen" style="display:none;">
+            <h1>Ringkasan Cerita Anda</h1>
+            <p class="text-md mb-8 text-center text-gray-700">Ini adalah ringkasan cerita dan karakter yang akan Anda mainkan.</p>
+            <div class="summary-section">
+                <h2>Judul Cerita</h2>
+                <p id="final-summary-title"></p>
+                <h2>Deskripsi Cerita</h2>
+                <p id="final-summary-description"></p>
+                <p class="genre">✨ Genre: <span id="final-summary-genres"></span></p>
+                <p class="genre">✨ Subgenre: <span id="final-summary-subgenres"></span></p>
+            </div>
+
+            <div class="summary-section">
+                <h2>Karakter Utama (MC)</h2>
+                <h2 id="final-mc-name-class"></h2>
+                <p><span class="char-detail">Sifat:</span> <span id="final-mc-personality"></span></p>
+                <p><span class="char-detail">Tentang:</span> <span id="final-mc-description"></span></p>
+            </div>
+
+            <div class="button-group-spacing">
+                <button class="button button-primary" id="start-game-btn">Mulai Game</button>
+                <button class="button button-secondary" id="back-from-summary-btn">Kembali</button>
+            </div>
+        </div>
+        
+        <!-- Game Screen (Main Visual Novel Display) -->
+        <div id="game-screen" style="display:none;">
+            <div id="game-loading-overlay" style="display:none;">
+                <div class="spinner"></div>
+                <span>Memuat cerita...</span>
+                <span id="game-loading-additional-text" class="loading-additional-text">Mohon tunggu sebentar, AI sedang memproses.</span>
+            </div>
+
+            <div id="game-play-screen" style="display:none;">
+                <div id="prolog-content-display">
+                    <!-- Prolog content generated by AI -->
+                </div>
+
+                <div id="chapter-content-display" style="display:none;">
+                    <!-- Chapter content generated by AI -->
+                </div>
+
+                <div id="dynamic-systems-display">
+                    <h3>🎮 Sistem Aktif:</h3>
+                    <!-- Dynamic systems will be displayed here -->
+                </div>
+
+                <div id="choice-container">
+                    <!-- Choices will be displayed here -->
+                </div>
+
+                <button class="button button-primary mt-8" id="start-real-story-btn" style="display:none;">Mulai ke cerita sebenarnya</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen (currently hidden) -->
+        <div id="game-over-screen" style="display:none;">
+            <h1>💀 GAME OVER 💀</h1>
+            <p class="game-over-text" id="game-over-message"></p>
+            <div class="analysis-text" id="game-over-analysis"></div>
+            <div class="button-group-spacing">
+                <button class="button button-primary" id="retry-game-btn">Coba Lagi</button>
+                <button class="button button-secondary" id="back-to-main-menu-btn">Kembali ke Menu Utama</button>
+            </div>
+        </div>
+
+        <p class="text-xs mt-8 opacity-75 footer-text">Katakanlah: Sesungguhnya aku takut akan azab hari yang besar jika aku durhaka kepada Tuhanku. (QS. Az-Zumar: 13)</p>
+
+        <!-- Custom Message Box -->
+        <div id="custom-message-box" class="message-box">
+            <h3 id="message-box-title"></h3>
+            <p id="message-box-content"></p>
+            <button id="message-box-ok-btn">OK</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script> <!-- Link ke file JavaScript terpisah -->
+</body>
+</html>
+
