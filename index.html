@@ -52,8 +52,8 @@
         .comic-line:nth-child(1) { height: 100%; left: 0%; animation-delay: 0s; }
         .comic-line:nth-child(2) { height: 100%; left: 20%; animation-delay: 2s; }
         .comic-line:nth-child(3) { height: 100%; left: 40%; animation-delay: 4s; }
-        .comic-line:nth-child(4) { height: 100%; left: 60%; animation-delay: 6s; }
-        .comic-line:nth-child(5) { height: 100%; left: 80%; animation-delay: 8s; }
+        .comic-line:nth-child(4) { height: 60%; left: 60%; animation-delay: 6s; } /* Adjusted height */
+        .comic-line:nth-child(5) { height: 80%; left: 80%; animation-delay: 8s; } /* Adjusted height */
         /* Horizontal Lines */
         .comic-line.horizontal { width: 100%; animation: lineMoveH 10s linear infinite; }
         .comic-line.horizontal:nth-child(6) { top: 0%; animation-delay: 1s; }
@@ -295,6 +295,73 @@
             margin-top: 30px;
         }
 
+        /* Custom Message Box */
+        .custom-message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .custom-message-box-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-message-box {
+            background-color: #333333;
+            color: #f0f0f0;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 5px 5px 0px 0px #000000;
+            border: 2px solid #000000;
+            max-width: 400px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease-in-out;
+        }
+        .custom-message-box-overlay.active .custom-message-box {
+            transform: scale(1);
+        }
+        .custom-message-box h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #f0f0f0;
+            text-shadow: 2px 2px 0px #000000;
+        }
+        .custom-message-box p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #cccccc;
+        }
+        .custom-message-box button {
+            background-color: #000000;
+            color: white;
+            padding: 10px 25px;
+            border: 2px solid #ffffff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 3px 3px 0px 0px #cccccc;
+        }
+        .custom-message-box button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px 0px #ffffff;
+            background-color: #444444;
+        }
+
+
         /* Responsive adjustments for small screens */
         @media (max-width: 600px) {
             body {
@@ -344,6 +411,15 @@
             .how-item p {
                 font-size: 0.85rem;
             }
+            .custom-message-box {
+                padding: 20px;
+            }
+            .custom-message-box h3 {
+                font-size: 1.3rem;
+            }
+            .custom-message-box p {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -368,13 +444,13 @@
             <span>H</span><span>A</span><span>N</span><span>Z</span><span>E</span><span>R</span><span>C</span><span>O</span><span>P</span><span>Y</span><span style="color:#ffffff;">.</span><span>C</span><span>L</span><span>O</span><span>U</span><span>D</span>
         </h1>
         <p>
-            Selami dunia <strong>visual cerita novel interaktif</strong> yang memikat, di mana setiap pilihan Kamu membentuk alur cerita. 
+            Selami dunia <strong>visual cerita novel interaktif</strong> yang memikat, di mana setiap pilihan Kamu membentuk alur cerita.
             Hanzercopy.cloud menghadirkan petualangan cerita mendalam dengan narasi yang kaya dan karakter yang tak terlupakan.
             Siapkah Kamu?
         </p>
         <p>
-            Rasakan sensasi membaca cerita dengan pilihan untuk mengubah alur didalmnya.
-            Dari misteri yang memutar otak hingga romansa yang mengharukan, setiap kisah adalah perjalanan unik yang menanti eksplorasi Kamu.
+            Rasakan sensasi membaca cerita dengan pilihan untuk mengubah alur didalamnya.
+            Dari misteri yang memutar otak hingga fantasi yang mengharukan, setiap kisah adalah perjalanan unik yang menanti eksplorasi Kamu.
         </p>
         
         <a href="https://hanzercopy.cloud/beta" class="cta-button">Mulai Petualangan Kamu</a>
@@ -403,7 +479,10 @@
 
         <div class="version-links">
             <p>
-                <a href="https://hanzercopy.cloud/tes.html" target="_blank" rel="noopener noreferrer">Versi Tidak Rekomendasi (Sebelumnya)</a>
+                <a href="https://github.com/SapiBersinar/visual-novel-ai" target="_blank" rel="noopener noreferrer">Source Code di GitHub</a>
+            </p>
+            <p>
+                <a href="https://hanzercopy.cloud/tes.html" target="_blank" rel="noopener noreferrer">Versi Tidak Rekomendasi (sebelumnya)</a>
             </p>
         </div>
 
@@ -411,6 +490,35 @@
             Katakanlah: Sesungguhnya aku takut akan azab hari yang besar jika aku durhaka kepada Tuhanku. (QS. Az-Zumar: 13)
         </p>
     </div>
+
+    <!-- Custom Message Box for AI Alert -->
+    <div id="aiMessageBoxOverlay" class="custom-message-box-overlay">
+        <div class="custom-message-box">
+            <h3>Pemberitahuan Penting</h3>
+            <p>Perlu diketahui bahwa seluruh website ini dibuat dengan bantuan Kecerdasan Buatan (AI).</p>
+            <button id="aiMessageBoxOkBtn">OKE</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Custom Message Box Logic ---
+        const aiMessageBoxOverlay = document.getElementById('aiMessageBoxOverlay');
+        const aiMessageBoxOkBtn = document.getElementById('aiMessageBoxOkBtn');
+
+        function showAiMessage() {
+            aiMessageBoxOverlay.classList.add('active');
+        }
+
+        aiMessageBoxOkBtn.addEventListener('click', () => {
+            aiMessageBoxOverlay.classList.remove('active');
+        });
+
+        // --- Initial Load Logic ---
+        window.onload = () => {
+            // Show the AI message box when the page finishes loading
+            showAiMessage();
+        };
+    </script>
 </body>
 </html>
 
