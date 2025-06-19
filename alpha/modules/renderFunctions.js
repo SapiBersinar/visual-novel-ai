@@ -82,20 +82,20 @@ export function displayPrologue(prologData, prologContentDisplay, chapterContent
         gameProgress.flagAwal = {}; // Default to empty object
     }
     
-    // NEW: Simpan konten prolog ke storyLog
-    gameProgress.storyLog = [{
-        type: 'prologue-header',
-        title: prologData.prologueTitle,
-        meta: prologData.genreDetails,
-        timestamp: new Date().toLocaleTimeString()
-    }];
-    prologData.prologueText.split('\n').filter(Boolean).forEach(p => {
-        gameProgress.storyLog.push({
-            type: 'narrative',
-            text: p.trim(),
-            timestamp: new Date().toLocaleTimeString()
-        });
-    });
+    // Removed: Simpan konten prolog ke storyLog
+    // gameProgress.storyLog = [{
+    //     type: 'prologue-header',
+    //     title: prologData.prologueTitle,
+    //     meta: prologData.genreDetails,
+    //     timestamp: new Date().toLocaleTimeString()
+    // }];
+    // prologData.prologueText.split('\n').filter(Boolean).forEach(p => {
+    //     gameProgress.storyLog.push({
+    //         type: 'narrative',
+    //         text: p.trim(),
+    //         timestamp: new Date().toLocaleTimeString()
+    //     });
+    // });
 
 
     renderDynamicSystemsFn(prologData.initialSystems, true, gameProgress, selectedLanguage); // True for initial display
@@ -107,13 +107,13 @@ export function displayPrologue(prologData, prologContentDisplay, chapterContent
 export function renderGameContent(chapterData, chapterContentDisplay, selectedMainCharacter, gameProgress, dynamicSystemsDisplay, choiceContainer, showMessageBox, handleChoiceFn, selectedLanguage, showNotificationFn) {
     chapterContentDisplay.innerHTML = '';
 
-    // NEW: Add chapter header to log
-    gameProgress.storyLog.push({
-        type: 'chapter-header',
-        title: chapterData.chapterTitle,
-        meta: chapterData.chapterMeta.mcDisplay + ' | ' + chapterData.chapterMeta.activePath,
-        timestamp: new Date().toLocaleTimeString()
-    });
+    // Removed: Add chapter header to log
+    // gameProgress.storyLog.push({
+    //     type: 'chapter-header',
+    //     title: chapterData.chapterTitle,
+    //     meta: chapterData.chapterMeta.mcDisplay + ' | ' + chapterData.chapterMeta.activePath,
+    //     timestamp: new Date().toLocaleTimeString()
+    // });
 
     const chapterHeaderCard = document.createElement('div');
     chapterHeaderCard.className = 'chapter-header-card';
@@ -141,12 +141,12 @@ export function renderGameContent(chapterData, chapterContentDisplay, selectedMa
             }).join('');
             narrativeContainer.appendChild(p);
 
-            // NEW: Add narrative to log
-            gameProgress.storyLog.push({
-                type: 'narrative',
-                text: block.text.trim(),
-                timestamp: new Date().toLocaleTimeString()
-            });
+            // Removed: Add narrative to log
+            // gameProgress.storyLog.push({
+            //     type: 'narrative',
+            //     text: block.text.trim(),
+            //     timestamp: new Date().toLocaleTimeString()
+            // });
 
         } else if (block.type === 'dialogue') {
             const dialogueCard = document.createElement('div');
@@ -166,13 +166,13 @@ export function renderGameContent(chapterData, chapterContentDisplay, selectedMa
             `;
             narrativeContainer.appendChild(dialogueCard);
 
-            // NEW: Add dialogue to log
-            gameProgress.storyLog.push({
-                type: 'dialogue',
-                speaker: speakerNameDisplay, // Use the displayed name with [Aku]
-                text: dialogueText.trim(),
-                timestamp: new Date().toLocaleTimeString()
-            });
+            // Removed: Add dialogue to log
+            // gameProgress.storyLog.push({
+            //     type: 'dialogue',
+            //     speaker: speakerNameDisplay, // Use the displayed name with [Aku]
+            //     text: dialogueText.trim(),
+            //     timestamp: new Date().toLocaleTimeString()
+            // });
         }
     });
 
@@ -185,7 +185,7 @@ export function renderGameContent(chapterData, chapterContentDisplay, selectedMa
                     gameProgress.trustPoints[tu.character] = 0;
                 }
                 gameProgress.trustPoints[tu.character] += tu.change;
-                // NEW: Show notification for trust changes
+                // Show notification for trust changes
                 const trustMessage = `${tu.character}: ${tu.change > 0 ? '+' : ''}${tu.change} Trust! ${tu.reason || ''}`;
                 showNotificationFn(trustMessage, tu.change > 0 ? 'success' : 'error');
             });
@@ -197,7 +197,7 @@ export function renderGameContent(chapterData, chapterContentDisplay, selectedMa
                     gameProgress.flagAwal = {};
                 }
                 gameProgress.flagAwal[flag] = true;
-                // NEW: Show notification for flag triggered
+                // Show notification for flag triggered
                 showNotificationFn(`${selectedLanguage === 'id' ? 'Flag Terpicu:' : 'Flag Triggered:'} ${flag}!`, 'info');
             });
         }
@@ -206,7 +206,7 @@ export function renderGameContent(chapterData, chapterContentDisplay, selectedMa
             updates.newAchievements.forEach(achievement => {
                 if (!gameProgress.achievements.some(a => a.title === achievement.title)) {
                     gameProgress.achievements.push(achievement);
-                    // NEW: Show notification for achievement
+                    // Show notification for achievement
                     showNotificationFn(`${selectedLanguage === 'id' ? 'Pencapaian Baru:' : 'New Achievement:'} ${achievement.title}!`, 'success');
                 }
             });
@@ -214,19 +214,19 @@ export function renderGameContent(chapterData, chapterContentDisplay, selectedMa
 
         if (updates.dnaProfileChanges) {
             gameProgress.dnaProfile = { ...gameProgress.dnaProfile, ...updates.dnaProfileChanges };
-            // NEW: Show notification for DNA changes (optional, can be verbose)
+            // Optional: Show notification for DNA changes (can be verbose)
             // showNotificationFn(`${selectedLanguage === 'id' ? 'Profil DNA Diperbarui!' : 'DNA Profile Updated!'}`, 'info');
         }
 
         if (updates.timeUpdate) {
             gameProgress.timeSystem.display = updates.timeUpdate; 
-            // NEW: Show notification for time update
+            // Show notification for time update
             showNotificationFn(`${selectedLanguage === 'id' ? 'Waktu Diperbarui:' : 'Time Updated:'} ${updates.timeUpdate}`, 'info');
         }
 
         if (updates.activeEvents) {
             gameProgress.timeSystem.activeEvents = updates.activeEvents;
-            // NEW: Show notification for new active events (optional, can be verbose)
+            // Optional: Show notification for new active events (can be verbose)
             // if (updates.activeEvents.length > 0) {
             //     showNotificationFn(`${selectedLanguage === 'id' ? 'Event Baru Aktif!' : 'New Event Active!'}`, 'info');
             // }
@@ -234,11 +234,11 @@ export function renderGameContent(chapterData, chapterContentDisplay, selectedMa
 
         if (updates.pathTrackerChange) {
             gameProgress.pathTracker = updates.pathTrackerChange;
-            // NEW: Show notification for path change
+            // Show notification for path change
             showNotificationFn(`${selectedLanguage === 'id' ? 'Jalur Cerita Berubah:' : 'Story Path Changed:'} ${updates.pathTrackerChange}`, 'info');
         }
 
-        // NEW: Handle relationshipLabels update
+        // Handle relationshipLabels update
         if (updates.relationshipLabels) {
             for (const charId in updates.relationshipLabels) {
                 gameProgress.relationshipLabels[charId] = updates.relationshipLabels[charId];
@@ -253,7 +253,7 @@ export function renderGameContent(chapterData, chapterContentDisplay, selectedMa
     chapterData.choices.forEach(choice => {
         const choiceCard = document.createElement('div');
         choiceCard.className = 'choice-card';
-        // NEW: Add a small visual indicator for choice type (if applicable, based on emote)
+        // Add a small visual indicator for choice type (if applicable, based on emote)
         let choiceIndicator = '';
         if (choice.emote) {
             choiceIndicator = `<span class="choice-emote">${choice.emote}</span>`;
@@ -262,14 +262,14 @@ export function renderGameContent(chapterData, chapterContentDisplay, selectedMa
         choiceCard.addEventListener('click', () => handleChoiceFn(choice, _deps)); // Pass _deps to handleChoice
         choiceContainer.appendChild(choiceCard);
 
-        // NEW: Add choice to story log (will be marked as player choice)
-        gameProgress.storyLog.push({
-            type: 'choice-option',
-            text: choice.text,
-            id: choice.id,
-            emote: choice.emote,
-            timestamp: new Date().toLocaleTimeString()
-        });
+        // Removed: Add choice to story log (will be marked as player choice)
+        // gameProgress.storyLog.push({
+        //     type: 'choice-option',
+        //     text: choice.text,
+        //     id: choice.id,
+        //     emote: choice.emote,
+        //     timestamp: new Date().toLocaleTimeString()
+        // });
     });
 
     if (chapterData.consequenceNote) {
@@ -292,7 +292,7 @@ export function renderDynamicSystems(updates, isInitial = false, gameProgress, s
     };
 
     appendSystemLine('🧠', 'Trust System', selectedLanguage === 'id' ? 'Setiap karakter memiliki poin kepercayaan terhadap MC.' : 'Each character has trust points towards MC.');
-    // NEW: Display individual character trust points
+    // Display individual character trust points
     if (Object.keys(gameProgress.trustPoints).length > 0) {
         const trustSection = document.createElement('div');
         trustSection.className = 'pl-4 mt-2 border-l border-dotted border-gray-400';
@@ -324,7 +324,7 @@ export function renderDynamicSystems(updates, isInitial = false, gameProgress, s
     if (gameProgress.pathTracker) {
         appendSystemLine('🔒', 'Path Tracker', gameProgress.pathTracker);
     }
-    // NEW: Display locked paths with hints
+    // Display locked paths with hints
     if (gameProgress.lockedPaths && gameProgress.lockedPaths.length > 0) {
         const lockedPathsContent = gameProgress.lockedPaths.map(path => {
             // Assume path might contain a hint in parentheses like "Jalur A (Membutuhkan Trust Tinggi)"
@@ -344,7 +344,7 @@ export function renderDynamicSystems(updates, isInitial = false, gameProgress, s
         appendSystemLine('🧬', 'Profil Keputusan', dnaText);
     }
 
-    // NEW: Display relationship labels
+    // Display relationship labels
     if (Object.keys(gameProgress.relationshipLabels).length > 0) {
         const relationshipSection = document.createElement('div');
         relationshipSection.className = 'pl-4 mt-2 border-l border-dotted border-gray-400';
@@ -433,51 +433,48 @@ export function addCharacterCardEventListener(charCard, charData, deps) {
     });
 }
 
-// NEW: Fungsi untuk menampilkan log cerita di modal
-export function displayStoryLog(storyLog, selectedLanguage) {
-    DOM.logContent.innerHTML = ''; // Clear previous log content
+// Removed: displayStoryLog function
+// export function displayStoryLog(storyLog, selectedLanguage) {
+//     DOM.logContent.innerHTML = ''; // Clear previous log content
 
-    if (storyLog.length === 0) {
-        DOM.logContent.textContent = selectedLanguage === 'id' ? "Log cerita masih kosong." : "Story log is empty.";
-        return;
-    }
+//     if (storyLog.length === 0) {
+//         DOM.logContent.textContent = selectedLanguage === 'id' ? "Log cerita masih kosong." : "Story log is empty.";
+//         return;
+//     }
 
-    storyLog.forEach(entry => {
-        const p = document.createElement('p');
-        p.className = 'log-entry';
+//     storyLog.forEach(entry => {
+//         const p = document.createElement('p');
+//         p.className = 'log-entry';
         
-        const timestampSpan = document.createElement('span');
-        timestampSpan.className = 'log-timestamp';
-        timestampSpan.textContent = entry.timestamp;
+//         const timestampSpan = document.createElement('span');
+//         timestampSpan.className = 'log-timestamp';
+//         timestampSpan.textContent = entry.timestamp;
 
-        if (entry.type === 'prologue-header') {
-            p.innerHTML = `<strong class="text-lg text-blue-600">🌹 ${entry.title}</strong> <br> <span class="text-sm italic text-gray-500">${entry.meta}</span>`;
-            p.className = 'log-header-prologue';
-        } else if (entry.type === 'chapter-header') {
-            p.innerHTML = `<strong class="text-lg text-purple-600">🩸 ${entry.title}</strong> <br> <span class="text-sm italic text-gray-500">${entry.meta}</span>`;
-            p.className = 'log-header-chapter';
-        } else if (entry.type === 'narrative') {
-            p.className = 'log-narrative';
-            p.textContent = entry.text;
-        } else if (entry.type === 'dialogue') {
-            p.className = 'log-dialogue';
-            p.innerHTML = `<strong>${entry.speaker}:</strong> ${entry.text}`;
-        } else if (entry.type === 'player-choice') { // The player's final choice
-            p.className = 'log-choice bg-yellow-100 p-2 rounded-md';
-            p.innerHTML = `<span class="font-bold">✅ ${selectedLanguage === 'id' ? 'Pilihan Anda' : 'Your Choice'}:</span> ${entry.text}`;
-        } else if (entry.type === 'choice-option') { // The options presented to the player
-            // These will be overridden by 'player-choice' if selected.
-            // For the log, we might only want to show the selected choice, not all options.
-            // Or, we can differentiate them visually. For now, let's just not display these directly if they aren't the final choice.
-            return; 
-        }
+//         if (entry.type === 'prologue-header') {
+//             p.innerHTML = `<strong class="text-lg text-blue-600">🌹 ${entry.title}</strong> <br> <span class="text-sm italic text-gray-500">${entry.meta}</span>`;
+//             p.className = 'log-header-prologue';
+//         } else if (entry.type === 'chapter-header') {
+//             p.innerHTML = `<strong class="text-lg text-purple-600">🩸 ${entry.title}</strong> <br> <span class="text-sm italic text-gray-500">${entry.meta}</span>`;
+//             p.className = 'log-header-chapter';
+//         } else if (entry.type === 'narrative') {
+//             p.className = 'log-narrative';
+//             p.textContent = entry.text;
+//         } else if (entry.type === 'dialogue') {
+//             p.className = 'log-dialogue';
+//             p.innerHTML = `<strong>${entry.speaker}:</strong> ${entry.text}`;
+//         } else if (entry.type === 'player-choice') { // The player's final choice
+//             p.className = 'log-choice bg-yellow-100 p-2 rounded-md';
+//             p.innerHTML = `<span class="font-bold">✅ ${selectedLanguage === 'id' ? 'Pilihan Anda' : 'Your Choice'}:</span> ${entry.text}`;
+//         } else if (entry.type === 'choice-option') { // The options presented to the player
+//             return; 
+//         }
 
-        DOM.logContent.appendChild(p);
-        DOM.logContent.appendChild(timestampSpan); // Add timestamp after each entry
-    });
-}
+//         DOM.logContent.appendChild(p);
+//         DOM.logContent.appendChild(timestampSpan); // Add timestamp after each entry
+//     });
+// }
 
-// NEW: Fungsi untuk menampilkan layar Game Over dengan detail tambahan
+// Fungsi untuk menampilkan layar Game Over dengan detail tambahan
 export function displayGameOverScreen(message, analysis, dnaProfile, epilogContent, selectedLanguage) {
     _deps.showScreen('game-over-screen');
     DOM.gameOverMessage.textContent = message;

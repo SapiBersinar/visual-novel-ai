@@ -3,7 +3,6 @@
 
 import { DOM } from './domElements.js'; // Impor elemen DOM
 import { selectedLanguage } from './gameState.js'; // Impor selectedLanguage langsung
-// impor toggleAutoRead dari gameState jika fungsi ini didefinisikan di sana
 import { toggleAutoRead } from './gameState.js'; // Import fungsi toggleAutoRead
 
 // Parameter `deps` (dependencies) akan diterima dari script.js utama
@@ -124,12 +123,12 @@ export function updateLanguageText() {
         DOM.gameLoadingAdditionalText.textContent = "Mohon tunggu sebentar, AI sedang memproses.";
         DOM.startRealStoryBtn.textContent = "Mulai ke cerita sebenarnya";
 
-        DOM.logButtonText.textContent = "Log"; // NEW
-        DOM.autoReadButtonText.textContent = "Auto"; // NEW
+        // Removed: DOM.logButtonText.textContent = "Log";
+        DOM.autoReadButtonText.textContent = "Auto"; 
 
         DOM.gameOverScreen.querySelector('h1').textContent = "💀 GAME OVER 💀";
-        DOM.gameOverDnaProfile.querySelector('h2').textContent = "🧬 Profil Keputusan Akhir Anda"; // NEW
-        DOM.gameOverEpilog.querySelector('h2').textContent = "📜 Epilog"; // NEW
+        DOM.gameOverDnaProfile.querySelector('h2').textContent = "🧬 Profil Keputusan Akhir Anda"; 
+        DOM.gameOverEpilog.querySelector('h2').textContent = "📜 Epilog"; 
         DOM.retryGameBtn.textContent = "Coba Lagi";
         DOM.backToMainMenuBtn.textContent = "Kembali ke Menu Utama";
 
@@ -211,8 +210,8 @@ export function updateLanguageText() {
         DOM.gameLoadingAdditionalText.textContent = "Please wait, AI is processing.";
         DOM.startRealStoryBtn.textContent = "Start the real story";
 
-        DOM.logButtonText.textContent = "Log"; // NEW
-        DOM.autoReadButtonText.textContent = "Auto"; // NEW
+        // Removed: DOM.logButtonText.textContent = "Log";
+        DOM.autoReadButtonText.textContent = "Auto";
         if (_deps.gameProgress.autoReadActive) {
             DOM.autoReadButtonText.textContent = "Auto ON";
         } else {
@@ -220,8 +219,8 @@ export function updateLanguageText() {
         }
 
         DOM.gameOverScreen.querySelector('h1').textContent = "💀 GAME OVER 💀";
-        DOM.gameOverDnaProfile.querySelector('h2').textContent = "🧬 Final Decision Profile"; // NEW
-        DOM.gameOverEpilog.querySelector('h2').textContent = "📜 Epilogue"; // NEW
+        DOM.gameOverDnaProfile.querySelector('h2').textContent = "🧬 Final Decision Profile"; 
+        DOM.gameOverEpilog.querySelector('h2').textContent = "📜 Epilogue"; 
         DOM.retryGameBtn.textContent = "Retry";
         DOM.backToMainMenuBtn.textContent = "Back to Main Menu";
     }
@@ -476,22 +475,22 @@ export function setupEventListeners(deps) {
         }
     });
 
-    // NEW: Game Play Screen Controls
-    DOM.showLogBtn.addEventListener('click', () => {
-        DOM.storyLogModal.style.display = 'flex';
-        _deps.displayStoryLog(_deps.gameProgress.storyLog, selectedLanguage);
-    });
+    // Removed: Log Button Events
+    // DOM.showLogBtn.addEventListener('click', () => {
+    //     DOM.storyLogModal.style.display = 'flex';
+    //     _deps.displayStoryLog(_deps.gameProgress.storyLog, selectedLanguage);
+    // });
 
-    DOM.storyLogCloseButton.addEventListener('click', () => {
-        DOM.storyLogModal.style.display = 'none';
-    });
+    // DOM.storyLogCloseButton.addEventListener('click', () => {
+    //     DOM.storyLogModal.style.display = 'none';
+    // });
 
-    // Close modal if click outside content
-    window.addEventListener('click', (event) => {
-        if (event.target === DOM.storyLogModal) {
-            DOM.storyLogModal.style.display = 'none';
-        }
-    });
+    // Removed: Close modal if click outside content
+    // window.addEventListener('click', (event) => {
+    //     if (event.target === DOM.storyLogModal) {
+    //         DOM.storyLogModal.style.display = 'none';
+    //     }
+    // });
 
     DOM.autoReadBtn.addEventListener('click', () => {
         const isActive = toggleAutoRead(); // Toggle state in gameState
@@ -505,5 +504,4 @@ export function setupEventListeners(deps) {
         }
     });
 }
-
 

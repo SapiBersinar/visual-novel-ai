@@ -78,11 +78,9 @@ export const DOM = {
     gameLoadingOverlay: document.getElementById('game-loading-overlay'),
     gameLoadingAdditionalText: document.getElementById('game-loading-additional-text'),
     gamePlayScreen: document.getElementById('game-play-screen'),
-    // Game Controls
-    showLogBtn: document.getElementById('show-log-btn'), // NEW
-    logButtonText: document.getElementById('log-button-text'), // NEW
-    autoReadBtn: document.getElementById('auto-read-btn'), // NEW
-    autoReadButtonText: document.getElementById('auto-read-button-text'), // NEW
+    // Game Controls (Log button removed)
+    autoReadBtn: document.getElementById('auto-read-btn'), 
+    autoReadButtonText: document.getElementById('auto-read-button-text'), 
 
     prologContentDisplay: document.getElementById('prolog-content-display'),
     chapterContentDisplay: document.getElementById('chapter-content-display'),
@@ -94,13 +92,13 @@ export const DOM = {
     gameOverScreen: document.getElementById('game-over-screen'),
     gameOverMessage: document.getElementById('game-over-message'),
     gameOverAnalysis: document.getElementById('game-over-analysis'),
-    gameOverDnaProfile: document.getElementById('game-over-dna-profile'), // NEW
-    dnaMoral: document.getElementById('dna-moral'), // NEW
-    dnaHonesty: document.getElementById('dna-honesty'), // NEW
-    dnaEmpathy: document.getElementById('dna-empathy'), // NEW
-    dnaStyle: document.getElementById('dna-style'), // NEW
-    gameOverEpilog: document.getElementById('game-over-epilog'), // NEW
-    epilogContent: document.getElementById('epilog-content'), // NEW
+    gameOverDnaProfile: document.getElementById('game-over-dna-profile'), 
+    dnaMoral: document.getElementById('dna-moral'), 
+    dnaHonesty: document.getElementById('dna-honesty'), 
+    dnaEmpathy: document.getElementById('dna-empathy'), 
+    dnaStyle: document.getElementById('dna-style'), 
+    gameOverEpilog: document.getElementById('game-over-epilog'), 
+    epilogContent: document.getElementById('epilog-content'), 
 
     retryGameBtn: document.getElementById('retry-game-btn'),
     backToMainMenuBtn: document.getElementById('back-to-main-menu-btn'),
@@ -116,13 +114,13 @@ export const DOM = {
     themeToggleIcon: document.getElementById('theme-toggle').querySelector('i'),
     themeToggleText: document.getElementById('theme-toggle-text'),
 
-    // Notification Container (NEW)
+    // Notification Container
     notificationContainer: document.getElementById('notification-container'),
 
-    // Story Log Modal (NEW)
-    storyLogModal: document.getElementById('story-log-modal'),
-    storyLogCloseButton: document.querySelector('#story-log-modal .close-button'),
-    logContent: document.getElementById('log-content')
+    // Removed: Story Log Modal elements
+    // storyLogModal: document.getElementById('story-log-modal'),
+    // storyLogCloseButton: document.querySelector('#story-log-modal .close-button'),
+    // logContent: document.getElementById('log-content')
 };
 
 

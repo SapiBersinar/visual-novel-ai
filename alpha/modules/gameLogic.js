@@ -433,21 +433,21 @@ export async function generateChapter(callGeminiAPI, selectedLanguage, selectedM
                         "type": { "type": "STRING", "enum": ["narrative", "dialogue"] },
                         "speaker": { "type": "STRING", "description": "The name of the character speaking. Required if type is 'dialogue'. MUST be a specific character name (e.g., 'Permaisuri', 'Kapten Drevan', or the MC's actual name like 'Aldi Saputra'), NOT 'seseorang misterius' or any generic placeholder." },
                         "text": { "type": "STRING", "description": "The dialogue content. This text should ONLY contain the dialogue itself, without 'Nama MC [Aku]:' or 'Nama Karakter:'. This prefix will be added by the client-side code. Quotes starting with '> ' can be part of any text block." },
-                        "nonVerbalReaction": { "type": "STRING", "description": "NEW: Non-verbal reaction of the speaker or other characters in the scene, e.g., 'Kael menatapku, senyumnya tipis, namun matanya menyiratkan kesedihan yang mendalam.'" } // NEW
+                        "nonVerbalReaction": { "type": "STRING", "description": "Non-verbal reaction of the speaker or other characters in the scene, e.g., 'Kael menatapku, senyumnya tipis, namun matanya menyiratkan kesedihan yang mendalam.'" } 
                     },
                     "required": ["type", "text"]
                 }
             },
             "choices": {
                 "type": "ARRAY",
-                "items": {
+                "items: {
                     "type": "OBJECT",
                     "properties": {
                         "id": { "type": "STRING" },
                         "text": { "type": "STRING" },
                         "emote": { "type": "STRING", "description": "The actual emote character (e.g., '💬', '🦶', '🧊'), NOT descriptive words like 'confused' or 'question'." },
-                        "typeIndicator": { "type": "STRING", "description": "NEW: Short indicator for choice type (e.g., 'direct_interaction', 'physical_action', 'reflection')." }, // NEW
-                        "consequenceFlag": { "type": "STRING", "description": "NEW: An optional flag string that indicates a specific long-term consequence of this choice, e.g., 'Memicu Konflik Fraksi' or 'Membuka Rahasia Kuno'." } // NEW
+                        "typeIndicator": { "type": "STRING", "description": "Short indicator for choice type (e.g., 'direct_interaction', 'physical_action', 'reflection')." }, 
+                        "consequenceFlag": { "type": "STRING", "description": "An optional flag string that indicates a specific long-term consequence of this choice, e.g., 'Memicu Konflik Fraksi' or 'Membuka Rahasia Kuno'." } 
                     },
                     "required": ["id", "text", "emote"]
                 }
@@ -492,17 +492,17 @@ export async function generateChapter(callGeminiAPI, selectedLanguage, selectedM
                     "timeUpdate": { "type": "STRING" },
                     "activeEvents": { "type": "ARRAY", "items": { "type": "STRING" } },
                     "pathTrackerChange": { "type": "STRING" },
-                    "lockedPathsInfo": { "type": "STRING", "description": "A hint about locked paths, e.g., 'Membutuhkan Trust Tinggi dengan [Karakter X]' or 'Memerlukan Flag [Y] Terpicu'." }, // NEW: Explicit hint for locked paths
-                    "gameOver": { // NEW: Game Over trigger
+                    "lockedPathsInfo": { "type": "STRING", "description": "A hint about locked paths, e.g., 'Membutuhkan Trust Tinggi dengan [Karakter X]' or 'Memerlukan Flag [Y] Terpicu'." }, 
+                    "gameOver": { 
                         "type": "OBJECT",
                         "properties": {
                             "isGameOver": { "type": "BOOLEAN" },
                             "message": { "type": "STRING" },
                             "analysis": { "type": "STRING" },
-                            "epilog": { "type": "STRING" } // NEW: Optional epilog for Game Over
+                            "epilog": { "type": "STRING" } 
                         }
                     },
-                    "ending": { // NEW: Multi-ending trigger (Good, Neutral, Bad)
+                    "ending": { 
                         "type": "OBJECT",
                         "properties": {
                             "type": { "type": "STRING", "enum": ["good", "neutral", "bad"] },
@@ -511,7 +511,7 @@ export async function generateChapter(callGeminiAPI, selectedLanguage, selectedM
                             "analysis": { "type": "STRING" }
                         }
                     },
-                    "characterArcUpdates": { // NEW: Character development
+                    "characterArcUpdates": { 
                         "type": "ARRAY",
                         "items": {
                             "type": "OBJECT",
@@ -524,9 +524,9 @@ export async function generateChapter(callGeminiAPI, selectedLanguage, selectedM
                             "required": ["characterId", "newPersonality", "reason"]
                         }
                     },
-                    "relationshipLabels": { // NEW: Explicit relationship label updates
+                    "relationshipLabels": { 
                         "type": "OBJECT",
-                        "additionalProperties": { "type": "STRING" } // { characterName: "Friend" | "Enemy" | "Lover" }
+                        "additionalProperties": { "type": "STRING" } 
                     }
                 }
             },
@@ -562,16 +562,16 @@ export async function generateChapter(callGeminiAPI, selectedLanguage, selectedM
         gameProgress: {
             currentChapter: gameProgress.currentChapter,
             currentScene: gameProgress.currentScene,
-            trustPoints: gameProgress.trustPoints, // Pass object directly
-            flagAwal: gameProgress.flagAwal, // Pass object directly
+            trustPoints: gameProgress.trustPoints, 
+            flagAwal: gameProgress.flagAwal, 
             pathTracker: gameProgress.pathTracker,
             lockedPaths: gameProgress.lockedPaths,
             achievements: gameProgress.achievements,
-            traumaSystem: gameProgress.traumaSystem, // Pass object directly
-            relationshipLabels: gameProgress.relationshipLabels, // Pass object directly
-            timeSystem: gameProgress.timeSystem, // Pass object directly
-            dnaProfile: gameProgress.dnaProfile, // Pass object directly
-            playerChoices: gameProgress.playerChoices.map(c => c.choiceText).join("; ") // Summarize past choices
+            traumaSystem: gameProgress.traumaSystem, 
+            relationshipLabels: gameProgress.relationshipLabels, 
+            timeSystem: gameProgress.timeSystem, 
+            dnaProfile: gameProgress.dnaProfile, 
+            playerChoices: gameProgress.playerChoices.map(c => c.choiceText).join("; ") 
         },
         previousChoice: previousChoiceText
     };
@@ -643,13 +643,13 @@ export async function generateChapter(callGeminiAPI, selectedLanguage, selectedM
         const chapterData = await callGeminiAPI(prompt, chapterSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), gameLoadingAdditionalText, null);
 
         if (chapterData) {
-            // NEW: Check for Game Over condition
+            // Check for Game Over condition
             if (chapterData.dynamicUpdates && chapterData.dynamicUpdates.gameOver && chapterData.dynamicUpdates.gameOver.isGameOver) {
                 // If MC dies or a critical game-over event occurs
                 _deps.endGame('game_over', chapterData.dynamicUpdates.gameOver.message, chapterData.dynamicUpdates.gameOver.analysis, chapterData.dynamicUpdates.gameOver.epilog);
                 return; // Stop further processing for this chapter
             }
-            // NEW: Check for Multi-Ending condition
+            // Check for Multi-Ending condition
             if (chapterData.dynamicUpdates && chapterData.dynamicUpdates.ending) {
                 const ending = chapterData.dynamicUpdates.ending;
                 _deps.endGame(ending.type, ending.title, ending.analysis, ending.epilog);
@@ -661,7 +661,7 @@ export async function generateChapter(callGeminiAPI, selectedLanguage, selectedM
             chapterContentDisplay.style.display = 'block';
             gamePlayScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-            // NEW: Implement Auto-Read logic here if active and choices are present
+            // Implement Auto-Read logic here if active and choices are present
             if (autoReadActive && chapterData.choices.length > 0) {
                 // Auto-read will wait for a short duration and then pick the first choice,
                 // or you could add more complex logic here (e.g., pick a random choice, pick a specific choice type)
@@ -689,16 +689,15 @@ export async function handleChoice(choice, deps) {
         scene: deps.gameProgress.currentScene,
         choiceId: choice.id,
         choiceText: choice.text,
-        timestamp: new Date().toLocaleTimeString() // NEW: Add timestamp
+        timestamp: new Date().toLocaleTimeString() 
     });
-    // Mark the chosen option in storyLog if it was previously added as an option
-    // (This requires a bit more sophisticated logging, but for now we push a specific 'player-choice' entry)
-    deps.gameProgress.storyLog.push({
-        type: 'player-choice',
-        text: choice.text,
-        id: choice.id,
-        timestamp: new Date().toLocaleTimeString()
-    });
+    // Removed: Mark the chosen option in storyLog if it was previously added as an option
+    // deps.gameProgress.storyLog.push({
+    //     type: 'player-choice',
+    //     text: choice.text,
+    //     id: choice.id,
+    //     timestamp: new Date().toLocaleTimeString()
+    // });
 
 
     // Increment scene/chapter (simple progression for now)

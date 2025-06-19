@@ -10,7 +10,7 @@ import { getApiKey, saveApiKey, clearApiKey, callGeminiAPI as originalCallGemini
 // Impor state game dan fungsi terkait dari gameState
 import { 
     gameProgress, selectedStoryDetails, generatedCharacters, selectedMainCharacter, 
-    initializeGameState, updateSelectedLanguage, toggleAutoRead, autoReadActive // NEW: autoReadActive diimpor
+    initializeGameState, updateSelectedLanguage, toggleAutoRead, autoReadActive 
 } from './modules/gameState.js';
 
 // Impor fungsi UI Handler
@@ -31,7 +31,7 @@ import {
     generatePrologue, 
     startChapter1, 
     handleChoice,
-    endGame // NEW: endGame diimpor
+    endGame 
 } from './modules/gameLogic.js';
 
 // Impor fungsi Render
@@ -40,9 +40,9 @@ import {
     renderGameContent, 
     renderDynamicSystems, 
     addCharacterCardEventListener,
-    showNotification, // NEW: showNotification diimpor
-    displayStoryLog, // NEW: displayStoryLog diimpor
-    displayGameOverScreen // NEW: displayGameOverScreen diimpor
+    showNotification, 
+    // Removed: displayStoryLog, 
+    displayGameOverScreen 
 } from './modules/renderFunctions.js';
 
 // Impor fungsi Tema
@@ -94,10 +94,10 @@ window.onload = () => {
         gameProgress, // Pass by reference
         DOM, // Pass the DOM elements object
         // Fungsi dari gameLogic
-        generateStoryContent, generateSubgenres, generateCharacters, startGame, startChapter1, handleChoice, endGame, // NEW: endGame ditambahkan
+        generateStoryContent, generateSubgenres, generateCharacters, startGame, startChapter1, handleChoice, endGame, 
         // Fungsi dari renderFunctions
         displayPrologue, renderGameContent, renderDynamicSystems, addCharacterCardEventListener, 
-        showNotification, displayStoryLog, displayGameOverScreen, // NEW: Notifikasi dan Log
+        showNotification, displayGameOverScreen, // Removed: displayStoryLog
         // Update language state (for radio buttons)
         updateSelectedLanguage,
         // Update auto read state

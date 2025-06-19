@@ -1051,98 +1051,6 @@ input[type="number"]::-webkit-inner-spin-button {
     }
 }
 
-/* New: Story Log Modal */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 10000; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: var(--container-bg);
-    margin: auto;
-    padding: 30px;
-    border: 2px solid var(--border-color);
-    border-radius: 10px;
-    box-shadow: 8px 8px 0px 0px var(--shadow-color);
-    width: 90%;
-    max-width: 700px; /* Max width for readability */
-    max-height: 80vh; /* Limit height */
-    overflow-y: auto; /* Enable scrolling for content */
-    position: relative;
-    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
-}
-
-.modal-content h2 {
-    margin-top: 0;
-    font-size: 2rem;
-    color: var(--title-color);
-    text-shadow: 2px 2px 0px var(--title-shadow-color);
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.modal-content .close-button {
-    color: var(--text-color);
-    font-size: 36px;
-    font-weight: bold;
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.modal-content .close-button:hover,
-.modal-content .close-button:focus {
-    color: var(--negative-color);
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.log-content {
-    text-align: left;
-    font-size: 1rem;
-    line-height: 1.7;
-    color: var(--loading-text-color);
-}
-.log-content p {
-    margin-bottom: 10px;
-    padding-left: 5px;
-    border-left: 3px solid transparent;
-}
-.log-content .log-narrative {
-    color: var(--text-color); /* Main narrative text */
-}
-.log-content .log-dialogue {
-    background-color: var(--dialogue-other-bg); /* Use other dialogue background for general log */
-    border-left-color: var(--dialogue-other-border);
-    padding: 8px 10px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-}
-.log-content .log-dialogue strong {
-    color: var(--dialogue-other-speaker); /* Use other dialogue speaker color */
-}
-.log-content .log-timestamp {
-    font-size: 0.8rem;
-    color: var(--footer-text-color);
-    margin-top: -5px;
-    margin-bottom: 15px;
-    display: block;
-    text-align: right;
-    font-style: italic;
-}
-
 
 /* Responsive adjustments for small screens */
 @media (max-width: 600px) {
@@ -1225,23 +1133,6 @@ input[type="number"]::-webkit-inner-spin-button {
     .notification-item {
         padding: 10px 15px;
         font-size: 0.8rem;
-    }
-
-    /* Responsive for modal */
-    .modal-content {
-        padding: 20px;
-        width: 95%;
-    }
-    .modal-content h2 {
-        font-size: 1.6rem;
-    }
-    .modal-content .close-button {
-        font-size: 30px;
-        top: 5px;
-        right: 10px;
-    }
-    .log-content {
-        font-size: 0.9rem;
     }
 }
 

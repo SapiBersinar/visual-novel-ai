@@ -5,7 +5,7 @@ export let selectedLanguage = 'id';
 export let selectedStoryDetails = null;
 export let generatedCharacters = []; // This will hold ALL generated characters
 export let selectedMainCharacter = null;
-export let autoReadActive = false; // NEW: State untuk mode auto-read
+export let autoReadActive = false; // State untuk mode auto-read
 
 // Game progress state to store dynamic system data
 export let gameProgress = {
@@ -17,11 +17,11 @@ export let gameProgress = {
     lockedPaths: [], // Array of locked path strings
     achievements: [],
     traumaSystem: {}, // {characterId: boolean}
-    relationshipLabels: {}, // {characterId: label} NEW: {characterId: "Friend" | "Enemy" | "Lover"}
+    relationshipLabels: {}, // {characterId: "Friend" | "Enemy" | "Lover"}
     timeSystem: {day: 1, partOfDay: "pagi", countdown: null, activeEvents: []},
     dnaProfile: {moral: "Netral", honesty: "Netral", empathy: "Netral", style: "Observasi"},
-    playerChoices: [], // Stores objects like {chapter: 1, choiceIndex: 0, choiceText: "..."}
-    storyLog: [] // NEW: Array to store all narrative and dialogue blocks for the log
+    playerChoices: [] // Stores objects like {chapter: 1, choiceIndex: 0, choiceText: "..."}
+    // Removed: storyLog: []
 };
 
 // Fungsi untuk menginisialisasi ulang state game (digunakan pada retry/kembali ke menu utama)
@@ -43,8 +43,8 @@ export function initializeGameState() {
         relationshipLabels: {},
         timeSystem: {day: 1, partOfDay: "pagi", countdown: null, activeEvents: []},
         dnaProfile: {moral: "Netral", honesty: "Netral", empathy: "Netral", style: "Observasi"},
-        playerChoices: [],
-        storyLog: [] // Reset story log
+        playerChoices: []
+        // Removed: storyLog: []
     };
 }
 
