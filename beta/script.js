@@ -37,6 +37,7 @@ const displayTitle = document.getElementById('display-title');
 const displayDescription = document.getElementById('display-description');
 const displayGenres = document.getElementById('display-genres');
 const displaySubgenres = document.getElementById('display-subgenres');
+const displayRating = document.getElementById('display-rating'); // New: Rating display
 
 const continueToCharacterSelectionBtn = document.getElementById('continue-to-character-selection-btn');
 const backFromAiResultsBtn = document.getElementById('back-from-ai-results-btn');
@@ -61,6 +62,7 @@ const finalSummaryTitle = document.getElementById('final-summary-title');
 const finalSummaryDescription = document.getElementById('final-summary-description');
 const finalSummaryGenres = document.getElementById('final-summary-genres');
 const finalSummarySubgenres = document.getElementById('final-summary-subgenres');
+const finalSummaryRating = document.getElementById('final-summary-rating'); // New: Rating display on summary
 const finalMcNameClass = document.getElementById('final-mc-name-class');
 const finalMcPersonality = document.getElementById('final-mc-personality');
 const finalMcDescription = document.getElementById('final-mc-description');
@@ -539,7 +541,8 @@ continueManualBtn.addEventListener('click', () => {
     const title = manualTitleInput.value.trim();
     const description = manualDescriptionInput.value.trim();
     if (title && description) {
-        selectedStoryDetails = { title, description, genres: [], subgenres: [] };
+        // For manually entered stories, assign a default SU rating.
+        selectedStoryDetails = { title, description, genres: [], subgenres: [], rating: "SU" }; 
         showScreen('character-creation-screen');
         characterResultsDiv.innerHTML = '';
         mcSelectionHeading.style.display = 'none';
@@ -565,6 +568,7 @@ continueToGameBtn.addEventListener('click', () => {
         finalSummaryDescription.textContent = selectedStoryDetails.description;
         finalSummaryGenres.textContent = selectedStoryDetails.genres.join(', ');
         finalSummarySubgenres.textContent = selectedStoryDetails.subgenres.join(', ');
+        finalSummaryRating.textContent = selectedStoryDetails.rating; // Display rating on summary screen
 
         finalMcNameClass.innerHTML = `<span class="selected-angel-icon">😇</span> ${selectedMainCharacter.name} (${selectedMainCharacter.class})`;
         finalMcPersonality.textContent = selectedMainCharacter.personality;
@@ -754,9 +758,10 @@ async function generateStoryContent() {
                 "subgenres": {
                     "type": "ARRAY",
                     "items": { "type": "STRING" }
-                }
+                },
+                "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] } // New: Rating property
             },
-            "required": ["title", "description", "genres", "subgenres"]
+            "required": ["title", "description", "genres", "subgenres", "rating"]
         }
     };
     
@@ -765,7 +770,17 @@ async function generateStoryContent() {
     - A concise and intriguing story description (focus on premise, conflict, or theme).
     - A list of relevant genres, including "${selectedGenre}".
     - A list of relevant subgenres.
-    IMPORTANT: Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes.
+    - An appropriate content rating from these options: "SU", "PG-13", "16+", "21+".
+    
+    Rating Guidelines:
+    - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
+    - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
+    - 16+: Contains mature themes, moderate violence, strong language, and/or suggestive themes.
+    - 21+: Contains explicit violence, strong language, and mature themes (excluding explicit sexual content).
+
+    Explicit sexual content is STRICTLY FORBIDDEN for ALL ratings.
+    Violence and harsh language are permitted only for ratings 16+ and 21+.
+
     Ensure the output is in JSON format according to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. (Random seed: ${Math.random()})`;
 
 
@@ -790,6 +805,7 @@ async function generateStoryContent() {
                 <p>${story.description}</p>
                 <p class="genre">✨ ${selectedLanguage === 'id' ? 'Genre' : 'Genre'}: ${story.genres.join(', ')}</p>
                 <p class="genre">✨ ${selectedLanguage === 'id' ? 'Subgenre' : 'Subgenre'}: ${story.subgenres.join(', ')}</p>
+                <p class="rating">⭐ ${selectedLanguage === 'id' ? 'Rating' : 'Rating'}: ${story.rating}</p> <!-- Display rating -->
                 <button class="button select-story-btn">${selectedLanguage === 'id' ? 'Pilih Ini' : 'Select This'}</button>
             `;
             storyListContainer.appendChild(storyCard);
@@ -806,6 +822,7 @@ async function generateStoryContent() {
                 displayDescription.textContent = selectedStoryDetails.description;
                 displayGenres.textContent = selectedStoryDetails.genres.join(', ');
                 displaySubgenres.textContent = selectedStoryDetails.subgenres.join(', ');
+                displayRating.textContent = selectedStoryDetails.rating; // Set the rating text
                 
                 storyListContainer.style.display = 'none';
                 selectedStoryDisplay.style.display = 'block'; 
@@ -931,6 +948,7 @@ async function generateCharacters() {
     if (selectedStoryDetails.subgenres.length > 0) {
         prompt += ` Subgenres: ${selectedStoryDetails.subgenres.join(', ')}.`;
     }
+    prompt += ` Story Rating: ${selectedStoryDetails.rating}.`; // Pass the story rating to character generation
 
     prompt += `
     For each character, provide:
@@ -942,7 +960,9 @@ async function generateCharacters() {
     - "role": Assign a *distinct* narrative role from the following list or similar archetypes: ${rolesList.join(', ')}. Ensure roles are varied, relevant to the story, and unique among the generated characters.
     - "isPotentialMC": boolean. Set to true for 1 to 3 characters that would make a good main protagonist for the story. These characters MUST be highly relevant and suitable as the main protagonist for the story title "${selectedStoryDetails.title}" and description "${selectedStoryDetails.description}". Prioritize roles like Protagonist, Antihero, The Chosen One. The rest should be false.
 
-    Ensure names are unique and in Latin alphabet.`;
+    Ensure names are unique and in Latin alphabet.
+    The character descriptions and personalities should be consistent with the story's rating (${selectedStoryDetails.rating}). Avoid generating characters that would lead to content violating the rating restrictions, especially regarding explicit sexual content (forbidden for all ratings).`; // Add rating constraint
+
 
     if (charClassHint && numCharactersSelect.value !== 'ai-recommended') { // Only add if input is visible and has value
         prompt += ` One character should ideally have the class: "${charClassHint}".`;
@@ -1090,9 +1110,10 @@ async function generatePrologue() {
                 },
                 "required": ["trustSystem", "deathTrigger", "flagAwal", "pathTracker", "lockedPaths", "notes"]
             },
-            "genreDetails": { "type": "STRING", "description": "Example: 😇 Genre, Romantis, Bodyguard Romance" }
+            "genreDetails": { "type": "STRING", "description": "Example: 😇 Genre, Romantis, Bodyguard Romance" },
+            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] } // New: Rating property
         },
-        "required": ["prologueTitle", "prologueText", "prologueQuote", "initialSystems", "genreDetails"]
+        "required": ["prologueTitle", "prologueText", "prologueQuote", "initialSystems", "genreDetails", "rating"]
     };
 
     const mcName = selectedMainCharacter.name;
@@ -1102,8 +1123,9 @@ async function generatePrologue() {
     const storyDescription = selectedStoryDetails.description;
     const genres = selectedStoryDetails.genres.join(', ');
     const subgenres = selectedStoryDetails.subgenres.join(', ');
+    const rating = selectedStoryDetails.rating; // Get the rating
 
-    let prompt = `Generate a compelling visual novel prologue for the story "${storyTitle}" (Description: "${storyDescription}") focusing on the main character ${mcName} (${mcClass}, Personality: ${mcPersonality}). The prologue should set the scene, introduce the MC's initial perspective, and hint at the main conflict. Ensure the narrative flows smoothly and connects logically.
+    let prompt = `Generate a compelling visual novel prologue for the story "${storyTitle}" (Description: "${storyDescription}") focusing on the main character ${mcName} (${mcClass}, Personality: ${mcPersonality}). The prologue should set the scene, introduce the MC's initial perspective, and hint at the main conflict. The story has a rating of ${rating}. Ensure the content is strictly compliant with this rating.
 
     Perkaya narasi dan deskripsi adegan:
     - Tambahkan lebih banyak detail sensorik (apa yang terlihat, terdengar, tercium, terasa) untuk membuat adegan lebih hidup.
@@ -1126,6 +1148,10 @@ async function generatePrologue() {
 
     When referencing MC, use "${mcName}" instead of "MC".
     Make sure the initial Flag Awal is relevant to the MC's personality and the story premise.
+    
+    Rating Considerations:
+    - Explicit sexual content: STRICTLY FORBIDDEN.
+    - Violence, harsh language, murder, crime, accusation: Permitted only for 16+ and 21+ ratings, and must be consistent with the ${rating} rating. For SU and PG-13, these themes must be absent or very mild/implied.
     `;
     
     const prologData = await callGeminiAPI(prompt, prologSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), gameLoadingAdditionalText, null);
@@ -1145,7 +1171,7 @@ function displayPrologue(prologData) {
     prologContentDisplay.innerHTML = `
         <div class="chapter-header-card">
             <h2>🌹 ${prologData.prologueTitle}</h2>
-            <p class="chapter-meta">${prologData.genreDetails}</p>
+            <p class="chapter-meta">${prologData.genreDetails} | Rating: ${prologData.rating}</p> <!-- Display rating -->
         </div>
         <div class="narrative-content">
             ${prologData.prologueText.split('\n').filter(Boolean).map(p => {
@@ -1262,14 +1288,16 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
                     "pathTrackerChange": { "type": "STRING" },
                     "lockedPathsInfo": { "type": "STRING" }
                 }
-            }
+            },
+            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] } // New: Rating property
         },
-        "required": ["chapterTitle", "chapterMeta", "chapterContent", "choices", "consequenceNote"]
+        "required": ["chapterTitle", "chapterMeta", "chapterContent", "choices", "consequenceNote", "rating"]
     };
 
     const mcName = selectedMainCharacter.name;
     const mcClass = selectedMainCharacter.class;
     const storyTitle = selectedStoryDetails.title;
+    const rating = selectedStoryDetails.rating; // Get the rating
 
     // Get all character names (including MC) to ensure distinctness and personality matching
     const allCharacterNames = generatedCharacters.map(c => ({
@@ -1291,7 +1319,8 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
             title: storyTitle,
             description: selectedStoryDetails.description,
             genres: selectedStoryDetails.genres,
-            subgenres: selectedStoryDetails.subgenres
+            subgenres: selectedStoryDetails.subgenres,
+            rating: rating // Pass the rating to the AI for content generation
         },
         allCharactersInStory: allCharacterNames, // Pass all characters with their personalities
         gameProgress: {
@@ -1323,6 +1352,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     - A set of 3 choices (dialogue or action) for the player.
     - A "consequenceNote" explaining what the choices will affect.
     - "dynamicUpdates": An object containing updates for various dynamic systems based on the narrative progression and previous choice.
+    - "rating": The determined rating for the chapter content based on the story's overall rating. This must be one of "SU", "PG-13", "16+", "21+".
 
     Perkaya narasi dan deskripsi adegan:
     - Tambahkan lebih banyak detail sensorik (apa yang terlihat, terdengar, tercium, terasa) untuk membuat adegan lebih hidup.
@@ -1355,6 +1385,14 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     If a character dies, the AI should indicate "MC mati" (MC died) or a specific character's death in the narrative/notes, which will trigger the game over logic.
     Do NOT include the "🎮 Sistem Aktif:" block in the chapter output, only provide the individual dynamic updates in the "dynamicUpdates" object.
     Always provide a "consequenceNote" explaining what the choices will affect (e.g., Kepercayaan sang Permaisuri, Jalur cerita aktif, DNA Pilihan).
+
+    Rating Guidelines for this chapter (must adhere to story's overall rating of ${rating}):
+    - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
+    - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
+    - 16+: Contains mature themes, moderate violence, strong language, and/or suggestive themes.
+    - 21+: Contains explicit violence, strong language, and mature themes (excluding explicit sexual content).
+    Explicit sexual content: STRICTLY FORBIDDEN.
+    Violence, harsh language, murder, crime, accusation: Permitted only for 16+ and 21+ ratings.
     `;
 
     const chapterData = await callGeminiAPI(prompt, chapterSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), gameLoadingAdditionalText, null);
@@ -1381,7 +1419,8 @@ function renderGameContent(chapterData) {
         <h2>🩸 ${chapterData.chapterTitle}</h2>
         <p class="chapter-meta">
             <span class="font-bold">🎭 MC:</span> ${chapterData.chapterMeta.mcDisplay} <br>
-            <span class="font-bold">🔒 Jalur Aktif:</span> ${chapterData.chapterMeta.activePath}
+            <span class="font-bold">🔒 Jalur Aktif:</span> ${chapterData.chapterMeta.activePath} <br>
+            <span class="font-bold">⭐ Rating:</span> ${chapterData.rating} <!-- Display rating -->
         </p>
     `;
     chapterContentDisplay.appendChild(chapterHeaderCard);
