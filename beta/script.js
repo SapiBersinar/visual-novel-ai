@@ -781,6 +781,8 @@ async function generateStoryContent() {
     Explicit sexual content is STRICTLY FORBIDDEN for ALL ratings.
     Violence and harsh language are permitted only for ratings 16+ and 21+.
 
+    Do NOT include any character names in the title or description, as characters will be generated later.
+
     Ensure the output is in JSON format according to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. (Random seed: ${Math.random()})`;
 
 
@@ -958,7 +960,7 @@ async function generateCharacters() {
     - "personality": 3-5 descriptive keywords (e.g., brave, loyal, cunning, melancholic, resourceful)
     - "description": a brief role/background in the story (e.g., "The exiled prince seeking his throne", "A mysterious mage from the enchanted forest").
     - "role": Assign a *distinct* narrative role from the following list or similar archetypes: ${rolesList.join(', ')}. Ensure roles are varied, relevant to the story, and unique among the generated characters.
-    - "isPotentialMC": boolean. Set to true for 1 to 3 characters that would make a good main protagonist for the story. These characters MUST be highly relevant and suitable as the main protagonist for the story title "${selectedStoryDetails.title}" and description "${selectedStoryDetails.description}". Prioritize roles like Protagonist, Antihero, The Chosen One. The rest should be false.
+    - "isPotentialMC": boolean. Generate *at least 1 and up to 3* characters where 'isPotentialMC' is true. These characters MUST be highly relevant and suitable as the main protagonist for the story title "${selectedStoryDetails.title}" and description "${selectedStoryDetails.description}". Prioritize roles like Protagonist, Antihero, The Chosen One. The rest should be false.
 
     Ensure names are unique and in Latin alphabet.
     The character descriptions and personalities should be consistent with the story's rating (${selectedStoryDetails.rating}). Avoid generating characters that would lead to content violating the rating restrictions, especially regarding explicit sexual content (forbidden for all ratings).`; // Add rating constraint
@@ -969,37 +971,37 @@ async function generateCharacters() {
     } else if (numCharactersSelect.value === 'ai-recommended') {
         prompt += ` Ensure varied character classes are generated automatically by AI.`;
     }
-    // Add naming style instruction
+    // Add naming style instruction, making it stricter and with examples
     switch (nameStyle) {
         case 'japanese':
-            prompt += ` Character names should sound Japanese.`;
+            prompt += ` Character names MUST sound authentically Japanese (e.g., Akira, Sakura, Kenji, Yui). Strictly use Japanese-sounding names.`;
             break;
         case 'chinese':
-            prompt += ` Character names should sound Chinese (e.g., Zhuo Jong).`;
+            prompt += ` Character names MUST sound authentically Chinese (e.g., Li Wei, Zhang Min, Wang Fang, Chen Bo). Strictly use Chinese-sounding names.`;
             break;
         case 'arabic':
-            prompt += ` Character names should sound Arabic.`;
+            prompt += ` Character names MUST sound authentically Arabic (e.g., Amir, Fatima, Omar, Layla). Strictly use Arabic-sounding names.`;
             break;
         case 'fantasy':
-            prompt += ` Character names should sound genuinely fantastical, unique, and not like common real-world or Indonesian names. For example, use names like 'Elara', 'Kaelen', 'Thorian', 'Lyra', 'Zephyr'.`;
+            prompt += ` Character names MUST sound genuinely fantastical and unique, not like common real-world names (e.g., Elara, Kaelen, Lyra, Thorian, Zephyr). Strictly use fantasy-inspired names.`;
             break;
         case 'european_medieval':
-            prompt += ` Character names should sound like European Medieval names (e.g., Arthur, Eleanor, Geoffrey).`;
+            prompt += ` Character names MUST sound like authentic European Medieval names (e.g., Arthur, Eleanor, Geoffrey, Isolde, Roland). Strictly use European Medieval-sounding names.`;
             break;
         case 'celtic':
-            prompt += ` Character names should sound like Celtic names (e.g., Aoife, Cormac, Deirdre).`;
+            prompt += ` Character names MUST sound like authentic Celtic names (e.g., Aoife, Cormac, Deirdre, Eilidh, Ronan). Strictly use Celtic-sounding names.`;
             break;
         case 'norse':
-            prompt += ` Character names should sound like Norse names (e.g., Bjorn, Freya, Ragnar).`;
+            prompt += ` Character names MUST sound like authentic Norse names (e.g., Bjorn, Freya, Ragnar, Astrid, Erik). Strictly use Norse-sounding names.`;
             break;
         case 'ancient_egyptian':
-            prompt += ` Character names should sound like Ancient Egyptian names (e.g., Nefertari, Ramses, Imhotep).`;
+            prompt += ` Character names MUST sound like authentic Ancient Egyptian names (e.g., Nefertari, Ramses, Imhotep, Cleopatra, Akhenaten). Strictly use Ancient Egyptian-sounding names.`;
             break;
         case 'indonesian':
-            prompt += ` Character names should sound like common Indonesian names (e.g., Budi, Siti, Rahmat, Indah).`;
+            prompt += ` Character names MUST sound like common Indonesian names (e.g., Budi, Siti, Rahmat, Indah, Agung). Strictly use Indonesian-sounding names.`;
             break;
         case 'german':
-            prompt += ` Character names should sound like common German names (e.g., Hans, Gretel, Klaus, Sofia).`;
+            prompt += ` Character names MUST sound like common German names (e.g., Hans, Gretel, Klaus, Sofia, Lena). Strictly use German-sounding names.`;
             break;
         default: // 'random' or any other default
             prompt += ` Character names should be diverse (e.g., Western, Asian, Middle Eastern, Fantasy-inspired).`;
