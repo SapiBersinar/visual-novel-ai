@@ -45,10 +45,9 @@ const subgenreSelect = document.getElementById('subgenre-select');
 const subgenreManualInput = document.getElementById('subgenre-manual-input');
 const subgenreManualInputContainer = document.getElementById('subgenre-manual-input-container');
 const plotKeywordsInput = document.getElementById('plot-keywords-input');
-const generateAiBtn = document.getElementById('generate-ai-btn');
+const generateAiBtn = document.getElementById('generate-ai-btn'); // This is the button on the AI form screen
 const backFromAiFormBtn = document.getElementById('back-from-ai-form-btn');
-const loadingAi = document.getElementById('loading-ai');
-const loadingText = document.getElementById('loading-text');
+const loadingAi = document.getElementById('game-loading-overlay'); // Renamed for consistency
 
 // Story Selection Screen Elements
 const storySelectionScreen = document.getElementById('story-selection-screen');
@@ -73,7 +72,7 @@ const storyContent = document.getElementById('story-content');
 const continueReadingBtn = document.getElementById('continue-reading-btn');
 const backToMainMenuFromStoryBtn = document.getElementById('back-to-main-menu-from-story-btn');
 
-const gameLoadingOverlay = document.getElementById('game-loading-overlay');
+const gameLoadingOverlay = document.getElementById('game-loading-overlay'); // Make sure this points to the single loading overlay
 const customMessageBox = document.getElementById('custom-message-box');
 const messageBoxTitle = document.getElementById('message-box-title');
 const messageBoxContent = document.getElementById('message-box-content');
@@ -82,15 +81,14 @@ const messageBoxOkBtn = document.getElementById('message-box-ok-btn');
 // --- Utility Functions ---
 
 function showScreen(screenId) {
+    console.log(`Menampilkan layar: ${screenId}`);
     const screens = document.querySelectorAll('.screen');
     screens.forEach(screen => screen.style.display = 'none');
     document.getElementById(screenId).style.display = 'flex';
-    if (screenId === 'game-screen') {
-        // Additional handling for game screen if needed
-    }
 }
 
 function showMessageBox(title, message, onOk = null) {
+    console.log(`Menampilkan pesan: ${title} - ${message}`);
     messageBoxTitle.textContent = title;
     messageBoxContent.textContent = message;
     customMessageBox.style.display = 'flex';
@@ -128,7 +126,7 @@ themeToggle.addEventListener('click', () => {
     body.classList.toggle('light-theme');
     const isDarkMode = body.classList.contains('dark-theme');
     themeToggle.querySelector('i').className = isDarkMode ? 'fas fa-sun text-yellow-300 text-xl' : 'fas fa-moon text-gray-700 text-xl';
-    themeToggle.querySelector('span').textContent = isDarkMode ? 'Mode Terang' : 'Mode Gelap';
+    // Removed the span update here as the HTML does not have a span for text
 });
 
 // Initial theme setup (from localStorage or default)
@@ -136,16 +134,16 @@ if (localStorage.getItem('theme') === 'dark') {
     body.classList.add('dark-theme');
     body.classList.remove('light-theme');
     themeToggle.querySelector('i').className = 'fas fa-sun text-yellow-300 text-xl';
-    themeToggle.querySelector('span').textContent = 'Mode Terang';
 } else {
     body.classList.add('light-theme');
     body.classList.remove('dark-theme');
     themeToggle.querySelector('i').className = 'fas fa-moon text-gray-700 text-xl';
-    themeToggle.querySelector('span').textContent = 'Mode Gelap';
 }
+
 
 // --- AI Model Interaction ---
 async function callGeminiAPI(prompt, isJson = false, schema = null) {
+    console.log("Memanggil Gemini API dengan prompt:", prompt);
     if (!API_KEY) {
         showMessageBox("Kesalahan API", "Kunci API tidak ditemukan. Harap masukkan kunci API Anda di layar pengaturan.");
         return null;
@@ -178,8 +176,15 @@ async function callGeminiAPI(prompt, isJson = false, schema = null) {
             result.candidates[0].content && result.candidates[0].content.parts &&
             result.candidates[0].content.parts.length > 0) {
             const text = result.candidates[0].content.parts[0].text;
+            console.log("Respon API Gemini (mentah):", text);
             if (isJson) {
-                return JSON.parse(text);
+                try {
+                    return JSON.parse(text);
+                } catch (jsonError) {
+                    showMessageBox("Error JSON Parsing", "Respon API bukan JSON yang valid. Coba lagi.");
+                    console.error("Error parsing JSON from API:", jsonError, "Raw text:", text);
+                    return null;
+                }
             }
             return text;
         } else if (result.error) {
@@ -200,8 +205,9 @@ async function callGeminiAPI(prompt, isJson = false, schema = null) {
 
 // --- Subgenre Generation (AI-driven) ---
 async function generateSubgenresForGenre(genre, language) {
-    loadingAi.style.display = 'flex';
-    loadingText.textContent = `Menghasilkan subgenre untuk ${genre}...`;
+    console.log(`Memulai generateSubgenresForGenre untuk genre: ${genre}, bahasa: ${language}`);
+    gameLoadingOverlay.style.display = 'flex';
+    gameLoadingOverlay.querySelector('span').textContent = `Menghasilkan subgenre untuk ${genre}...`;
 
     const prompt = `
     Berikan 5-10 subgenre yang sangat spesifik dan relevan untuk genre "${genre}".
@@ -218,20 +224,22 @@ async function generateSubgenresForGenre(genre, language) {
 
     try {
         const subgenres = await callGeminiAPI(prompt, true, schema);
-        loadingAi.style.display = 'none';
+        console.log("Subgenre yang dihasilkan:", subgenres);
         return subgenres || [];
     } catch (error) {
         console.error("Error generating subgenres:", error);
-        loadingAi.style.display = 'none';
         showMessageBox("Error", "Gagal menghasilkan subgenre. Coba lagi.");
         return [];
+    } finally {
+        gameLoadingOverlay.style.display = 'none'; // Ensure loading is hidden
     }
 }
 
 // --- Story Generation (AI) ---
 async function generateStoryOutline(language, genre, subgenre, plotKeywords) {
-    loadingAi.style.display = 'flex';
-    loadingText.textContent = "Menulis ide cerita Anda...";
+    console.log("Memulai generateStoryOutline...");
+    gameLoadingOverlay.style.display = 'flex'; // Use gameLoadingOverlay
+    gameLoadingOverlay.querySelector('span').textContent = "Menulis ide cerita Anda...";
 
     const genreText = genre === 'other' ? otherGenreInput.value : genre;
     const subgenreText = subgenre === 'other' ? subgenreManualInput.value : subgenre;
@@ -273,18 +281,20 @@ async function generateStoryOutline(language, genre, subgenre, plotKeywords) {
 
     try {
         const story = await callGeminiAPI(prompt, true, schema);
-        loadingAi.style.display = 'none';
+        console.log("Story outline generated:", story);
         return story;
     } catch (error) {
         console.error("Error generating story outline:", error);
-        loadingAi.style.display = 'none';
         showMessageBox("Error", "Gagal menghasilkan ide cerita. Coba lagi.");
         return null;
+    } finally {
+        gameLoadingOverlay.style.display = 'none'; // Ensure loading is hidden
     }
 }
 
 // --- Story Continuation (AI) ---
 async function generateStoryChapter(language, previousContent, currentChapterIndex, culturalStyle, characterNames, locationNames) {
+    console.log(`Memulai generateStoryChapter untuk chapter ${currentChapterIndex + 1}`);
     gameLoadingOverlay.style.display = 'flex';
     gameLoadingOverlay.querySelector('span').textContent = `Melanjutkan cerita bagian ${currentChapterIndex + 1}...`;
 
@@ -298,7 +308,6 @@ async function generateStoryChapter(language, previousContent, currentChapterInd
         const regex = new RegExp(`\\[LOKASI_${key.toUpperCase()}\\]`, 'g');
         contentForAI = contentForAI.replace(regex, locationNames[key]);
     }
-
 
     const prompt = `
     Lanjutkan cerita berikut. Cerita ini adalah novel bacaan lurus tanpa pilihan atau sistem interaktif.
@@ -321,18 +330,20 @@ async function generateStoryChapter(language, previousContent, currentChapterInd
 
     try {
         const newChapter = await callGeminiAPI(prompt);
-        gameLoadingOverlay.style.display = 'none';
+        console.log("New chapter generated:", newChapter);
         return newChapter;
     } catch (error) {
         console.error("Error generating story chapter:", error);
-        gameLoadingOverlay.style.display = 'none';
         showMessageBox("Error", "Gagal melanjutkan cerita. Coba lagi.");
         return null;
+    } finally {
+        gameLoadingOverlay.style.display = 'none'; // Ensure loading is hidden
     }
 }
 
 // --- Cultural Naming Generation (AI) ---
 async function generateNamesForCulture(culture, language, numCharacters, numLocations, existingCharacters = [], existingLocations = []) {
+    console.log(`Memulai generateNamesForCulture untuk budaya: ${culture}, chars: ${numCharacters}, locs: ${numLocations}`);
     gameLoadingOverlay.style.display = 'flex';
     gameLoadingOverlay.querySelector('span').textContent = `Menciptakan nama-nama ${culture}...`;
 
@@ -366,13 +377,14 @@ async function generateNamesForCulture(culture, language, numCharacters, numLoca
 
     try {
         const names = await callGeminiAPI(prompt, true, schema);
-        gameLoadingOverlay.style.display = 'none';
+        console.log("Nama-nama yang dihasilkan:", names);
         return names;
     } catch (error) {
         console.error("Error generating names:", error);
-        gameLoadingOverlay.style.display = 'none';
         showMessageBox("Error", "Gagal menghasilkan nama-nama. Coba lagi.");
         return { character_names: [], location_names: [] };
+    } finally {
+        gameLoadingOverlay.style.display = 'none'; // Ensure loading is hidden
     }
 }
 
@@ -381,6 +393,7 @@ async function generateNamesForCulture(culture, language, numCharacters, numLoca
 
 // API Key Screen
 saveApiKeyBtn.addEventListener('click', () => {
+    console.log("Tombol 'Simpan Kunci API' diklik.");
     const key = apiKeyInput.value.trim();
     if (key) {
         setApiKey(key);
@@ -392,6 +405,7 @@ saveApiKeyBtn.addEventListener('click', () => {
 });
 
 clearApiKeyBtn.addEventListener('click', () => {
+    console.log("Tombol 'Hapus Kunci API' diklik.");
     clearApiKey();
     apiKeyInput.value = '';
     showMessageBox("Info", "Kunci API telah dihapus dari penyimpanan lokal.");
@@ -400,10 +414,12 @@ clearApiKeyBtn.addEventListener('click', () => {
 
 // Main Screen
 manualInputBtn.addEventListener('click', () => {
+    console.log("Tombol 'Input Cerita Manual' diklik.");
     showScreen('manual-input-screen');
 });
 
 aiGenerateBtn.addEventListener('click', () => {
+    console.log("Tombol 'Buat Cerita dengan AI' (Main Screen) diklik.");
     if (!API_KEY) {
         showScreen('api-key-screen');
         showMessageBox("Kunci API Diperlukan", "Harap masukkan kunci API Gemini Anda untuk menggunakan fitur AI.");
@@ -414,11 +430,13 @@ aiGenerateBtn.addEventListener('click', () => {
 
 // Manual Input Screen
 continueManualBtn.addEventListener('click', () => {
+    console.log("Tombol 'Lanjutkan (Manual Input)' diklik.");
     const title = manualTitleInput.value.trim();
     const description = manualDescriptionInput.value.trim();
 
     if (!title || !description) {
         showMessageBox("Input Diperlukan", "Judul dan Deskripsi/Prolog tidak boleh kosong.");
+        console.log("Validasi input manual gagal.");
         return;
     }
 
@@ -434,15 +452,18 @@ continueManualBtn.addEventListener('click', () => {
     storySummaryTitle.textContent = storyContext.title;
     storySummaryDescription.textContent = storyContext.description;
     storySummaryProlog.textContent = storyContext.prolog;
+    console.log("Menampilkan Story Selection Screen dari Manual Input.");
     showScreen('story-selection-screen');
 });
 
 backFromManualBtn.addEventListener('click', () => {
+    console.log("Tombol 'Kembali (Manual Input)' diklik.");
     showScreen('main-screen');
 });
 
 // AI Generate Form Screen
 genreSelect.addEventListener('change', async () => {
+    console.log("Genre dipilih. Memulai pembaruan subgenre.");
     const selectedGenre = genreSelect.value;
     const selectedLanguage = document.querySelector('input[name="language"]:checked').value;
 
@@ -454,28 +475,36 @@ genreSelect.addEventListener('change', async () => {
     if (selectedGenre === 'other') {
         otherGenreContainer.style.display = 'block';
     } else if (selectedGenre) {
-        const subgenres = await generateSubgenresForGenre(selectedGenre, selectedLanguage);
-        if (subgenres && subgenres.length > 0) {
-            subgenreSelect.style.display = 'block';
-            subgenres.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub;
-                option.textContent = sub;
-                subgenreSelect.appendChild(option);
-            });
-            // Add 'Other' option for subgenre if AI didn't provide enough or user wants custom
-            const otherOption = document.createElement('option');
-            otherOption.value = 'other';
-            otherOption.textContent = 'Lainnya...';
-            subgenreSelect.appendChild(otherOption);
-        } else {
-            // If no subgenres are generated, allow manual input directly
-            subgenreManualInputContainer.style.display = 'block';
+        try {
+            const subgenres = await generateSubgenresForGenre(selectedGenre, selectedLanguage);
+            if (subgenres && subgenres.length > 0) {
+                subgenreSelect.style.display = 'block';
+                subgenres.forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub;
+                    option.textContent = sub;
+                    subgenreSelect.appendChild(option);
+                });
+                // Add 'Other' option for subgenre if AI didn't provide enough or user wants custom
+                const otherOption = document.createElement('option');
+                otherOption.value = 'other';
+                otherOption.textContent = 'Lainnya...';
+                subgenreSelect.appendChild(otherOption);
+            } else {
+                console.log("Tidak ada subgenre yang dihasilkan AI, menampilkan input manual subgenre.");
+                // If no subgenres are generated, allow manual input directly
+                subgenreManualInputContainer.style.display = 'block';
+            }
+        } catch (error) {
+            console.error("Kesalahan saat mengubah genre:", error);
+            showMessageBox("Error", "Terjadi kesalahan saat memuat subgenre. Silakan coba lagi.");
+            subgenreManualInputContainer.style.display = 'block'; // Fallback to manual input
         }
     }
 });
 
 subgenreSelect.addEventListener('change', () => {
+    console.log("Subgenre dipilih.");
     if (subgenreSelect.value === 'other') {
         subgenreManualInputContainer.style.display = 'block';
     } else {
@@ -485,6 +514,7 @@ subgenreSelect.addEventListener('change', () => {
 
 
 generateAiBtn.addEventListener('click', async () => {
+    console.log("Tombol 'Buat Cerita (AI Generate Form)' diklik.");
     const selectedLanguage = document.querySelector('input[name="language"]:checked').value;
     const selectedGenre = genreSelect.value;
     const plotKeywords = plotKeywordsInput.value.trim();
@@ -492,15 +522,18 @@ generateAiBtn.addEventListener('click', async () => {
 
     if (selectedGenre === 'other' && !otherGenreInput.value.trim()) {
         showMessageBox("Input Diperlukan", "Mohon masukkan genre lainnya.");
+        console.log("Validasi genre 'other' gagal.");
         return;
     }
     if (selectedGenre && selectedSubgenre === 'other' && !subgenreManualInput.value.trim()) {
          showMessageBox("Input Diperlukan", "Mohon masukkan subgenre lainnya.");
+         console.log("Validasi subgenre 'other' gagal.");
          return;
     }
 
     if (!selectedGenre) {
         showMessageBox("Input Diperlukan", "Mohon pilih genre cerita.");
+        console.log("Validasi genre kosong gagal.");
         return;
     }
 
@@ -508,46 +541,53 @@ generateAiBtn.addEventListener('click', async () => {
     const subgenreToUse = selectedSubgenre === 'other' ? subgenreManualInput.value.trim() : selectedSubgenre;
 
 
-    loadingAi.style.display = 'flex';
-    loadingText.textContent = 'Menghasilkan ide cerita...';
+    gameLoadingOverlay.style.display = 'flex'; // Use gameLoadingOverlay for all main loading
+    gameLoadingOverlay.querySelector('span').textContent = 'Menghasilkan ide cerita...';
 
-    currentStory = await generateStoryOutline(selectedLanguage, genreToUse, subgenreToUse, plotKeywords);
+    try {
+        currentStory = await generateStoryOutline(selectedLanguage, genreToUse, subgenreToUse, plotKeywords);
 
-    if (currentStory) {
-        storyContext.title = currentStory.title;
-        storyContext.description = currentStory.description;
-        storyContext.prolog = currentStory.prolog;
-        storyContext.genre = genreToUse;
-        storyContext.subgenre = subgenreToUse;
-        storyContext.language = selectedLanguage;
+        if (currentStory) {
+            storyContext.title = currentStory.title;
+            storyContext.description = currentStory.description;
+            storyContext.prolog = currentStory.prolog;
+            storyContext.genre = genreToUse;
+            storyContext.subgenre = subgenreToUse;
+            storyContext.language = selectedLanguage;
 
-        storySummaryTitle.textContent = currentStory.title;
-        storySummaryDescription.textContent = currentStory.description;
-        storySummaryProlog.textContent = currentStory.prolog;
-        showScreen('story-selection-screen');
-    } else {
-        showMessageBox("Gagal", "Gagal menghasilkan cerita. Silakan coba lagi.");
+            storySummaryTitle.textContent = currentStory.title;
+            storySummaryDescription.textContent = currentStory.description;
+            storySummaryProlog.textContent = currentStory.prolog;
+            console.log("Story outline berhasil digenerate. Menampilkan Story Selection Screen.");
+            showScreen('story-selection-screen');
+        } else {
+            showMessageBox("Gagal", "Gagal menghasilkan cerita. Silakan coba lagi.");
+            console.log("currentStory kosong setelah generateStoryOutline.");
+        }
+    } catch (error) {
+        console.error("Kesalahan umum saat menghasilkan cerita AI:", error);
+        showMessageBox("Error", "Terjadi kesalahan fatal saat menghasilkan cerita. Coba lagi.");
+    } finally {
+        gameLoadingOverlay.style.display = 'none'; // Ensure loading is hidden even on error
     }
-    loadingAi.style.display = 'none';
 });
 
 backFromAiFormBtn.addEventListener('click', () => {
+    console.log("Tombol 'Kembali (AI Form)' diklik.");
     showScreen('main-screen');
 });
 
 // Story Selection Screen
 selectStoryAndCultureBtn.addEventListener('click', async () => {
+    console.log("Tombol 'Lanjutkan ke Penamaan' diklik.");
     const culturalStyle = cultureStyleSelect.value;
     if (!culturalStyle) {
         showMessageBox("Pilihan Diperlukan", "Harap pilih ala budaya.");
+        console.log("Validasi gaya budaya gagal.");
         return;
     }
     storyContext.culturalStyle = culturalStyle;
     selectedCultureDisplay.textContent = culturalStyle === 'custom' ? 'Kustom' : culturalStyle.charAt(0).toUpperCase() + culturalStyle.slice(1).replace('_', ' ');
-
-    // Determine initial character and location placeholders based on story content
-    const detectedCharacters = (currentStory.prolog.match(/\b[A-Z][a-z]*\b/g) || []).slice(0, 3); // Simple regex for initial caps, limit to 3
-    const detectedLocations = (currentStory.prolog.match(/\b(?:desa|kota|provinsi|wilayah)\s+([A-Z][a-z]*)/gi) || []).slice(0, 2); // Simple regex for common location terms
 
     characterInputArea.innerHTML = ''; // Clear previous inputs
 
@@ -556,43 +596,51 @@ selectStoryAndCultureBtn.addEventListener('click', async () => {
     let locCount = 0;
 
     // Try to extract a potential main character name from the prolog or a generic one
+    // Note: This simple regex might not always catch the main character effectively.
+    // For more robust extraction, a more advanced AI call might be needed,
+    // but for now, we'll use a generic placeholder if detection fails.
     const mcNameMatch = currentStory.prolog.match(/([A-Z][a-z]+(?: [A-Z][a-z]+)?)\s+(adalah|bernama|yang)/i);
     const mcPlaceholder = mcNameMatch && mcNameMatch[1] ? mcNameMatch[1].trim() : 'Karakter Utama';
 
-    addNamingInput('character', 'Nama Karakter Utama', 'mc', mcPlaceholder);
+    addNamingInput('char', 'Nama Karakter Utama', 'mc', mcPlaceholder);
     charCount++;
 
-    addNamingInput('location', 'Nama Desa/Kota Utama', 'loc1', 'Nama Desa/Kota');
+    addNamingInput('loc', 'Nama Desa/Kota Utama', 'loc1', 'Nama Desa/Kota');
     locCount++;
-    addNamingInput('location', 'Nama Provinsi/Wilayah Utama', 'loc2', 'Nama Provinsi/Wilayah');
+    addNamingInput('loc', 'Nama Provinsi/Wilayah Utama', 'loc2', 'Nama Provinsi/Wilayah');
     locCount++;
 
 
     if (culturalStyle !== 'custom') {
-        const generatedNames = await generateNamesForCulture(culturalStyle, storyContext.language, charCount, locCount, [], []);
+        try {
+            const generatedNames = await generateNamesForCulture(culturalStyle, storyContext.language, charCount, locCount, [], []);
 
-        // Fill in generated names into the inputs if they exist
-        const mcInput = document.getElementById('char-mc');
-        if (mcInput && generatedNames.character_names && generatedNames.character_names[0]) {
-            mcInput.value = generatedNames.character_names[0];
-        }
+            // Fill in generated names into the inputs if they exist
+            const mcInput = document.getElementById('char-mc');
+            if (mcInput && generatedNames.character_names && generatedNames.character_names[0]) {
+                mcInput.value = generatedNames.character_names[0];
+            }
 
-        const loc1Input = document.getElementById('loc-loc1');
-        if (loc1Input && generatedNames.location_names && generatedNames.location_names[0]) {
-            loc1Input.value = generatedNames.location_names[0];
-        }
+            const loc1Input = document.getElementById('loc-loc1');
+            if (loc1Input && generatedNames.location_names && generatedNames.location_names[0]) {
+                loc1Input.value = generatedNames.location_names[0];
+            }
 
-        const loc2Input = document.getElementById('loc-loc2');
-        if (loc2Input && generatedNames.location_names && generatedNames.location_names[1]) {
-            loc2Input.value = generatedNames.location_names[1];
+            const loc2Input = document.getElementById('loc-loc2');
+            if (loc2Input && generatedNames.location_names && generatedNames.location_names[1]) {
+                loc2Input.value = generatedNames.location_names[1];
+            }
+        } catch (error) {
+            console.error("Kesalahan saat menghasilkan nama untuk budaya:", error);
+            showMessageBox("Error", "Gagal menghasilkan nama budaya. Silakan isi manual.");
         }
     }
-
-
+    console.log("Menampilkan Character Naming Screen.");
     showScreen('character-naming-screen');
 });
 
 backFromStorySelectionBtn.addEventListener('click', () => {
+    console.log("Tombol 'Kembali (Story Selection)' diklik.");
     // Determine which screen to go back to based on how we got to story-selection-screen
     if (storyContext.genre === 'Manual') {
         showScreen('manual-input-screen');
@@ -603,6 +651,7 @@ backFromStorySelectionBtn.addEventListener('click', () => {
 
 // Character Naming Screen
 startStoryBtn.addEventListener('click', async () => {
+    console.log("Tombol 'Mulai Cerita' diklik.");
     gameProgress.characterNames = {};
     gameProgress.locationNames = {};
 
@@ -626,6 +675,7 @@ startStoryBtn.addEventListener('click', async () => {
 
     if (!allInputsValid) {
         showMessageBox("Input Diperlukan", "Harap isi semua bidang nama.");
+        console.log("Validasi input nama karakter/lokasi gagal.");
         return;
     }
 
@@ -636,27 +686,49 @@ startStoryBtn.addEventListener('click', async () => {
     // Replace character and location placeholders in prolog with user-defined names
     let processedProlog = storyContext.prolog;
     for (const key in gameProgress.characterNames) {
-        const regex = new RegExp(`\\[KARAKTER_${key.toUpperCase()}\\]`, 'g');
-        processedProlog = processedProlog.replace(regex, gameProgress.characterNames[key]);
+        // Use a more generic placeholder format for replacement,
+        // and ensure AI understands to use the names directly.
+        // Example: replace "karakter utama" or specific AI-generated character tags in prolog
+        // This is a simplification; a more robust solution might involve AI generating
+        // the *prolog with placeholders* and then replacing them here.
+        // For now, we assume the prolog might use generic terms like "sang pahlawan"
+        // or AI might generate placeholder like [MC_NAME] that we replace.
+        // If the prolog doesn't contain placeholders, this step won't do much.
+        const charName = gameProgress.characterNames[key];
+        // Simple heuristic: try to replace "Karakter Utama" with the chosen name
+        if (key === 'mc') {
+            processedProlog = processedProlog.replace(/Karakter Utama/g, charName);
+            processedProlog = processedProlog.replace(/sang pahlawan/g, charName);
+            processedProlog = processedProlog.replace(/seorang (pemuda|gadis|ksatria|penjelajah)/g, charName); // Example, might be too aggressive
+        }
+        // More robust: If AI uses specific tags like [MC_NAME], replace those.
+        processedProlog = processedProlog.replace(new RegExp(`\\[${key.toUpperCase()}_NAME\\]`, 'g'), charName); // For [MC_NAME]
+        processedProlog = processedProlog.replace(new RegExp(`\\[KARAKTER_${key.toUpperCase()}\\]`, 'g'), charName); // For [KARAKTER_MC]
     }
     for (const key in gameProgress.locationNames) {
-        const regex = new RegExp(`\\[LOKASI_${key.toUpperCase()}\\]`, 'g');
-        processedProlog = processedProlog.replace(regex, gameProgress.locationNames[key]);
+        const locName = gameProgress.locationNames[key];
+        // Similar replacement for locations
+        processedProlog = processedProlog.replace(new RegExp(`\\[LOKASI_${key.toUpperCase()}\\]`, 'g'), locName); // For [LOKASI_LOC1]
+        processedProlog = processedProlog.replace(new RegExp(`desa\\s+sukorame|provinsi\\s+jawa\\s+timur`, 'gi'), locName); // Example, be careful with broad replacements
     }
+
 
     gameProgress.chapterContent.push(processedProlog);
     storyTitleDisplay.textContent = storyContext.title;
     storyContent.innerHTML = `<p>${processedProlog.replace(/\n/g, '</p><p>')}</p>`; // Display prolog
 
+    console.log("Mulai membaca cerita. Menampilkan Story Reading Screen.");
     showScreen('story-reading-screen');
 });
 
 backFromNamingBtn.addEventListener('click', () => {
+    console.log("Tombol 'Kembali (Character Naming)' diklik.");
     showScreen('story-selection-screen');
 });
 
 // Story Reading Screen
 continueReadingBtn.addEventListener('click', async () => {
+    console.log("Tombol 'Lanjutkan Cerita' diklik. Chapter saat ini:", gameProgress.currentChapterIndex);
     gameProgress.currentChapterIndex++;
     // Check if we already have the next chapter generated
     if (gameProgress.currentChapterIndex < gameProgress.chapterContent.length) {
@@ -664,26 +736,33 @@ continueReadingBtn.addEventListener('click', async () => {
     } else {
         // If not, generate the next chapter
         const previousContent = gameProgress.chapterContent[gameProgress.chapterContent.length - 1];
-        const newChapter = await generateStoryChapter(
-            storyContext.language,
-            previousContent,
-            gameProgress.currentChapterIndex,
-            storyContext.culturalStyle,
-            gameProgress.characterNames,
-            gameProgress.locationNames
-        );
-        if (newChapter) {
-            gameProgress.chapterContent.push(newChapter);
-            displayCurrentChapter();
-        } else {
-            // Handle end of story or error
-            showMessageBox("Akhir Cerita", "Anda telah mencapai akhir cerita atau terjadi kesalahan saat melanjutkan. Kembali ke menu utama.");
+        try {
+            const newChapter = await generateStoryChapter(
+                storyContext.language,
+                previousContent,
+                gameProgress.currentChapterIndex,
+                storyContext.culturalStyle,
+                gameProgress.characterNames,
+                gameProgress.locationNames
+            );
+            if (newChapter) {
+                gameProgress.chapterContent.push(newChapter);
+                displayCurrentChapter();
+            } else {
+                // This branch is reached if generateStoryChapter returns null (e.g., API error)
+                showMessageBox("Akhir Cerita atau Error", "Anda telah mencapai akhir cerita atau terjadi kesalahan saat melanjutkan. Kembali ke menu utama.");
+                backToMainMenuFromStoryBtn.click(); // Go back to main menu
+            }
+        } catch (error) {
+            console.error("Kesalahan saat melanjutkan cerita:", error);
+            showMessageBox("Error", "Terjadi kesalahan saat melanjutkan cerita. Silakan coba lagi.");
             backToMainMenuFromStoryBtn.click(); // Go back to main menu
         }
     }
 });
 
 backToMainMenuFromStoryBtn.addEventListener('click', () => {
+    console.log("Tombol 'Kembali ke Menu Utama' diklik. Mereset game state.");
     showScreen('main-screen');
     // Reset game state
     currentStory = null;
@@ -723,20 +802,25 @@ function addNamingInput(type, labelText, idSuffix, placeholder) {
     div.appendChild(label);
     div.appendChild(input);
     characterInputArea.appendChild(div);
+    console.log(`Input penamaan ditambahkan: ${type}-${idSuffix}`);
 }
 
 // --- Display Current Chapter Function ---
 function displayCurrentChapter() {
+    console.log(`Menampilkan chapter ${gameProgress.currentChapterIndex}.`);
     if (gameProgress.chapterContent[gameProgress.currentChapterIndex]) {
         const chapterText = gameProgress.chapterContent[gameProgress.currentChapterIndex];
         storyContent.innerHTML = `<p>${chapterText.replace(/\n/g, '</p><p>')}</p>`;
         storyContent.scrollTop = 0; // Scroll to top for new chapter
+    } else {
+        console.warn(`Chapter ${gameProgress.currentChapterIndex} tidak ditemukan dalam chapterContent.`);
     }
 }
 
 
 // --- Initialization ---
 window.onload = () => {
+    console.log("Window loaded. Memulai inisialisasi aplikasi.");
     API_KEY = getApiKey();
     if (API_KEY) {
         showScreen('main-screen');
