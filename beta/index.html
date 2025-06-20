@@ -10,56 +10,56 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css"> <!-- Link ke file CSS terpisah -->
 </head>
-<body class="light-theme"> <!-- Default theme -->
-    <button id="theme-toggle" class="theme-toggle-button">
-        <i class="fas fa-moon"></i> <span id="theme-toggle-text">Mode Gelap</span>
+<body class="light-theme flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8"> <!-- Default theme, updated body classes -->
+    <button id="theme-toggle" class="theme-toggle-button fixed top-4 left-4 z-50 p-2 rounded-full shadow-lg transition-all duration-300 ease-in-out hover:scale-105">
+        <i class="fas fa-moon text-lg"></i> <span id="theme-toggle-text" class="ml-2 hidden sm:inline-block">Mode Gelap</span>
     </button>
 
-    <div class="container">
+    <div class="main-container bg-white dark:bg-gray-800 p-6 sm:p-8 md:p-10 rounded-2xl shadow-xl border-2 border-gray-300 dark:border-gray-700 w-full max-w-xl lg:max-w-2xl text-center relative overflow-hidden transition-all duration-300 ease-in-out">
         <!-- API Key Input Screen -->
-        <div id="api-key-screen" style="display:none;">
-            <h1>Masukkan Kunci API Gemini Anda</h1>
-            <p class="text-md mb-8 text-center text-gray-700">
+        <div id="api-key-screen" class="screen" style="display:none;">
+            <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">Masukkan Kunci API Gemini Anda</h1>
+            <p class="text-base sm:text-lg mb-8 text-gray-700 dark:text-gray-300">
                 Untuk menggunakan fitur AI, Anda memerlukan kunci API Gemini.
                 Anda bisa mendapatkannya di:
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline">aistudio.google.com/app/apikey</a>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">aistudio.google.com/app/apikey</a>
             </p>
-            <input type="text" id="api-key-input" placeholder="Masukkan Kunci API Gemini Anda">
-            <button class="button button-primary" id="save-api-key-btn">Simpan Kunci API</button>
-            <button class="button button-secondary" id="clear-api-key-btn">Hapus Kunci API</button>
-            <p class="text-xs mt-4 text-red-500">
+            <input type="text" id="api-key-input" placeholder="Masukkan Kunci API Gemini Anda" class="form-input text-center w-full px-5 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 mb-4">
+            <button class="btn btn-primary w-full py-3 mb-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="save-api-key-btn">Simpan Kunci API</button>
+            <button class="btn btn-secondary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="clear-api-key-btn">Hapus Kunci API</button>
+            <p class="text-xs mt-4 text-red-500 dark:text-red-400">
                 Peringatan: Menyimpan kunci API di browser tidak disarankan untuk aplikasi produksi.
             </p>
         </div>
 
-        <div id="main-screen">
-            <h1>Cerita Komik Interaktif</h1>
-            <p class="text-md mb-8 text-center text-gray-700">Dapatkan ide cerita baru atau masukkan cerita Anda sendiri.</p>
-            <button class="button button-primary" id="manual-input-btn">Masukkan Judul & Deskripsi Manual</button>
-            <button class="button button-success" id="ai-generate-btn">Hasilkan Cerita dengan AI</button>
+        <div id="main-screen" class="screen">
+            <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">Visual Novel AI</h1>
+            <p class="text-base sm:text-lg mb-8 text-gray-700 dark:text-gray-300">Dapatkan ide cerita baru atau masukkan cerita Anda sendiri.</p>
+            <button class="btn btn-primary w-full py-4 mb-4 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out" id="manual-input-btn">Masukkan Judul & Deskripsi Manual</button>
+            <button class="btn btn-success w-full py-4 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out" id="ai-generate-btn">Hasilkan Cerita dengan AI</button>
         </div>
 
-        <div id="manual-input-screen" style="display:none;">
-            <h1>Masukkan Cerita Anda</h1>
-            <input type="text" id="manual-title" placeholder="Judul Cerita">
-            <textarea id="manual-description" placeholder="Deskripsi Cerita (fokus pada premis & konflik)" rows="6"></textarea>
-            <button class="button button-primary" id="continue-manual-btn">Lanjutkan ke Pembuatan Karakter</button>
-            <button class="button button-secondary" id="back-from-manual-btn">Kembali</button>
+        <div id="manual-input-screen" class="screen" style="display:none;">
+            <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">Masukkan Cerita Anda</h1>
+            <input type="text" id="manual-title" placeholder="Judul Cerita" class="form-input text-center w-full px-5 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 mb-4">
+            <textarea id="manual-description" placeholder="Deskripsi Cerita (fokus pada premis & konflik)" rows="6" class="form-input text-center w-full px-5 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 mb-6"></textarea>
+            <button class="btn btn-primary w-full py-3 mb-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="continue-manual-btn">Lanjutkan ke Pembuatan Karakter</button>
+            <button class="btn btn-secondary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="back-from-manual-btn">Kembali</button>
         </div>
 
-        <div id="ai-generate-form-screen" style="display:none;">
-            <h1>Hasilkan Cerita dengan AI</h1>
-            <p class="text-md mb-8 text-center text-gray-700">AI akan membuat ide cerita berdasarkan preferensi Anda.</p>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="language" value="id" checked> Bahasa Indonesia
+        <div id="ai-generate-form-screen" class="screen" style="display:none;">
+            <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">Hasilkan Cerita dengan AI</h1>
+            <p class="text-base sm:text-lg mb-8 text-gray-700 dark:text-gray-300">AI akan membuat ide cerita berdasarkan preferensi Anda.</p>
+            <div class="radio-group flex justify-center gap-6 mb-6">
+                <label class="flex items-center cursor-pointer text-gray-700 dark:text-gray-300">
+                    <input type="radio" name="language" value="id" checked class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-blue-500 focus:border-blue-500"> Bahasa Indonesia
                 </label>
-                <label>
-                    <input type="radio" name="language" value="en"> English
+                <label class="flex items-center cursor-pointer text-gray-700 dark:text-gray-300">
+                    <input type="radio" name="language" value="en" class="form-radio h-5 w-5 text-blue-600 transition duration-150 ease-in-out focus:ring-blue-500 focus:border-blue-500"> English
                 </label>
             </div>
-            
-            <select id="genre-select">
+
+            <select id="genre-select" class="form-select w-full px-5 py-3 mb-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center">
                 <option value="">Pilih Genre</option>
                 <option value="Fantasy">Fantasi</option>
                 <option value="Sci-Fi">Fiksi Ilmiah</option>
@@ -83,6 +83,7 @@
                 <option value="Legal">Legal</option>
                 <option value="Medical">Medis</option>
                 <option value="Sports">Olahraga</option>
+                <option value="War">Perang</option>
                 <option value="Western">Western</option>
                 <option value="Crime">Kriminal</option>
                 <option value="Coming-of-Age">Coming-of-Age</option>
@@ -99,76 +100,75 @@
                 <option value="Mythology">Mitologi</option>
                 <option value="Parody">Parodi</option>
                 <option value="Fan-Fiction">Fan-Fiksi</option>
-                <option value="Murim">Murim</option> <!-- New Genre -->
-                <option value="Webtoon">Webtoon</option> <!-- New Genre -->
-                <option value="Absurd">Absurd</option> <!-- New Genre -->
-                <option value="Tragedy">Tragedi</option> <!-- New Genre -->
-                <option value="Perdebatan">Perdebatan</option> <!-- New Genre -->
-                <option value="AI">AI</option> <!-- New Genre -->
-                <option value="Creepy">Creepy</option> <!-- New Genre -->
-                <option value="Kekerasan">Kekerasan</option> <!-- New Genre -->
-                <option value="Pembunuhan">Pembunuhan</option> <!-- New Genre -->
-                <option value="Tuduhan">Tuduhan</option> <!-- New Genre -->
-                <option value="Sadness">Kesedihan</option> <!-- New Genre -->
-                <option value="Happiness">Kebahagiaan</option> <!-- New Genre -->
-                <option value="Time Travel">Time Travel</option> <!-- New Genre -->
-                <option value="Hukum">Hukum</option> <!-- New Genre -->
-                <option value="Konspirasi">Konspirasi</option> <!-- New Genre -->
-                <option value="War">Perang</option> <!-- New Genre -->
+                <option value="Murim">Murim</option>
+                <option value="Webtoon">Webtoon</option>
+                <option value="Absurd">Absurd</option>
+                <option value="Tragedy">Tragedi</option>
+                <option value="Perdebatan">Perdebatan</option>
+                <option value="AI">AI</option>
+                <option value="Creepy">Creepy</option>
+                <option value="Kekerasan">Kekerasan</option>
+                <option value="Pembunuhan">Pembunuhan</option>
+                <option value="Tuduhan">Tuduhan</option>
+                <option value="Sadness">Kesedihan</option>
+                <option value="Happiness">Kebahagiaan</option>
+                <option value="Time Travel">Time Travel</option>
+                <option value="Conspiracy">Konspirasi</option>
+                <option value="Boring">Membosankan</option>
+                <option value="Isekai">Isekai</option>
                 <option value="other">Lainnya...</option>
             </select>
-            <input type="text" id="other-genre-input" placeholder="Masukkan Genre Lainnya" style="display:none;">
+            <input type="text" id="other-genre-input" placeholder="Masukkan Genre Lainnya" class="form-input w-full px-5 py-3 mb-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-center" style="display:none;">
 
-            <select id="subgenre-select" style="display:none;">
+            <select id="subgenre-select" class="form-select w-full px-5 py-3 mb-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center" style="display:none;">
                 <option value="">Pilih Subgenre</option>
             </select>
-            <input type="text" id="subgenre-manual-input" placeholder="Masukkan Subgenre Lainnya" style="display:none;">
+            <input type="text" id="subgenre-manual-input" placeholder="Masukkan Subgenre Lainnya" class="form-input w-full px-5 py-3 mb-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-center" style="display:none;">
 
-            <input type="number" id="num-stories" placeholder="Jumlah Cerita (1-5)" min="1" max="5" value="1">
-            
-            <div class="button-group-spacing">
-                <button class="button button-success" id="generate-ai-btn">Hasilkan Cerita</button>
-                <button class="button button-secondary" id="back-from-ai-form-btn">Kembali</button>
+            <input type="number" id="num-stories" placeholder="Jumlah Cerita (1-5)" min="1" max="5" value="1" class="form-input w-full px-5 py-3 mb-6 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-center">
+
+            <div class="button-group-spacing flex flex-col gap-4">
+                <button class="btn btn-success w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="generate-ai-btn">Hasilkan Cerita</button>
+                <button class="btn btn-secondary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="back-from-ai-form-btn">Kembali</button>
             </div>
-            
-            <div class="loading-indicator" id="loading-ai" style="display:none;">
-                <div class="spinner"></div>
-                <span id="loading-text">Sedang menulis kisah Anda...</span>
-                <span id="loading-additional-text" class="loading-additional-text">Mohon tunggu sebentar, AI sedang memproses.</span>
+
+            <div class="loading-indicator flex flex-col items-center justify-center mt-8 text-gray-700 dark:text-gray-300" id="loading-ai" style="display:none;">
+                <div class="spinner border-t-4 border-blue-500 w-10 h-10 mb-4 rounded-full animate-spin"></div>
+                <span id="loading-text" class="text-xl font-semibold">Sedang menulis kisah Anda...</span>
+                <span id="loading-additional-text" class="text-sm mt-2 text-gray-500 dark:text-gray-400" style="display:none;">Mohon tunggu sebentar, AI sedang memproses.</span>
             </div>
         </div>
 
-        <div id="ai-results-screen" style="display:none;">
-            <h1>Pilih Cerita Anda</h1>
-            <p class="text-md mb-8 text-center text-gray-700">Pilih salah satu cerita yang dihasilkan AI.</p>
-            <div id="story-list-container">
+        <div id="ai-results-screen" class="screen" style="display:none;">
+            <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">Pilih Cerita Anda</h1>
+            <p class="text-base sm:text-lg mb-8 text-gray-700 dark:text-gray-300">Pilih salah satu cerita yang dihasilkan AI.</p>
+            <div id="story-list-container" class="grid grid-cols-1 gap-6 mb-6">
                 <!-- AI generated stories will be added here -->
             </div>
 
             <!-- This div will act as the selected story summary, displayed after a story is chosen -->
-            <div id="selected-story-display" style="display:none;">
-                <h2 id="display-title" class="text-center font-bold text-xl mb-2"></h2>
-                <p id="display-description" class="text-center text-gray-700 mb-4"></p>
-                <p class="genre text-center">✨ Genre: <span id="display-genres"></span></p>
-                <p class="genre text-center">✨ Subgenre: <span id="display-subgenres"></span></p>
-                <p class="rating text-center">⭐ Rating: <span id="display-rating"></span></p> <!-- New: Display rating -->
+            <div id="selected-story-display" class="story-card p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 transition-all duration-300 ease-in-out" style="display:none;">
+                <h2 id="display-title" class="text-2xl font-bold text-gray-900 dark:text-white mb-3"></h2>
+                <p id="display-description" class="text-gray-700 dark:text-gray-300 mb-4"></p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">✨ <span class="font-medium text-gray-800 dark:text-gray-200">Genre:</span> <span id="display-genres"></span></p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">✨ <span class="font-medium text-gray-800 dark:text-gray-200">Subgenre:</span> <span id="display-subgenres"></span></p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">⭐ <span class="font-medium text-gray-800 dark:text-gray-200">Rating:</span> <span id="display-rating"></span></p>
             </div>
 
-            <div class="button-group-spacing">
-                 <button class="button button-primary" id="continue-to-character-selection-btn" style="display:none;">Lanjutkan ke Pemilihan Karakter</button>
-                 <button class="button button-secondary" id="back-from-ai-results-btn">Kembali Cari Cerita Lain</button>
+            <div class="button-group-spacing flex flex-col gap-4 mt-6">
+                 <button class="btn btn-primary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="continue-to-character-selection-btn" style="display:none;">Lanjutkan ke Pembuatan Karakter</button>
+                 <button class="btn btn-secondary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="back-from-ai-results-btn">Kembali Cari Cerita Lain</button>
             </div>
         </div>
 
         <!-- Character Creation Screen -->
-        <div id="character-creation-screen" style="display:none;">
-            <h1>Buat Karakter</h1>
-            <p class="text-md mb-8 text-center text-gray-700">AI akan merekomendasikan karakter untuk cerita Anda, termasuk beberapa kandidat Karakter Utama (MC).</p>
-            
-            <!-- Removed num-characters-select dropdown -->
-            <input type="text" id="character-class-input" placeholder="Kelas Karakter (opsional, cth: Pahlawan)" style="display:none;">
-            
-            <select id="name-style-select" class="mb-4">
+        <div id="character-creation-screen" class="screen" style="display:none;">
+            <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">Buat Karakter</h1>
+            <p class="text-base sm:text-lg mb-8 text-gray-700 dark:text-gray-300">AI akan merekomendasikan karakter untuk cerita Anda, termasuk beberapa kandidat Karakter Utama (MC).</p>
+
+            <input type="text" id="character-class-input" placeholder="Kelas Karakter (opsional, cth: Pahlawan)" class="form-input text-center w-full px-5 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 mb-4" style="display:none;">
+
+            <select id="name-style-select" class="form-select w-full px-5 py-3 mb-6 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center">
                 <option value="random">Nama Acak AI</option>
                 <option value="japanese">Nama Ala Jepang</option>
                 <option value="chinese">Nama Ala Tiongkok</option>
@@ -181,102 +181,104 @@
                 <option value="indonesian">Nama Ala Indonesia</option>
                 <option value="german">Nama Ala Jerman</option>
             </select>
-            
-            <div class="button-group-spacing">
-                <button class="button button-success" id="generate-characters-btn">Generate Karakter</button>
-                <button class="button button-secondary" id="back-to-story-select-btn">Kembali ke Pemilihan Cerita</button>
+
+            <div class="button-group-spacing flex flex-col gap-4">
+                <button class="btn btn-success w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="generate-characters-btn">Generate Karakter</button>
+                <button class="btn btn-secondary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="back-to-story-select-btn">Kembali ke Pemilihan Cerita</button>
             </div>
 
-            <div class="loading-indicator" id="loading-characters" style="display:none;">
-                <div class="spinner"></div>
-                <span id="loading-chars-text">Menciptakan karakter Anda...</span>
-                <span id="loading-additional-text-chars" class="loading-additional-text">Mohon tunggu sebentar, AI sedang memproses.</span>
+            <div class="loading-indicator flex flex-col items-center justify-center mt-8 text-gray-700 dark:text-gray-300" id="loading-characters" style="display:none;">
+                <div class="spinner border-t-4 border-blue-500 w-10 h-10 mb-4 rounded-full animate-spin"></div>
+                <span id="loading-chars-text" class="text-xl font-semibold">Menciptakan karakter Anda...</span>
+                <span id="loading-additional-text-chars" class="text-sm mt-2 text-gray-500 dark:text-gray-400" style="display:none;">Mohon tunggu sebentar, AI sedang memproses.</span>
             </div>
 
-            <h2 class="text-xl font-bold mt-8 mb-4 text-center text-gray-800" id="mc-selection-heading" style="display:none;">Pilih Karakter Utama (MC):</h2>
-            <div id="character-results" class="character-options">
+            <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-800 dark:text-gray-200" id="mc-selection-heading" style="display:none;">Pilih Karakter Utama (MC):</h2>
+            <div id="character-results" class="grid grid-cols-1 gap-6 mb-6">
                 <!-- Generated characters will be added here -->
             </div>
-            
-            <div class="button-group-spacing" id="character-action-buttons" style="display:none;">
-                <button class="button button-primary" id="continue-to-game-btn">Lanjutkan Cerita</button>
-                <button class="button button-secondary" id="regenerate-characters-btn">Cari Karakter Lagi</button>
+
+            <div class="button-group-spacing flex flex-col gap-4" id="character-action-buttons" style="display:none;">
+                <button class="btn btn-primary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="continue-to-game-btn">Lanjutkan Cerita</button>
+                <button class="btn btn-secondary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="regenerate-characters-btn">Cari Karakter Lagi</button>
             </div>
         </div>
 
         <!-- Summary screen before starting the game -->
-        <div id="summary-screen" style="display:none;">
-            <h1>Ringkasan Cerita Anda</h1>
-            <p class="text-md mb-8 text-center text-gray-700">Ini adalah ringkasan cerita dan karakter yang akan Anda mainkan.</p>
-            <div class="summary-section">
-                <h2>Judul Cerita</h2>
-                <p id="final-summary-title"></p>
-                <h2>Deskripsi Cerita</h2>
-                <p id="final-summary-description"></p>
-                <p class="genre">✨ Genre: <span id="final-summary-genres"></span></p>
-                <p class="genre">✨ Subgenre: <span id="final-summary-subgenres"></span></p>
-                <p class="rating">⭐ Rating: <span id="final-summary-rating"></span></p> <!-- New: Display rating -->
+        <div id="summary-screen" class="screen" style="display:none;">
+            <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">Ringkasan Cerita Anda</h1>
+            <p class="text-base sm:text-lg mb-8 text-gray-700 dark:text-gray-300">Ini adalah ringkasan cerita dan karakter yang akan Anda mainkan.</p>
+            <div class="summary-card bg-white dark:bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6 text-left">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Judul Cerita</h2>
+                <p id="final-summary-title" class="text-gray-700 dark:text-gray-300 text-lg mb-4"></p>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Deskripsi Cerita</h2>
+                <p id="final-summary-description" class="text-gray-700 dark:text-gray-300 text-lg mb-4"></p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">✨ <span class="font-medium text-gray-800 dark:text-gray-200">Genre:</span> <span id="final-summary-genres"></span></p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">✨ <span class="font-medium text-gray-800 dark:text-gray-200">Subgenre:</span> <span id="final-summary-subgenres"></span></p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">⭐ <span class="font-medium text-gray-800 dark:text-gray-200">Rating:</span> <span id="final-summary-rating"></span></p>
             </div>
 
-            <div class="summary-section">
-                <h2>Karakter Utama (MC)</h2>
-                <h2 id="final-mc-name-class"></h2>
-                <p><span class="char-detail">Sifat:</span> <span id="final-mc-personality"></span></p>
-                <p><span class="char-detail">Tentang:</span> <span id="final-mc-description"></span></p>
+            <div class="summary-card bg-white dark:bg-gray-700 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6 text-left">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Karakter Utama (MC)</h2>
+                <p id="final-mc-name-class" class="text-gray-900 dark:text-white text-xl font-semibold mb-2 flex items-center justify-start"><span class="selected-angel-icon text-2xl mr-2">😇</span> </p>
+                <p class="text-gray-700 dark:text-gray-300 mb-2"><span class="font-medium text-gray-800 dark:text-gray-200">Sifat:</span> <span id="final-mc-personality"></span></p>
+                <p class="text-gray-700 dark:text-gray-300"><span class="font-medium text-gray-800 dark:text-gray-200">Tentang:</span> <span id="final-mc-description"></span></p>
             </div>
 
-            <div class="button-group-spacing">
-                <button class="button button-primary" id="start-game-btn">Mulai Game</button>
-                <button class="button button-secondary" id="back-from-summary-btn">Kembali</button>
+            <div class="button-group-spacing flex flex-col gap-4 mt-6">
+                <button class="btn btn-primary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="start-game-btn">Mulai Game</button>
+                <button class="btn btn-secondary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="back-from-summary-btn">Kembali</button>
             </div>
         </div>
-        
+
         <!-- Game Screen (Main Visual Novel Display) -->
-        <div id="game-screen" style="display:none;">
-            <div id="game-loading-overlay" style="display:none;">
-                <div class="spinner"></div>
-                <span>Memuat cerita...</span>
-                <span id="game-loading-additional-text" class="loading-additional-text">Mohon tunggu sebentar, AI sedang memproses.</span>
+        <div id="game-screen" class="screen flex flex-col items-center" style="display:none;">
+            <div id="game-loading-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-gray-800 bg-opacity-95 rounded-2xl z-50 text-gray-700 dark:text-gray-300 transition-all duration-300 ease-in-out" style="display:none;">
+                <div class="spinner border-t-4 border-blue-500 w-12 h-12 mb-5 rounded-full animate-spin"></div>
+                <span class="text-2xl font-semibold">Memuat cerita...</span>
+                <span id="game-loading-additional-text" class="text-base mt-2 text-gray-500 dark:text-gray-400" style="display:none;">Mohon tunggu sebentar, AI sedang memproses.</span>
             </div>
 
-            <div id="game-play-screen" style="display:none;">
-                <div id="prolog-content-display">
+            <div id="game-play-screen" class="w-full flex flex-col items-center text-left p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out">
+                <div id="prolog-content-display" class="w-full">
                     <!-- Prolog content generated by AI -->
                 </div>
 
-                <div id="chapter-content-display" style="display:none;">
+                <div id="chapter-content-display" class="w-full" style="display:none;">
                     <!-- Chapter content generated by AI -->
                 </div>
 
-                <div id="dynamic-systems-display">
-                    <h3>🎮 Sistem Aktif:</h3>
+                <div id="dynamic-systems-display" class="w-full bg-gray-50 dark:bg-gray-700 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mt-6">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-3 text-center">🎮 Sistem Aktif:</h3>
                     <!-- Dynamic systems will be displayed here -->
                 </div>
 
-                <div id="choice-container">
+                <div id="choice-container" class="w-full flex flex-col gap-4 mt-6">
                     <!-- Choices will be displayed here -->
                 </div>
 
-                <button class="button button-primary mt-8" id="start-real-story-btn" style="display:none;">Mulai ke cerita sebenarnya</button>
+                <button class="btn btn-primary w-full py-3 mt-8 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="start-real-story-btn" style="display:none;">Mulai ke cerita sebenarnya</button>
             </div>
         </div>
 
         <!-- Game Over Screen (currently hidden) -->
-        <div id="game-over-screen" style="display:none;">
-            <h1>💀 GAME OVER 💀</h1>
-            <p class="game-over-text" id="game-over-message"></p>
-            <div class="analysis-text" id="game-over-analysis"></div>
-            <div class="button-group-spacing">
-                <button class="button button-primary" id="retry-game-btn">Coba Lagi</button>
-                <button class="button button-secondary" id="back-to-main-menu-btn">Kembali ke Menu Utama</button>
+        <div id="game-over-screen" class="screen" style="display:none;">
+            <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-red-600 dark:text-red-400 mb-6 leading-tight">💀 GAME OVER 💀</h1>
+            <p class="game-over-text text-base sm:text-lg mb-4 text-gray-700 dark:text-gray-300" id="game-over-message"></p>
+            <div class="analysis-text text-gray-600 dark:text-gray-400 text-sm mb-8" id="game-over-analysis"></div>
+            <div class="button-group-spacing flex flex-col gap-4">
+                <button class="btn btn-primary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="retry-game-btn">Coba Lagi</button>
+                <button class="btn btn-secondary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="back-to-main-menu-btn">Kembali ke Menu Utama</button>
             </div>
         </div>
 
         <!-- Custom Message Box -->
-        <div id="custom-message-box" class="message-box">
-            <h3 id="message-box-title"></h3>
-            <p id="message-box-content"></p>
-            <button id="message-box-ok-btn">OK</button>
+        <div id="custom-message-box" class="message-box fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[1000]" style="display:none;">
+            <div class="message-box-content bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl border-2 border-gray-300 dark:border-gray-700 max-w-sm mx-auto text-center transition-all duration-300 ease-in-out">
+                <h3 id="message-box-title" class="text-2xl font-bold text-gray-900 dark:text-white mb-4"></h3>
+                <p id="message-box-content" class="text-gray-700 dark:text-gray-300 mb-6"></p>
+                <button id="message-box-ok-btn" class="btn btn-primary px-8 py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out">OK</button>
+            </div>
         </div>
     </div>
 
