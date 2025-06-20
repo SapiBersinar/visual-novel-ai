@@ -51,8 +51,8 @@ const backToStorySelectBtn = document.getElementById('back-to-story-select-btn')
 const loadingCharacters = document.getElementById('loading-characters');
 const loadingCharsText = document.getElementById('loading-chars-text');
 const loadingAdditionalTextChars = document.getElementById('loading-additional-text-chars');
-const characterResultsDiv = document.getElementById('character-results');
 const mcSelectionHeading = document.getElementById('mc-selection-heading');
+const characterResultsDiv = document.getElementById('character-results');
 const characterActionButtons = document.getElementById('character-action-buttons');
 const continueToGameBtn = document.getElementById('continue-to-game-btn');
 const regenerateCharactersBtn = document.getElementById('regenerate-characters-btn');
@@ -526,7 +526,7 @@ continueManualBtn.addEventListener('click', () => {
     const description = manualDescriptionInput.value.trim();
     if (title && description) {
         // For manually entered stories, assign a default SU rating.
-        selectedStoryDetails = { title, description, genres: [], subgenres: [], rating: "SU" }; 
+        selectedStoryDetails = { title, description, genres: [], subgenres: [], rating: "SU", initialCharacterMentions: [] }; // Added initialCharacterMentions
         showScreen('character-creation-screen');
         characterResultsDiv.innerHTML = '';
         mcSelectionHeading.style.display = 'none';
@@ -545,13 +545,70 @@ generateAiBtn.addEventListener('click', generateStoryContent);
 generateCharactersBtn.addEventListener('click', generateCharacters);
 regenerateCharactersBtn.addEventListener('click', generateCharacters);
 
-continueToGameBtn.addEventListener('click', () => {
+continueToGameBtn.addEventListener('click', async () => { // Made async
     if (selectedMainCharacter) {
+        // AI Call to rewrite story description with selected MC's name
+        const originalDescription = selectedStoryDetails.description;
+        const mcName = selectedMainCharacter.name;
+        const initialMentions = selectedStoryDetails.initialCharacterMentions || []; // Ensure it's an array
+
+        const rewriteSchema = {
+            type: "OBJECT",
+            properties: {
+                "rewrittenDescription": { "type": "STRING" }
+            },
+            "required": ["rewrittenDescription"]
+        };
+
+        // Determine loading elements
+        const loadingElement = loadingCharacters; // Re-use character loading for now
+        const loadingTxtElement = loadingCharsText;
+        const loadingAdditionalElement = loadingAdditionalTextChars;
+
+        // Temporarily change loading text for this specific operation
+        const originalLoadingText = loadingTxtElement.textContent;
+        const originalAdditionalText = loadingAdditionalElement.textContent;
+        loadingTxtElement.textContent = selectedLanguage === 'id' ? 'Menyesuaikan deskripsi cerita...' : 'Adjusting story description...';
+        loadingAdditionalElement.textContent = selectedLanguage === 'id' ? 'Mohon tunggu, AI sedang merevisi.' : 'Please wait, AI is revising.';
+
+        let rewritePrompt = `Rewrite the following story description based on the new main character's name.
+
+        Original Description: "${originalDescription}"
+        Main Character's New Name: "${mcName}"
+        Original Character Names Mentioned (if any, use these as targets for replacement): ${JSON.stringify(initialMentions)}
+
+        Instructions:
+        1. If any of the "Original Character Names Mentioned" are present in the "Original Description", replace them with the "Main Character's New Name".
+        2. Ensure the rewritten description flows naturally and grammatically correct.
+        3. The core plot, tone, and conflict of the original description must remain unchanged.
+        4. If no specific character names were mentioned in the original description, or if the replacement isn't straightforward, simply ensure the new description subtly implies "${mcName}" as the primary focus if possible, without forcing it.
+        5. Provide the rewritten description in ${selectedLanguage === 'id' ? 'Indonesian' : 'English'}.
+        6. Do NOT include any introductory or concluding remarks, just the rewritten description string.`;
+
+        const rewrittenDescriptionObj = await callGeminiAPI(
+            rewritePrompt,
+            rewriteSchema,
+            loadingElement,
+            loadingTxtElement,
+            loadingAdditionalElement,
+            continueToGameBtn // Disable button during rewrite
+        );
+
+        // Restore original loading text
+        loadingTxtElement.textContent = originalLoadingText;
+        loadingAdditionalElement.textContent = originalAdditionalText;
+
+        if (rewrittenDescriptionObj && rewrittenDescriptionObj.rewrittenDescription) {
+            selectedStoryDetails.description = rewrittenDescriptionObj.rewrittenDescription;
+        }
+        // If rewrite fails, we proceed with the original description, which is acceptable.
+
+        // Now, proceed to summary screen with potentially updated description
         finalSummaryTitle.textContent = selectedStoryDetails.title;
-        finalSummaryDescription.textContent = selectedStoryDetails.description;
+        finalSummaryDescription.textContent = selectedStoryDetails.description; // This will now be the rewritten one
         finalSummaryGenres.textContent = selectedStoryDetails.genres.join(', ');
         finalSummarySubgenres.textContent = selectedStoryDetails.subgenres.join(', ');
-        finalSummaryRating.textContent = selectedStoryDetails.rating; // Display rating on summary screen
+        finalSummaryRating.textContent = selectedStoryDetails.rating;
 
         finalMcNameClass.innerHTML = `<span class="selected-angel-icon">😇</span> ${selectedMainCharacter.name} (${selectedMainCharacter.class})`;
         finalMcPersonality.textContent = selectedMainCharacter.personality;
@@ -742,9 +799,14 @@ async function generateStoryContent() {
                     "type": "ARRAY",
                     "items": { "type": "STRING" }
                 },
-                "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] } // Added 18+
+                "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] },
+                "initialCharacterMentions": { // New field to capture names in description
+                    "type": "ARRAY",
+                    "items": { "type": "STRING" },
+                    "description": "Any character names explicitly mentioned in the story description. Return as an empty array if none."
+                }
             },
-            "required": ["title", "description", "genres", "subgenres", "rating"]
+            "required": ["title", "description", "genres", "subgenres", "rating", "initialCharacterMentions"]
         }
     };
     
@@ -754,6 +816,7 @@ async function generateStoryContent() {
     - A list of relevant genres, including "${selectedGenre}".
     - A list of relevant subgenres.
     - An appropriate content rating from these options: "SU", "PG-13", "16+", "18+", "21+".
+    - A list of any specific character names mentioned in the description (e.g., ["Lintang", "Budi"]). If no specific names, return an empty array.
     
     Rating Guidelines:
     - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
@@ -832,7 +895,23 @@ async function generateSubgenres(mainGenre) {
         items: { "type": "STRING" }
     };
     
-    const prompt = `Provide a list of 5-10 relevant subgenres for the main genre "${mainGenre}". Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language.`;
+    let prompt;
+    if (selectedLanguage === 'id') {
+        prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre utama "${mainGenre}". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string.`;
+        if (mainGenre === "Sadness") {
+            prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Kesedihan". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Melankolis, Patah Hati, Kehilangan, Perpisahan, Kesendirian, Depresi.`;
+        } else if (mainGenre === "Happiness") {
+            prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Kebahagiaan". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Euforia, Kegembiraan, Ketenangan, Kedamaian, Sukacita, Optimisme.`;
+        }
+    } else { // English
+        prompt = `Provide a list of 5-10 relevant subgenres for the main genre "${mainGenre}". Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format.`;
+        if (mainGenre === "Sadness") {
+            prompt = `Provide a list of 5-10 relevant subgenres for the "Sadness" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: Melancholy, Heartbreak, Loss, Farewell, Loneliness, Depression.`;
+        } else if (mainGenre === "Happiness") {
+            prompt = `Provide a list of 5-10 relevant subgenres for the "Happiness" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: Euphoria, Joy, Serenity, Peace, Cheer, Optimism.`;
+        }
+    }
+    
     try {
         const subgenres = await callGeminiAPI(prompt, subgenreSchema, loadingAi, loadingText, loadingAdditionalText, generateAiBtn);
 
@@ -1093,7 +1172,7 @@ async function generatePrologue() {
     const mcClass = selectedMainCharacter.class;
     const mcPersonality = selectedMainCharacter.personality;
     const storyTitle = selectedStoryDetails.title;
-    const storyDescription = selectedStoryDetails.description;
+    const storyDescription = selectedStoryDetails.description; // This will now be the potentially rewritten description
     const genres = selectedStoryDetails.genres.join(', ');
     const subgenres = selectedStoryDetails.subgenres.join(', ');
     const rating = selectedStoryDetails.rating; // Get the rating
@@ -1339,7 +1418,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     1. Trust System: Each character has trust points towards MC. Trust can increase or decrease. High trust unlocks secrets, unique paths, or positive endings. Low trust can trigger betrayal, character death, or bad endings.
     2. Death Trigger: MC or important characters can die based on choices. Death can be immediate or chain reaction. If MC dies, game over.
     3. Flag Awal: Characters have hidden conditions from the start (e.g., betrayed before, secret, trauma). Triggered by words, actions, or time. Greatly influences initial attitude towards MC.
-    4. Path Tracker: Shows main story path (e.g., “Shadows Between Two Crowns”). Changes based on key decisions. Can contain hidden sub-paths.
+    4. Path Tracker: Shows main story path (e.g., “Shadows Between Two Crowns”). Jalur ini bisa berganti tergantung keputusan kunci. Path bisa berisi sub-jalur tersembunyi.
     5. Locked Story Paths: Some paths open only if certain conditions met (high/low trust, flags triggered, secret actions, specific DNA Profile).
     6. Trust Dynamic Update: Only appears for significant changes. Format: 🔸 Althea: +2.1, 🟡 Kael: -1.2 → “You broke it again?”, ⚠️ Shadow Guild: -4.0 → [Considers you a threat].
     7. Title / Achievement System: Player gets titles based on moral choices, play style, and ending. Example: 🗡️ Bloody Hand, 👑 Forgiving Hero, 🕷️ Master Deceiver. Titles can unlock unique dialogues or hidden paths.
