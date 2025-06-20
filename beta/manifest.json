@@ -1,5 +1,4 @@
-{
-  "name": "Visual novel ai",
+{ "name": "Visual novel ai",
   "short_name": "VN AI",
   "description": "Aplikasi cerita komik interaktif bertenaga AI.",
   "start_url": "https://hanzercopy.cloud/",
@@ -8,12 +7,12 @@
   "theme_color": "#333333",
   "icons": [
     {
-      "src": "/beta/images/1.png",
+      "src": "/images/1.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/beta/images/1.png",
+      "src": "/images/2.png",
       "sizes": "512x512",
       "type": "image/png"
     }
