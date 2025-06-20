@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerita Baca Interaktif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css"> <!-- Link ke file CSS terpisah -->
+</head>
+<body class="light-theme flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="theme-toggle-button fixed top-4 left-4 z-50 p-2 rounded-full shadow-lg transition-all duration-300 ease-in-out">
+        <i class="fas fa-moon text-gray-700 dark:text-white text-xl"></i>
+    </button>
+
+    <!-- API Key Screen -->
+    <div id="api-key-screen" class="screen main-container" style="display: none;">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-center mb-6">Pengaturan Kunci API</h1>
+        <p class="text-center text-gray-700 dark:text-gray-300 mb-6">Masukkan kunci API Anda untuk mengakses fitur pembuatan cerita AI.</p>
+        <div class="input-group">
+            <label for="api-key-input" class="form-label">Kunci API:</label>
+            <input type="password" id="api-key-input" class="form-input" placeholder="Masukkan kunci API Anda">
+        </div>
+        <div class="button-group-spacing mt-6">
+            <button id="save-api-key-btn" class="btn btn-primary w-full">Simpan Kunci API</button>
+            <button id="clear-api-key-btn" class="btn btn-secondary w-full mt-2">Hapus Kunci API</button>
+        </div>
+    </div>
+
+    <!-- Main Screen -->
+    <div id="main-screen" class="screen main-container" style="display: flex;">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-center mb-6 animate-fade-in-down">Selamat Datang di Cerita Baca Interaktif</h1>
+        <p class="text-center text-gray-700 dark:text-gray-300 mb-8 animate-fade-in">Pilih bagaimana Anda ingin memulai cerita Anda.</p>
+        <div class="button-group-spacing">
+            <button id="ai-generate-btn" class="btn btn-primary w-full animate-bounce-in">Buat Cerita dengan AI</button>
+            <button id="manual-input-btn" class="btn btn-secondary w-full mt-4 animate-bounce-in delay-100">Input Cerita Manual</button>
+        </div>
+    </div>
+
+    <!-- AI Generate Form Screen -->
+    <div id="ai-generate-form-screen" class="screen main-container" style="display: none;">
+        <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Buat Cerita dengan AI</h2>
+        <div class="input-group mb-4">
+            <label class="form-label mb-2">Pilih Bahasa:</label>
+            <div class="radio-group flex gap-4">
+                <label class="radio-label">
+                    <input type="radio" name="language" value="id" checked> Bahasa Indonesia
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="language" value="en"> English
+                </label>
+            </div>
+        </div>
+        <div class="input-group mb-4">
+            <label for="genre-select" class="form-label">Pilih Genre Cerita:</label>
+            <select id="genre-select" class="form-select w-full">
+                <option value="">Pilih Genre</option>
+                <option value="Fantasy">Fantasi</option>
+                <option value="Sci-Fi">Fiksi Ilmiah</option>
+                <option value="Romance">Romansa</option>
+                <option value="Mystery">Misteri</option>
+                <option value="Adventure">Petualangan</option>
+                <option value="Thriller">Thriller</option>
+                <option value="Horror">Horor</option>
+                <option value="Comedy">Komedi</option>
+                <option value="Drama">Drama</option>
+                <option value="Historical">Sejarah</option>
+                <option value="Slice of Life">Slice of Life</option>
+                <option value="Action">Aksi</option>
+                <option value="Supernatural">Supernatural</option>
+                <option value="Psychological">Psikologis</option>
+                <option value="Dystopian">Distopia</option>
+                <option value="Utopian">Utopia</option>
+                <option value="Steampunk">Steampunk</option>
+                <option value="Cyberpunk">Cyberpunk</option>
+                <option value="Post-Apocalyptic">Pascabencana</option>
+                <option value="Legal">Legal</option>
+                <option value="Medical">Medis</option>
+                <option value="Sports">Olahraga</option>
+                <option value="War">Perang</option>
+                <option value="Western">Western</option>
+                <option value="Crime">Kriminal</option>
+                <option value="Coming-of-Age">Coming-of-Age</option>
+                <option value="Young Adult">Young Adult</option>
+                <option value="New Adult">New Adult</option>
+                <option value="Children">Anak-anak</option>
+                <option value="Biographical">Biografi</option>
+                <option value="Magical Realism">Realism Magis</option>
+                <option value="Philosophical">Filosofis</option>
+                <option value="Satire">Satir</option>
+                <option value="Gothic">Gotik</option>
+                <option value="Noir">Noir</option>
+                <option value="Faerie Tale">Dongeng</option>
+                <option value="Mythology">Mitologi</option>
+                <option value="Parody">Parodi</option>
+                <option value="Fan-Fiction">Fan-Fiksi</option>
+                <option value="Murim">Murim</option>
+                <option value="Webtoon">Webtoon</option>
+                <option value="Absurd">Absurd</option>
+                <option value="Tragedy">Tragedi</option>
+                <option value="Perdebatan">Perdebatan</option>
+                <option value="AI">AI</option>
+                <option value="Creepy">Creepy</option>
+                <option value="Kekerasan">Kekerasan</option>
+                <option value="Pembunuhan">Pembunuhan</option>
+                <option value="Tuduhan">Tuduhan</option>
+                <option value="Sadness">Kesedihan</option>
+                <option value="Happiness">Kebahagiaan</option>
+                <option value="Time Travel">Time Travel</option>
+                <option value="Conspiracy">Konspirasi</option>
+                <option value="Boring">Membosankan</option>
+                <option value="Isekai">Isekai</option>
+                <option value="other">Lainnya...</option>
+            </select>
+        </div>
+        <div id="other-genre-container" class="input-group mb-4" style="display: none;">
+            <label for="other-genre-input" class="form-label">Genre Lainnya:</label>
+            <input type="text" id="other-genre-input" class="form-input" placeholder="Masukkan genre lainnya">
+        </div>
+        <div class="input-group mb-4">
+            <label for="subgenre-select" class="form-label">Pilih Subgenre Cerita:</label>
+            <select id="subgenre-select" class="form-select w-full" style="display:none;">
+                <!-- Subgenre options will be populated dynamically by JavaScript -->
+                <option value="">Pilih Subgenre</option>
+            </select>
+        </div>
+        <div id="subgenre-manual-input-container" class="input-group mb-4" style="display:none;">
+            <label for="subgenre-manual-input" class="form-label">Subgenre Lainnya:</label>
+            <input type="text" id="subgenre-manual-input" class="form-input" placeholder="Masukkan subgenre lainnya">
+        </div>
+        <div class="input-group mb-6">
+            <label for="plot-keywords-input" class="form-label">Kata Kunci/Ide Plot (Opsional):</label>
+            <textarea id="plot-keywords-input" class="form-input h-24" placeholder="Contoh: Petualangan mencari artefak kuno, kisah cinta terlarang, detektif memecahkan kasus"></textarea>
+        </div>
+        <div class="button-group-spacing">
+            <button id="generate-ai-btn" class="btn btn-primary w-full">Buat Cerita</button>
+            <button id="back-from-ai-form-btn" class="btn btn-secondary w-full mt-2">Kembali</button>
+        </div>
+    </div>
+
+    <!-- Manual Input Screen -->
+    <div id="manual-input-screen" class="screen main-container" style="display: none;">
+        <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Input Cerita Manual</h2>
+        <div class="input-group mb-4">
+            <label for="manual-title" class="form-label">Judul Cerita:</label>
+            <input type="text" id="manual-title" class="form-input" placeholder="Masukkan judul cerita">
+        </div>
+        <div class="input-group mb-6">
+            <label for="manual-description" class="form-label">Deskripsi Cerita & Prolog:</label>
+            <textarea id="manual-description" class="form-input h-32" placeholder="Tuliskan deskripsi singkat cerita Anda dan prolog awal di sini."></textarea>
+        </div>
+        <div class="button-group-spacing">
+            <button id="continue-manual-btn" class="btn btn-primary w-full">Lanjutkan</button>
+            <button id="back-from-manual-btn" class="btn btn-secondary w-full mt-2">Kembali</button>
+        </div>
+    </div>
+
+    <!-- Story Selection Screen (NEW) -->
+    <div id="story-selection-screen" class="screen main-container" style="display: none;">
+        <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Pilih Cerita Anda</h2>
+        <div id="story-summary-display" class="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow-inner mb-6">
+            <h3 id="story-summary-title" class="text-xl font-bold text-gray-900 dark:text-white mb-2"></h3>
+            <p id="story-summary-description" class="text-gray-700 dark:text-gray-300 mb-4"></p>
+            <p id="story-summary-prolog" class="text-gray-800 dark:text-gray-200 italic"></p>
+        </div>
+
+        <div class="input-group mb-6">
+            <label for="culture-style-select" class="form-label">Pilih Ala Budaya untuk Nama Karakter & Lokasi:</label>
+            <select id="culture-style-select" class="form-select w-full">
+                <option value="indonesian">Indonesia (Contoh: Jawa, Sunda, Batak)</option>
+                <option value="chinese">Tiongkok</option>
+                <option value="japanese">Jepang</option>
+                <option value="european">Eropa (Contoh: Inggris, Perancis, Jerman)</option>
+                <option value="arabic">Timur Tengah</option>
+                <option value="indian">India</option>
+                <option value="custom">Kustom (Tentukan sendiri)</option>
+            </select>
+        </div>
+
+        <div class="button-group-spacing">
+            <button id="select-story-and-culture-btn" class="btn btn-primary w-full">Lanjutkan ke Penamaan</button>
+            <button id="back-from-story-selection-btn" class="btn btn-secondary w-full mt-2">Kembali</button>
+        </div>
+    </div>
+
+    <!-- Character Naming Screen (NEW) -->
+    <div id="character-naming-screen" class="screen main-container" style="display: none;">
+        <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Penamaan Karakter & Lokasi (<span id="selected-culture-display"></span>)</h2>
+        <p class="text-center text-gray-700 dark:text-gray-300 mb-6">Masukkan nama-nama yang akan digunakan dalam cerita Anda, disesuaikan dengan ala budaya yang Anda pilih.</p>
+
+        <div id="character-input-area" class="space-y-4 mb-6">
+            <!-- Karakter dan lokasi akan ditambahkan di sini secara dinamis oleh JavaScript -->
+            <!-- Contoh: -->
+            <!-- <div class="input-group">
+                <label for="char-name-1" class="form-label">Nama Karakter Utama:</label>
+                <input type="text" id="char-name-1" class="form-input" placeholder="Misal: Ling, Yuuto, Arthur">
+            </div>
+            <div class="input-group">
+                <label for="loc-name-1" class="form-label">Nama Desa/Kota Utama:</label>
+                <input type="text" id="loc-name-1" class="form-input" placeholder="Misal: Desa Bunga Teratai, Kota Sakura, Valoria">
+            </div> -->
+        </div>
+
+        <div class="button-group-spacing">
+            <button id="start-story-btn" class="btn btn-primary w-full">Mulai Cerita</button>
+            <button id="back-from-naming-btn" class="btn btn-secondary w-full mt-2">Kembali</button>
+        </div>
+    </div>
+
+    <!-- Story Reading Screen (NEW) -->
+    <div id="story-reading-screen" class="screen main-container" style="display: none;">
+        <h2 id="story-title-display" class="text-2xl sm:text-3xl font-bold text-center mb-6"></h2>
+        <div id="story-content" class="story-content-area bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow-inner mb-6 overflow-y-auto max-h-[60vh] text-gray-800 dark:text-gray-200 leading-relaxed text-justify">
+            <!-- Isi cerita akan dimuat di sini -->
+        </div>
+        <div class="button-group-spacing">
+            <button id="continue-reading-btn" class="btn btn-primary w-full">Lanjutkan Cerita</button>
+            <button id="back-to-main-menu-from-story-btn" class="btn btn-secondary w-full mt-2">Kembali ke Menu Utama</button>
+        </div>
+    </div>
+
+    <!-- Game Loading Overlay -->
+    <div id="game-loading-overlay" class="loading-indicator fixed inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center z-[1000]" style="display: none;">
+        <div class="spinner border-t-4 border-b-4 border-blue-500 rounded-full w-12 h-12 animate-spin mb-4"></div>
+        <span class="text-white text-lg font-semibold">Memuat cerita...</span>
+    </div>
+
+    <!-- Custom Message Box -->
+    <div id="custom-message-box" class="message-box fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[1000]" style="display:none;">
+        <div class="message-box-content bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl border-2 border-gray-300 dark:border-gray-700 max-w-sm mx-auto text-center transition-all duration-300 ease-in-out">
+            <h3 id="message-box-title" class="text-2xl font-bold text-gray-900 dark:text-white mb-4"></h3>
+            <p id="message-box-content" class="text-gray-700 dark:text-gray-300 mb-6"></p>
+            <button id="message-box-ok-btn" class="btn btn-primary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out">Oke</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

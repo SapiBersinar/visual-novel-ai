@@ -12,86 +12,53 @@
     <meta property="og:description" content="Hanzercopy.cloud adalah platform visual novel interaktif yang menghadirkan cerita komik mendalam dengan pilihan yang menentukan nasib Kamu. Rasakan petualangan fantasi, misteri, dan romansa dalam gaya komik hitam putih yang unik.">
     <meta property="og:url" content="https://hanzercopy.cloud/">
     <meta property="og:type" content="website">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* General Body Styling - Revamped for Scrolling */
+        /* General Body Styling */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #1a1a1a; /* Dark background for black and white theme */
+            background: linear-gradient(135deg, #1a1a1a, #333333, #1a1a1a); /* Dark gradient background */
+            background-size: 400% 400%;
+            animation: gradientMove 15s ease infinite; /* Smooth gradient animation */
             color: #f0f0f0; /* Light text color */
-            min-height: 100vh; /* Ensure background covers full viewport height */
+            min-height: 100vh;
             margin: 0;
-            padding: 20px; /* Overall page padding */
+            padding: 20px;
             box-sizing: border-box;
-            /* Removed display: flex and overflow: hidden to allow natural scrolling */
-            position: relative; /* For comic panel background */
-            /* Overflow is now default (auto), allowing vertical scrolling if content overflows */
+            position: relative;
+            display: flex; /* Use flex to center content */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            overflow-x: hidden; /* Prevent horizontal scroll */
         }
 
-        /* Comic Panel Lines Background Animation (Visible & Moving) */
-        .comic-lines {
-            position: fixed; /* Use fixed to ensure it covers the viewport regardless of scroll */
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        .comic-line {
-            position: absolute;
-            background-color: rgba(255, 255, 255, 0.45); /* High opacity for strong visibility */
-            width: 4px; /* Thicker lines */
-            height: 4px; /* Thicker lines */
-            animation: lineMove 10s linear infinite; /* Faster for very clear movement */
-        }
-        /* Vertical Lines */
-        .comic-line:nth-child(1) { height: 100%; left: 0%; animation-delay: 0s; }
-        .comic-line:nth-child(2) { height: 100%; left: 20%; animation-delay: 2s; }
-        .comic-line:nth-child(3) { height: 100%; left: 40%; animation-delay: 4s; }
-        .comic-line:nth-child(4) { height: 60%; left: 60%; animation-delay: 6s; } /* Adjusted height */
-        .comic-line:nth-child(5) { height: 80%; left: 80%; animation-delay: 8s; } /* Adjusted height */
-        /* Horizontal Lines */
-        .comic-line.horizontal { width: 100%; animation: lineMoveH 10s linear infinite; }
-        .comic-line.horizontal:nth-child(6) { top: 0%; animation-delay: 1s; }
-        .comic-line.horizontal:nth-child(7) { top: 20%; animation-delay: 3s; }
-        .comic-line.horizontal:nth-child(8) { top: 40%; animation-delay: 5s; }
-        .comic-line.horizontal:nth-child(9) { top: 60%; animation-delay: 7s; }
-        .comic-line.horizontal:nth-child(10) { top: 80%; animation-delay: 9s; }
-
-
-        @keyframes lineMove {
-            0% { transform: translateX(-100%); } /* Start fully off-screen left */
-            100% { transform: translateX(100vw); } /* End fully off-screen right (moves by viewport width) */
-        }
-        @keyframes lineMoveH {
-            0% { transform: translateY(-100%); } /* Start fully off-screen top */
-            100% { transform: translateY(100vh); } /* End fully off-screen bottom (moves by viewport height) */
-        }
-
 
         /* Main Container - Centered and allows content flow */
         .container {
-            background-color: #333333; /* Dark gray container background */
+            background-color: rgba(51, 51, 51, 0.95); /* Slightly transparent dark gray container background */
             padding: 40px;
             border-radius: 8px;
-            box-shadow: 10px 10px 0px 0px #000000; /* Stronger black shadow */
+            box-shadow: 10px 10px 0px 0px rgba(0, 0, 0, 0.7); /* Stronger black shadow */
             width: 100%;
             max-width: 700px; /* Wider max-width for content */
             text-align: center;
             border: 3px solid #000000; /* Thick black border */
             position: relative;
-            z-index: 1; /* Ensure content is above lines */
+            z-index: 1; /* Ensure content is above background */
             display: flex;
             flex-direction: column;
             gap: 20px;
             margin: 0 auto; /* Center the container horizontally */
-            animation: fadeIn 1.5s ease-out forwards; /* Keep container fade in */
-            min-height: calc(100vh - 40px); /* Ensure it's at least viewport height minus body padding */
-            justify-content: center; /* Center content vertically within the container if it's not overflowing */
+            animation: fadeIn 1.5s ease-out forwards;
         }
 
         @keyframes fadeIn {
@@ -110,14 +77,13 @@
             line-height: 1.1;
             text-transform: uppercase;
             position: relative;
-            /* Animation for the whole H1, after initial letters appear */
-            animation: finalTitlePulse 1.2s ease-in-out infinite alternate 1.5s; /* Starts after 1.5s (after letter animation) */
+            animation: finalTitlePulse 1.2s ease-in-out infinite alternate 1.5s;
         }
 
         /* Continuous pulse animation for the entire H1 */
         @keyframes finalTitlePulse {
             0% { text-shadow: 4px 4px 0px #000000, 0 0 0px #ffffff; }
-            50% { text-shadow: 10px 10px 0px rgba(0, 0, 0, 0.7), 0 0 10px #ffffff; } /* Larger shadow, subtle white glow */
+            50% { text-shadow: 10px 10px 0px rgba(0, 0, 0, 0.7), 0 0 10px #ffffff; }
             100% { text-shadow: 4px 4px 0px #000000, 0 0 0px #ffffff; }
         }
 
@@ -125,7 +91,7 @@
             display: inline-block;
             opacity: 0;
             transform: scale(0.2) translateY(-50px);
-            animation: bounceInText 0.6s ease-out forwards; /* Very fast individual letter bounce for clarity */
+            animation: bounceInText 0.6s ease-out forwards;
         }
         h1 span:nth-child(1) { animation-delay: 0.1s; }
         h1 span:nth-child(2) { animation-delay: 0.15s; }
@@ -141,46 +107,53 @@
         h1 span:nth-child(12) { animation-delay: 0.65s; }
         h1 span:nth-child(13) { animation-delay: 0.7s; }
         h1 span:nth-child(14) { animation-delay: 0.75s; }
-        h1 span:nth-child(15) { animation-delay: 0.8s; } 
+        h1 span:nth-child(15) { animation-delay: 0.8s; }
 
 
         @keyframes bounceInText {
             0% { opacity: 0; transform: scale(0.2) translateY(-50px); }
             60% { opacity: 1; transform: scale(1.3) translateY(15px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); } /* Ensure it stays visible */
+            100% { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         p {
             font-size: 1.1rem;
             line-height: 1.7;
             margin-bottom: 25px;
-            color: #cccccc; /* Slightly darker light text */
+            color: #cccccc;
         }
 
-        /* Call to Action Button */
+        /* Call to Action Buttons */
+        .cta-button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Spasi antar tombol */
+            margin-top: 10px;
+        }
+
         .cta-button {
             display: inline-block;
             padding: 18px 35px;
-            background-color: #000000; /* Black button */
-            color: #ffffff; /* White text */
-            border: 2px solid #ffffff; /* White border */
+            background-color: #000000;
+            color: #ffffff;
+            border: 2px solid #ffffff;
             border-radius: 4px;
             font-size: 1.25rem;
             font-weight: 700;
             text-decoration: none;
             cursor: pointer;
             transition: all 0.3s ease-in-out;
-            box-shadow: 5px 5px 0px 0px #cccccc; /* Light shadow */
+            box-shadow: 5px 5px 0px 0px #cccccc;
             position: relative;
             overflow: hidden;
             letter-spacing: 0.5px;
         }
 
         .cta-button:hover {
-            transform: translate(-3px, -3px); /* Lift effect */
-            box-shadow: 8px 8px 0px 0px #ffffff; /* Deeper white shadow */
-            background-color: #444444; /* Darker on hover */
-            color: #ffffff; /* Keep text white */
+            transform: translate(-3px, -3px);
+            box-shadow: 8px 8px 0px 0px #ffffff;
+            background-color: #444444;
+            color: #ffffff;
         }
 
         .cta-button::before {
@@ -190,7 +163,7 @@
             left: 50%;
             width: 300%;
             height: 300%;
-            background: rgba(255, 255, 255, 0.1); /* Subtle white flash effect */
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             transition: all 0.75s ease-out;
             transform: translate(-50%, -50%) scale(0);
@@ -204,12 +177,13 @@
 
         /* How It Works Section */
         .how-it-works {
-            background-color: #222222; /* Slightly lighter dark gray for this section */
+            background-color: rgba(34, 34, 34, 0.9); /* Slightly lighter dark gray, transparent */
             padding: 30px;
             border-radius: 8px;
             border: 2px solid #000000;
-            box-shadow: 7px 7px 0px 0px #000000;
+            box-shadow: 7px 7px 0px 0px rgba(0, 0, 0, 0.7);
             margin-top: 30px;
+            text-align: left; /* Align text within this section to the left */
         }
 
         .how-it-works h2 {
@@ -219,56 +193,37 @@
             margin-bottom: 25px;
             text-shadow: 2px 2px 0px #000000;
             letter-spacing: -1px;
+            text-align: center; /* Center the heading of this section */
         }
 
-        .how-it-works-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            text-align: left;
+        .how-it-works-item {
+            margin-bottom: 25px; /* Spasi antar item cara kerja */
         }
 
-        @media (min-width: 640px) {
-            .how-it-works-grid {
-                grid-template-columns: 1fr 1fr; /* 2 columns on larger screens */
-            }
-        }
-
-        .how-item {
-            background-color: #444444; /* Even lighter gray for item cards */
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid #000000;
-            box-shadow: 4px 4px 0px 0px #000000;
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .how-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 6px 6px 0px 0px #000000;
-        }
-
-        .how-item h3 {
-            font-size: 1.25rem;
+        .how-it-works-item h3 {
+            font-size: 1.5rem;
             font-weight: 600;
             color: #ffffff;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.3); /* Garis bawah tipis */
+            padding-bottom: 8px;
         }
 
-        .how-item h3 .icon {
-            font-size: 1.5rem;
-            color: #f0f0f0; /* White icon */
+        .how-it-works-item h3 .icon {
+            font-size: 1.8rem; /* Lebih besar untuk ikon */
+            color: #f0f0f0;
         }
 
-        .how-item p {
-            font-size: 0.95rem;
+        .how-it-works-item p {
+            font-size: 1rem;
             color: #dddddd;
             margin-bottom: 0;
             line-height: 1.6;
         }
+
 
         /* Version links */
         .version-links {
@@ -295,14 +250,14 @@
             margin-top: 30px;
         }
 
-        /* Custom Message Box */
+        /* Custom Message Box (for AI Alert) */
         .custom-message-box-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent overlay */
+            background-color: rgba(0, 0, 0, 0.7);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -370,7 +325,6 @@
             .container {
                 padding: 30px;
                 box-shadow: 7px 7px 0px 0px #000000;
-                min-height: auto; /* Allow container to shrink on small screens if content is short */
             }
             h1 {
                 font-size: 2.5rem;
@@ -402,14 +356,14 @@
                 font-size: 1.7rem;
                 margin-bottom: 20px;
             }
-            .how-item h3 {
-                font-size: 1.1rem;
-            }
-            .how-item h3 .icon {
+            .how-it-works-item h3 {
                 font-size: 1.3rem;
             }
-            .how-item p {
-                font-size: 0.85rem;
+            .how-it-works-item h3 .icon {
+                font-size: 1.5rem;
+            }
+            .how-it-works-item p {
+                font-size: 0.9rem;
             }
             .custom-message-box {
                 padding: 20px;
@@ -424,20 +378,7 @@
     </style>
 </head>
 <body>
-    <div class="comic-lines">
-        <!-- Lines for vertical movement -->
-        <div class="comic-line"></div>
-        <div class="comic-line"></div>
-        <div class="comic-line"></div>
-        <div class="comic-line"></div>
-        <div class="comic-line"></div>
-        <!-- Lines for horizontal movement, adjusted nth-child for unique delays -->
-        <div class="comic-line horizontal"></div>
-        <div class="comic-line horizontal"></div>
-        <div class="comic-line horizontal"></div>
-        <div class="comic-line horizontal"></div>
-        <div class="comic-line horizontal"></div>
-    </div>
+    <!-- Background is now handled by animated gradient in body CSS -->
 
     <div class="container">
         <h1>
@@ -452,28 +393,22 @@
             Rasakan sensasi membaca cerita dengan pilihan untuk mengubah alur didalamnya.
             Dari misteri yang memutar otak hingga fantasi yang mengharukan, setiap kisah adalah perjalanan unik yang menanti eksplorasi Kamu.
         </p>
-        
-        <a href="https://hanzercopy.cloud/beta" class="cta-button">Mulai Petualangan Kamu</a>
+
+        <div class="cta-button-group">
+            <a href="https://hanzercopy.cloud/beta" class="cta-button">Mulai Petualangan Interaktif</a>
+            <a href="https://hanzercopy.cloud/cerita-non-interaktif" class="cta-button">Cerita Non-Interaktif</a>
+        </div>
+
 
         <div class="how-it-works">
             <h2>Bagaimana Hanzercopy Bekerja?</h2>
-            <div class="how-it-works-grid">
-                <div class="how-item">
-                    <h3><span class="icon">✍️</span> Pilihan Kamu, Cerita Kamu</h3>
-                    <p>Setiap keputusan yang Kamu buat akan secara langsung memengaruhi alur cerita, membuka jalur baru, atau mengubah nasib karakter. Tidak ada dua perjalanan yang sama!</p>
-                </div>
-                <div class="how-item">
-                    <h3><span class="icon">📚</span> Narasi & Karakter Mendalam</h3>
-                    <p>Selami kisah-kisah yang kaya akan plot, karakter yang kompleks, dan dunia yang imersif, disajikan dalam gaya komik hitam putih yang menawan.</p>
-                </div>
-                <div class="how-item">
-                    <h3><span class="icon">🎮</span> Sistem Dinamis</h3>
-                    <p>Rasakan interaksi dengan sistem seperti Trust System, Flag Awal, DNA Keputusan, dan Event Waktu yang akan membuat setiap permainan penuh kejutan.</p>
-                </div>
-                <div class="how-item">
-                    <h3><span class="icon">🔄</span> Replayability Tinggi</h3>
-                    <p>Dengan berbagai akhir cerita, jalur tersembunyi, dan konsekuensi pilihan, Kamu akan menemukan nilai replayability yang tak terbatas di setiap judul.</p>
-                </div>
+            <div class="how-it-works-item">
+                <h3><i class="fas fa-hand-pointer icon"></i> Untuk Cerita Interaktif</h3>
+                <p>Di Hanzercopy, Kamu adalah penentu takdir! Setiap keputusan yang Kamu buat akan langsung memengaruhi alur cerita, membuka jalur baru, atau mengubah nasib karakter. Sistem dinamis seperti Trust System, Flag Awal, DNA Keputusan, dan Event Waktu akan membuat setiap permainan penuh kejutan dan menawarkan replayability tinggi. Tidak ada dua perjalanan yang sama, karena cerita menyesuaikan diri dengan setiap pilihanmu!</p>
+            </div>
+            <div class="how-it-works-item">
+                <h3><i class="fas fa-book-reader icon"></i> Untuk Cerita Non-Interaktif</h3>
+                <p>Jika Kamu ingin tenggelam dalam narasi yang mendalam tanpa interupsi, mode non-interaktif adalah pilihanmu. Kamu akan menikmati cerita yang panjang dan kaya, yang terus berlanjut secara linier. Sebelum memulai, Kamu bisa menyesuaikan nama karakter utama dan lokasi (seperti desa atau provinsi) dengan gaya budaya pilihanmu (misalnya, Tiongkok, Jepang, atau Indonesia), menciptakan pengalaman membaca yang personal dan imersif. Cukup klik 'Lanjutkan' untuk melaju ke bab berikutnya dan nikmati alur cerita yang tak terputus!</p>
             </div>
         </div>
 
@@ -486,9 +421,6 @@
             </p>
         </div>
 
-        <p class="text-xs mt-8 opacity-75 footer-text">
-            Katakanlah: Sesungguhnya aku takut akan azab hari yang besar jika aku durhaka kepada Tuhanku. (QS. Az-Zumar: 13)
-        </p>
     </div>
 
     <!-- Custom Message Box for AI Alert -->
@@ -506,11 +438,15 @@
         const aiMessageBoxOkBtn = document.getElementById('aiMessageBoxOkBtn');
 
         function showAiMessage() {
-            aiMessageBoxOverlay.classList.add('active');
+            // Check if the message has been shown before in this session
+            if (!sessionStorage.getItem('aiMessageBoxShown')) {
+                aiMessageBoxOverlay.classList.add('active');
+            }
         }
 
         aiMessageBoxOkBtn.addEventListener('click', () => {
             aiMessageBoxOverlay.classList.remove('active');
+            sessionStorage.setItem('aiMessageBoxShown', 'true'); // Mark as shown for this session
         });
 
         // --- Initial Load Logic ---

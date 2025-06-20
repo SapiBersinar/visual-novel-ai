@@ -308,14 +308,36 @@ textarea::placeholder {
 /* Loading Indicator & Spinner */
 .loading-indicator {
     color: var(--sub-text-color);
+    /* For loading-ai and loading-characters, these properties are set */
+    /* display: flex; flex-direction: column; align-items: center; justify-content: center; */
 }
-.spinner {
+.loading-indicator .spinner {
+    border: 4px solid var(--input-border); /* Use input border for base */
+    border-top: 4px solid var(--loading-spinner-color); /* Spinner color */
+}
+.loading-indicator span { /* Applies to loading-text and loading-additional-text */
+    color: var(--sub-text-color);
+}
+.loading-indicator #loading-additional-text {
+    color: var(--light-text-color);
+}
+
+
+/* New Loading Card Style (for game-loading-overlay) */
+.loading-card {
+    /* Uses Tailwind classes in HTML: w-full max-w-sm mx-auto p-8 rounded-2xl shadow-xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col items-center justify-center text-center z-50 */
+    background-color: var(--container-bg);
+    border-color: var(--border-color);
+    box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color);
+}
+.loading-card .spinner {
     border: 4px solid var(--input-border);
     border-top: 4px solid var(--loading-spinner-color);
 }
-.loading-additional-text {
-    color: var(--light-text-color);
+.loading-card span { /* For text inside loading-card */
+    color: var(--sub-text-color);
 }
+
 
 /* Card Styles (Story, Character, Summary sections) */
 .story-card, .character-card, .summary-card {
@@ -350,6 +372,9 @@ textarea::placeholder {
 }
 
 /* Custom Message Box */
+.message-box { /* The overlay background */
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+}
 .message-box-content {
     background-color: var(--container-bg);
     border-color: var(--border-color);
@@ -532,6 +557,11 @@ textarea::placeholder {
     }
     #theme-toggle-text {
         display: none; /* Hide text on small screens */
+    }
+
+    /* Adjustments for loading-card on small screens if needed */
+    .loading-card {
+        max-width: 90%; /* Adjust max-width for smaller screens */
     }
 }
 
