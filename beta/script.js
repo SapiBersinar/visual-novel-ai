@@ -69,7 +69,7 @@ const startGameBtn = document.getElementById('start-game-btn');
 const backFromSummaryBtn = document.getElementById('back-from-summary-btn');
 
 const gameScreen = document.getElementById('game-screen');
-const gameLoadingOverlay = document.getElementById('game-loading-overlay');
+const gameLoadingOverlay = document.getElementById('game-loading-overlay'); // This will be improved
 const gameLoadingAdditionalText = document.getElementById('game-loading-additional-text');
 const gamePlayScreen = document.getElementById('game-play-screen');
 const prologContentDisplay = document.getElementById('prolog-content-display');
@@ -100,6 +100,7 @@ let selectedLanguage = 'id';
 let selectedStoryDetails = null;
 let generatedCharacters = []; // This will hold ALL generated characters
 let selectedMainCharacter = null;
+let selectedNameStyle = 'random'; // New: To store the chosen name style
 
 // Game progress state to store dynamic system data
 let gameProgress = {
@@ -113,7 +114,6 @@ let gameProgress = {
     traumaSystem: {}, // {characterId: boolean}
     relationshipLabels: {}, // {characterId: label}
     timeSystem: {day: 1, partOfDay: "pagi", countdown: null, activeEvents: []},
-    // Updated DNA Profile with initial neutral values
     dnaProfile: {moral: "Netral", honesty: "Netral", empathy: "Netral", style: "Observasi"},
     playerChoices: [] // Stores objects like {chapter: 1, choiceIndex: 0, choiceText: "..."}
 };
@@ -158,7 +158,6 @@ function clearApiKey() {
     localStorage.removeItem('geminiApiKey');
     API_KEY = ""; // Clear global API_KEY
     showMessageBox(selectedLanguage === 'id' ? 'Kunci API Dihapus' : 'API Key Cleared', selectedLanguage === 'id' ? 'Kunci API telah dihapus dari browser Anda. Silakan masukkan kunci baru.' : 'API Key has been cleared from your browser. Please enter a new key.');
-    // Reload or redirect to API key input screen
     location.reload();
 }
 
@@ -182,6 +181,7 @@ function toggleTheme() {
 
 function applyStoredTheme() {
     const storedTheme = localStorage.getItem('theme') || 'light-theme';
+    // Ensure existing Tailwind classes like 'flex', 'flex-col' are preserved
     document.body.className = document.body.className.split(' ').filter(c => !c.includes('-theme')).join(' ') + ' ' + storedTheme;
     updateThemeToggleButtonText();
 }
@@ -288,26 +288,22 @@ languageRadios.forEach(radio => {
 function updateLanguageText() {
     if (selectedLanguage === 'id') {
         document.title = "Cerita Komik Interaktif";
-        // Main Screen
-        mainScreen.querySelector('h1').textContent = "Visual Novel AI"; // Changed title
+        mainScreen.querySelector('h1').textContent = "Visual Novel AI";
         mainScreen.querySelector('p').textContent = "Dapatkan ide cerita baru atau masukkan cerita Anda sendiri.";
         manualInputBtn.textContent = "Masukkan Judul & Deskripsi Manual";
         aiGenerateBtn.textContent = "Hasilkan Cerita dengan AI";
 
-        // Manual Input Screen
         manualInputScreen.querySelector('h1').textContent = "Masukkan Cerita Anda";
         manualTitleInput.placeholder = "Judul Cerita";
         manualDescriptionInput.placeholder = "Deskripsi Cerita (fokus pada premis & konflik)";
         continueManualBtn.textContent = "Lanjutkan ke Pembuatan Karakter";
         backFromManualBtn.textContent = "Kembali";
 
-        // AI Generate Form Screen
         aiGenerateFormScreen.querySelector('h1').textContent = "Hasilkan Cerita dengan AI";
         aiGenerateFormScreen.querySelector('p').textContent = "AI akan membuat ide cerita berdasarkan preferensi Anda.";
         languageRadios[0].nextSibling.textContent = " Bahasa Indonesia";
         languageRadios[1].nextSibling.textContent = " English";
         genreSelect.options[0].textContent = "Pilih Genre";
-        // Update "Other" option for genre select
         const otherGenreOption = Array.from(genreSelect.options).find(opt => opt.value === 'other');
         if (otherGenreOption) otherGenreOption.textContent = "Lainnya...";
         otherGenreInput.placeholder = "Masukkan Genre Lainnya";
@@ -319,17 +315,14 @@ function updateLanguageText() {
         loadingText.textContent = "Sedang menulis kisah Anda...";
         loadingAdditionalText.textContent = "Mohon tunggu sebentar, AI sedang memproses.";
 
-        // AI Results Screen
         aiResultsScreen.querySelector('h1').textContent = "Pilih Cerita Anda";
         aiResultsScreen.querySelector('p').textContent = "Pilih salah satu cerita yang dihasilkan AI.";
         continueToCharacterSelectionBtn.textContent = "Lanjutkan ke Pemilihan Karakter";
         backFromAiResultsBtn.textContent = "Kembali Cari Cerita Lain";
 
-        // Character Creation Screen
         characterCreationScreen.querySelector('h1').textContent = "Buat Karakter";
         characterCreationScreen.querySelector('p').textContent = "AI akan membuat seluruh karakter untuk cerita Anda, termasuk memilih 2-4 kandidat Karakter Utama (MC).";
         characterClassInput.placeholder = "Kelas Karakter (opsional, cth: Pahlawan)";
-        // Update new name style options
         Array.from(nameStyleSelect.options).forEach(option => {
             switch (option.value) {
                 case 'random': option.textContent = "Nama Acak AI"; break;
@@ -353,48 +346,41 @@ function updateLanguageText() {
         continueToGameBtn.textContent = "Lanjutkan Cerita";
         regenerateCharactersBtn.textContent = "Cari Karakter Lagi";
 
-        // Summary Screen
         summaryScreen.querySelector('h1').textContent = "Ringkasan Cerita Anda";
         summaryScreen.querySelector('p').textContent = "Ini adalah ringkasan cerita dan karakter yang akan Anda mainkan.";
         summaryScreen.querySelector('.summary-card:nth-of-type(1) h2').textContent = "Judul Cerita";
-        summaryScreen.querySelector('.summary-card:nth-of-type(1) h2:nth-of-type(2)').textContent = "Deskripsi Cerita"; // Corrected selector
+        summaryScreen.querySelector('.summary-card:nth-of-type(1) h2:nth-of-type(2)').textContent = "Deskripsi Cerita";
         summaryScreen.querySelector('.summary-card:nth-of-type(2) h2').textContent = "Karakter Utama (MC)";
         startGameBtn.textContent = "Mulai Game";
         backFromSummaryBtn.textContent = "Kembali";
 
-        // Game Screen
         gameLoadingOverlay.querySelector('span').textContent = "Memuat cerita...";
         gameLoadingAdditionalText.textContent = "Mohon tunggu sebentar, AI sedang memproses.";
         startRealStoryBtn.textContent = "Mulai ke cerita sebenarnya";
 
 
-        // Game Over Screen
         gameOverScreen.querySelector('h1').textContent = "💀 GAME OVER 💀";
         retryGameBtn.textContent = "Coba Lagi";
         backToMainMenuBtn.textContent = "Kembali ke Menu Utama";
 
     } else { // English
         document.title = "Interactive Comic Story";
-        // Main Screen
-        mainScreen.querySelector('h1').textContent = "Visual Novel AI"; // Changed title
+        mainScreen.querySelector('h1').textContent = "Visual Novel AI";
         mainScreen.querySelector('p').textContent = "Get new story ideas or input your own story.";
         manualInputBtn.textContent = "Enter Title & Description Manually";
         aiGenerateBtn.textContent = "Generate Story with AI";
 
-        // Manual Input Screen
         manualInputScreen.querySelector('h1').textContent = "Enter Your Story";
         manualTitleInput.placeholder = "Story Title";
         manualDescriptionInput.placeholder = "Story Description (focus on premise & conflict)";
         continueManualBtn.textContent = "Proceed to Character Creation";
         backFromManualBtn.textContent = "Back";
 
-        // AI Generate Form Screen
         aiGenerateFormScreen.querySelector('h1').textContent = "Generate Story with AI";
         aiGenerateFormScreen.querySelector('p').textContent = "AI will create story ideas based on your preferences.";
         languageRadios[0].nextSibling.textContent = " Indonesian";
         languageRadios[1].nextSibling.textContent = " English";
         genreSelect.options[0].textContent = "Select Genre";
-        // Update "Other" option for genre select
         const otherGenreOption = Array.from(genreSelect.options).find(opt => opt.value === 'other');
         if (otherGenreOption) otherGenreOption.textContent = "Other...";
         otherGenreInput.placeholder = "Enter Other Genre";
@@ -406,17 +392,14 @@ function updateLanguageText() {
         loadingText.textContent = "Crafting your story...";
         loadingAdditionalText.textContent = "Please wait, AI is processing.";
 
-        // AI Results Screen
         aiResultsScreen.querySelector('h1').textContent = "Select Your Story";
         aiResultsScreen.querySelector('p').textContent = "Select one of the AI generated stories.";
         continueToCharacterSelectionBtn.textContent = "Proceed to Character Selection";
         backFromAiResultsBtn.textContent = "Go Back, Find Another Story";
 
-        // Character Creation Screen
         characterCreationScreen.querySelector('h1').textContent = "Create Characters";
         characterCreationScreen.querySelector('p').textContent = "AI will create all characters for your story, including selecting 2-4 Main Character (MC) candidates.";
         characterClassInput.placeholder = "Character Class (optional, e.g., Hero)";
-        // Update new name style options
         Array.from(nameStyleSelect.options).forEach(option => {
             switch (option.value) {
                 case 'random': option.textContent = "Random AI Name"; break;
@@ -440,26 +423,23 @@ function updateLanguageText() {
         continueToGameBtn.textContent = "Continue Story";
         regenerateCharactersBtn.textContent = "Find Other Characters";
 
-        // Summary Screen
         summaryScreen.querySelector('h1').textContent = "Your Story Summary";
         summaryScreen.querySelector('p').textContent = "Here is the summary of your story and characters.";
         summaryScreen.querySelector('.summary-card:nth-of-type(1) h2').textContent = "Story Title";
-        summaryScreen.querySelector('.summary-card:nth-of-type(1) h2:nth-of-type(2)').textContent = "Story Description"; // Corrected selector
+        summaryScreen.querySelector('.summary-card:nth-of-type(1) h2:nth-of-type(2)').textContent = "Story Description";
         summaryScreen.querySelector('.summary-card:nth-of-type(2) h2').textContent = "Main Character (MC)";
         startGameBtn.textContent = "Start Game";
         backFromSummaryBtn.textContent = "Back";
 
-        // Game Screen
         gameLoadingOverlay.querySelector('span').textContent = "Loading story...";
         gameLoadingAdditionalText.textContent = "Please wait, AI is processing.";
         startRealStoryBtn.textContent = "Start the real story";
 
-        // Game Over Screen
         gameOverScreen.querySelector('h1').textContent = "💀 GAME OVER 💀";
         retryGameBtn.textContent = "Retry";
         backToMainMenuBtn.textContent = "Back to Main Menu";
     }
-    updateThemeToggleButtonText(); // Update button text after language change
+    updateThemeToggleButtonText();
 }
 
 
@@ -495,8 +475,8 @@ continueToCharacterSelectionBtn.addEventListener('click', () => {
         characterActionButtons.style.display = 'none';
         generatedCharacters = [];
         selectedMainCharacter = null;
-        characterClassInput.value = ''; // Clear optional class input
-        characterClassInput.style.display = 'none'; // Ensure it's hidden
+        characterClassInput.value = '';
+        characterClassInput.style.display = 'none';
     } else {
         showMessageBox(selectedLanguage === 'id' ? 'Peringatan' : 'Warning', selectedLanguage === 'id' ? 'Silakan pilih cerita terlebih dahulu.' : 'Please select a story first.');
     }
@@ -506,7 +486,7 @@ continueManualBtn.addEventListener('click', () => {
     const title = manualTitleInput.value.trim();
     const description = manualDescriptionInput.value.trim();
     if (title && description) {
-        selectedStoryDetails = { title, description, genres: [], subgenres: [], rating: "SU", initialCharacterMentions: [] };
+        selectedStoryDetails = { title, description, genres: [], subgenres: [], rating: "SU", initialCharacterMentions: [], initialPlaceMentions: [] }; // Added initialPlaceMentions
         showScreen('character-creation-screen');
         characterResultsDiv.innerHTML = '';
         mcSelectionHeading.style.display = 'none';
@@ -524,12 +504,18 @@ generateAiBtn.addEventListener('click', generateStoryContent);
 generateCharactersBtn.addEventListener('click', generateCharacters);
 regenerateCharactersBtn.addEventListener('click', generateCharacters);
 
+nameStyleSelect.addEventListener('change', (event) => {
+    selectedNameStyle = event.target.value; // Update selectedNameStyle
+});
+
+
 continueToGameBtn.addEventListener('click', async () => {
     if (selectedMainCharacter) {
-        // AI Call to rewrite story description with selected MC's name
+        // AI Call to rewrite story description with selected MC's name and cultural place names
         const originalDescription = selectedStoryDetails.description;
         const mcName = selectedMainCharacter.name;
-        const initialMentions = selectedStoryDetails.initialCharacterMentions || [];
+        const initialCharacterMentions = selectedStoryDetails.initialCharacterMentions || [];
+        const initialPlaceMentions = selectedStoryDetails.initialPlaceMentions || []; // Get initial place mentions
 
         const rewriteSchema = {
             type: "OBJECT",
@@ -548,19 +534,22 @@ continueToGameBtn.addEventListener('click', async () => {
         loadingTxtElement.textContent = selectedLanguage === 'id' ? 'Menyesuaikan deskripsi cerita...' : 'Adjusting story description...';
         loadingAdditionalElement.textContent = selectedLanguage === 'id' ? 'Mohon tunggu, AI sedang merevisi.' : 'Please wait, AI is revising.';
 
-        let rewritePrompt = `Rewrite the following story description based on the new main character's name.
+        let rewritePrompt = `Rewrite the following story description.
+        The main character's name is "${mcName}".
+        The chosen naming style for characters is "${selectedNameStyle}".
 
         Original Description: "${originalDescription}"
-        Main Character's New Name: "${mcName}"
-        Original Character Names Mentioned (if any, use these as targets for replacement): ${JSON.stringify(initialMentions)}
+        Original Character Names Mentioned (if any, use these as targets for replacement): ${JSON.stringify(initialCharacterMentions)}
+        Original Place Names Mentioned (if any, replace these with culturally appropriate names based on "${selectedNameStyle}" naming style): ${JSON.stringify(initialPlaceMentions)}
 
         Instructions:
-        1. If any of the "Original Character Names Mentioned" are present in the "Original Description", replace them with the "Main Character's New Name".
-        2. Ensure the rewritten description flows naturally and grammatically correct.
-        3. The core plot, tone, and conflict of the original description must remain unchanged.
-        4. If no specific character names were mentioned in the original description, or if the replacement isn't straightforward, simply ensure the new description subtly implies "${mcName}" as the primary focus if possible, without forcing it.
+        1. If any "Original Character Names Mentioned" are present, replace them with "${mcName}".
+        2. If any "Original Place Names Mentioned" are present, replace them with *culturally appropriate equivalents* that match the "${selectedNameStyle}" naming style. For example, if "Jawa Timur" is mentioned and the style is "chinese", replace it with a Chinese-sounding province or region name. If "Desa Sukorame" and "japanese" style, replace with a Japanese-sounding village name. If no clear equivalent, use a generic but culturally fitting term (e.g., "desa di Tiongkok", "kota di Jepang").
+        3. Ensure the rewritten description flows naturally and grammatically correct.
+        4. The core plot, tone, and conflict of the original description must remain unchanged.
         5. Provide the rewritten description in ${selectedLanguage === 'id' ? 'Indonesian' : 'English'}.
-        6. Do NOT include any introductory or concluding remarks, just the rewritten description string.`;
+        6. Do NOT include any introductory or concluding remarks, just the rewritten description string.
+        7. Strictly avoid using the names "Arya" and "Anya".`; // Added instruction to avoid names
 
         const rewrittenDescriptionObj = await callGeminiAPI(
             rewritePrompt,
@@ -652,7 +641,22 @@ async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtEl
         return null;
     }
 
-    loadingElement.style.display = 'flex';
+    // Apply loading classes for consistent look across all loading states
+    loadingElement.classList.add('flex', 'flex-col', 'items-center', 'justify-center', 'mt-8', 'text-gray-700', 'dark:text-gray-300');
+    loadingElement.style.display = 'flex'; // Ensure display flex is set
+    // Remove specific spinner/text classes if they were inline or conflicting
+    const spinner = loadingElement.querySelector('.spinner');
+    if (spinner) {
+        spinner.classList.add('border-t-4', 'border-blue-500', 'w-10', 'h-10', 'mb-4', 'rounded-full', 'animate-spin');
+    }
+    if (loadingTxtElement) {
+        loadingTxtElement.classList.add('text-xl', 'font-semibold');
+    }
+    if (loadingAdditionalElement) {
+        loadingAdditionalElement.classList.add('text-sm', 'mt-2', 'text-gray-500', 'dark:text-gray-400');
+    }
+
+
     if (buttonToDisable) buttonToDisable.disabled = true;
 
     let loadingTimeout;
@@ -763,19 +767,25 @@ async function generateStoryContent() {
                     "type": "ARRAY",
                     "items": { "type": "STRING" },
                     "description": "Any character names explicitly mentioned in the story description. Return as an empty array if none."
+                },
+                "initialPlaceMentions": { // New field to capture initial place mentions
+                    "type": "ARRAY",
+                    "items": { "type": "STRING" },
+                    "description": "Any specific geographical place names (cities, regions, countries) explicitly mentioned in the story description. Return as an empty array if none."
                 }
             },
-            "required": ["title", "description", "genres", "subgenres", "rating", "initialCharacterMentions"]
+            "required": ["title", "description", "genres", "subgenres", "rating", "initialCharacterMentions", "initialPlaceMentions"]
         }
     };
 
     let prompt = `Generate ${numStories} *new and unique* visual novel story ideas. For each idea, provide:
     - A compelling story title.
-    - A concise and intriguing story description (focus on premise, conflict, or theme). Character names CAN be included in the description if relevant.
+    - A concise and intriguing story description (focus on premise, conflict, or theme). Character names and place names CAN be included in the description if relevant.
     - A list of relevant genres, including "${selectedGenre}".
     - A list of relevant subgenres.
     - An appropriate content rating from these options: "SU", "PG-13", "16+", "18+", "21+".
     - A list of any specific character names mentioned in the description (e.g., ["Lintang", "Budi"]). If no specific names, return an empty array.
+    - A list of any specific geographical place names (cities, regions, countries) explicitly mentioned in the story description (e.g., ["Jawa Timur", "Desa Sukorame"]). If no specific place names, return an empty array.
 
     Rating Guidelines:
     - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
@@ -788,7 +798,7 @@ async function generateStoryContent() {
     Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
     Violence and harsh language are permitted only for ratings 16+, 18+ and 21+.
 
-    Ensure the output is in JSON format according to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. (Random seed: ${Math.random()})`;
+    Ensure the output is in JSON format according to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. Strictly avoid using the names "Arya" and "Anya". (Random seed: ${Math.random()})`;
 
 
     if (selectedSubgenre && selectedSubgenre !== (selectedLanguage === 'id' ? 'Pilih Subgenre' : 'Select Subgenre')) {
@@ -801,11 +811,11 @@ async function generateStoryContent() {
         const filteredStories = stories.slice(0, numStories);
 
         showScreen('ai-results-screen');
-        storyListContainer.style.display = 'grid'; // Changed back to grid
+        storyListContainer.style.display = 'grid';
 
         filteredStories.forEach((story) => {
             const storyCard = document.createElement('div');
-            storyCard.className = 'story-card p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 cursor-pointer hover:shadow-xl transition-all duration-300 ease-in-out'; // Updated classes
+            storyCard.className = 'story-card p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 cursor-pointer hover:shadow-xl transition-all duration-300 ease-in-out';
             storyCard.dataset.story = JSON.stringify(story);
             storyCard.innerHTML = `
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">${story.title}</h2>
@@ -869,9 +879,9 @@ async function generateSubgenres(mainGenre) {
             prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Konspirasi". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Teori Konspirasi, Masyarakat Rahasia, Pemerintah Bayangan, Pengungkapan Kebenaran, Pembunuhan Terencana.`;
         } else if (mainGenre === "War") {
             prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Perang". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Perang Dunia, Perang Sipil, Konflik Futuristik, Taktik Militer, Survival di Medan Perang.`;
-        } else if (mainGenre === "Boring") { // New genre
+        } else if (mainGenre === "Boring") {
             prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Membosankan". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Rutinitas Harian, Kehidupan Perkantoran, Menunggu, Proses Membosankan, Monoton, Tanpa Konflik.`;
-        } else if (mainGenre === "Isekai") { // New genre
+        } else if (mainGenre === "Isekai") {
             prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Isekai". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Reinkarnasi, Summoning, Petualangan Dunia Lain, Sistem Game, Pahlawan Terpilih, Kebangkitan Kekuatan.`;
         }
     } else { // English
@@ -888,9 +898,9 @@ async function generateSubgenres(mainGenre) {
             prompt = `Provide a list of 5-10 relevant subgenres for the "Conspiracy" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: Conspiracy Theory, Secret Societies, Shadow Government, Truth Unveiling, Assassination Plot.`;
         } else if (mainGenre === "War") {
             prompt = `Provide a list of 5-10 relevant subgenres for the "War" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: World War, Civil War, Futuristic Conflict, Military Tactics, Battlefield Survival.`;
-        } else if (mainGenre === "Boring") { // New genre
+        } else if (mainGenre === "Boring") {
             prompt = `Provide a list of 5-10 relevant subgenres for the "Boring" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: Daily Routine, Office Life, Waiting, Tedious Processes, Monotony, No Conflict.`;
-        } else if (mainGenre === "Isekai") { // New genre
+        } else if (mainGenre === "Isekai") {
             prompt = `Provide a list of 5-10 relevant subgenres for the "Isekai" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: Reincarnation, Summoning, Otherworld Adventure, Game System, Chosen Hero, Power Awakening.`;
         }
     }
@@ -928,13 +938,14 @@ async function generateCharacters() {
     mcSelectionHeading.style.display = 'none';
     characterActionButtons.style.display = 'none';
     selectedMainCharacter = null;
-    generatedCharacters = []; // Clear previous characters
+    generatedCharacters = [];
 
     const totalNumChars = Math.floor(Math.random() * (10 - 6 + 1)) + 6;
     console.log("AI-determined totalNumChars:", totalNumChars);
 
     const charClassHint = characterClassInput.value.trim();
-    const nameStyle = nameStyleSelect.value;
+    const nameStyle = nameStyleSelect.value; // Get the chosen name style
+    selectedNameStyle = nameStyle; // Store it globally for later use
 
     if (!selectedStoryDetails) {
          showMessageBox(selectedLanguage === 'id' ? 'Peringatan' : 'Warning', selectedLanguage === 'id' ? 'Silakan pilih cerita terlebih dahulu sebelum membuat karakter.' : 'Please select a story first before generating characters.');
@@ -987,7 +998,7 @@ async function generateCharacters() {
     prompt += `
     For each character, provide:
     - "id": a short unique string (e.g., "char1", "char2")
-    - "name": full name. MUST NOT be "seseorang misterius" or any generic placeholder. Use actual names. Ensure names are unique within this list and are NOT repeated from previous generations.
+    - "name": full name. MUST NOT be "seseorang misterius" or any generic placeholder. Use actual names. Ensure names are unique within this list and are NOT repeated from previous generations. **STRICTLY AVOID USING THE NAMES "Arya" AND "Anya".**
     - "class": character role/archetype (e.g., Hero, Mage, King, Guard).
     - "personality": 3-5 descriptive keywords (e.g., brave, loyal, cunning, melancholic, resourceful)
     - "description": a brief role/background in the story (e.g., "The exiled prince seeking his throne", "A mysterious mage from the enchanted forest").
@@ -1088,7 +1099,7 @@ function addCharacterCardEventListener(charCard, charData) {
     charCard.addEventListener('click', () => {
         document.querySelectorAll('.character-card').forEach(card => {
             card.classList.remove('selected-mc');
-            card.style.backgroundColor = ''; // Reset inline background color
+            card.style.backgroundColor = '';
             const iconSpan = card.querySelector('.icon-placeholder');
             if (iconSpan) iconSpan.textContent = '✨';
         });
@@ -1105,6 +1116,8 @@ function addCharacterCardEventListener(charCard, charData) {
 // --- Game Play Functions ---
 async function startGame() {
     showScreen('game-screen');
+    // Ensure gameLoadingOverlay uses the shared loading style
+    gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
     gameLoadingOverlay.style.display = 'flex';
     gamePlayScreen.style.display = 'none';
 
@@ -1144,8 +1157,11 @@ async function generatePrologue() {
     const genres = selectedStoryDetails.genres.join(', ');
     const subgenres = selectedStoryDetails.subgenres.join(', ');
     const rating = selectedStoryDetails.rating;
+    const initialPlaceMentions = selectedStoryDetails.initialPlaceMentions || []; // Get place mentions from story details
 
-    let prompt = `Generate a compelling visual novel prologue for the story "${storyTitle}" (Description: "${storyDescription}") focusing on the main character ${mcName} (${mcClass}, Personality: ${mcPersonality}). The prologue should set the scene, introduce the MC's initial perspective, and hint at the main conflict. The story has a rating of ${rating}. Ensure the content is strictly compliant with this rating.
+    let prompt = `Generate a compelling visual novel prologue for the story "${storyTitle}" (Description: "${storyDescription}") focusing on the main character ${mcName} (${mcClass}, Personality: ${mcPersonality}). The prologue should set the scene, introduce the MC's initial perspective, and hint at the main conflict. The story has a rating of ${rating}. Ensure the content is strictly compliant with this rating. **STRICTLY AVOID USING THE NAMES "Arya" AND "Anya".**
+
+    Crucially, given the character naming style is "${selectedNameStyle}", ensure that any place names (cities, regions, provinces, villages, landmarks) mentioned in the prologue narrative or dialogue are *culturally appropriate* for that style. For example, if "${selectedNameStyle}" is "chinese", use Chinese-sounding place names (e.g., "Provinsi Shingyei", "Kota Longjing", "Desa Wuyue"). If "${selectedNameStyle}" is "indonesian", use Indonesian-sounding place names. If the original description contained specific place names like "Jawa Timur" or "Desa Sukorame" (${JSON.stringify(initialPlaceMentions)}), *replace them with culturally appropriate equivalents* based on the "${selectedNameStyle}" style. If no clear equivalent, use a generic but culturally fitting term (e.g., "desa di Tiongkok", "kota di Jepang").
 
     Perkaya narasi dan deskripsi adegan:
     - Tambahkan lebih banyak detail sensorik (apa yang terlihat, terdengar, tercium, terasa) untuk membuat adegan lebih hidup.
@@ -1176,7 +1192,14 @@ async function generatePrologue() {
     - For 18+ rating: Allows stronger violence and harsh language than 16+, and **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
     `;
 
-    const prologData = await callGeminiAPI(prompt, prologSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), gameLoadingAdditionalText, null);
+    const prologData = await callGeminiAPI(
+        prompt,
+        prologSchema,
+        gameLoadingOverlay,
+        gameLoadingOverlay.querySelector('span'),
+        gameLoadingAdditionalText,
+        null // No button to disable for this loading
+    );
 
     if (prologData) {
         displayPrologue(prologData);
@@ -1223,6 +1246,7 @@ async function startChapter1() {
 
     prologContentDisplay.style.display = 'none';
     startRealStoryBtn.style.display = 'none';
+    gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
     gameLoadingOverlay.style.display = 'flex';
 
     await generateChapter(gameProgress.currentChapter);
@@ -1293,7 +1317,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
                             "required": ["title", "description"]
                         }
                     },
-                    "dnaProfileChanges": { // This is what we will update
+                    "dnaProfileChanges": {
                         "type": "OBJECT",
                         "properties": {
                             "moral": { "type": "STRING", "enum": ["Tinggi", "Netral", "Rendah"] },
@@ -1351,7 +1375,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
             traumaSystem: JSON.stringify(gameProgress.traumaSystem),
             relationshipLabels: JSON.stringify(gameProgress.relationshipLabels),
             timeSystem: JSON.stringify(gameProgress.timeSystem),
-            dnaProfile: gameProgress.dnaProfile, // Send directly as object for AI to modify
+            dnaProfile: gameProgress.dnaProfile,
             playerChoices: gameProgress.playerChoices.map(c => c.choiceText).join("; ")
         },
         previousChoice: previousChoiceText
@@ -1364,7 +1388,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     - "chapterMeta": An object containing "mcDisplay" (e.g., "MC: Renessa – Penjaga Bayangan") and "activePath" (e.g., "Jalur Aktif: Bayangan di Atas Takhta").
     - "chapterContent": An ordered array of narrative and dialogue blocks.
         - For narrative blocks, use type "narrative" and include the text. **Ensure narrative flows logically from the previous scene/prologue and does not jump.**
-        - For dialogue blocks, use type "dialogue", explicitly include the "speaker" name (e.g., 'Permaisuri', 'Kapten Drevan', or "${mcName}" for the MC). The speaker's name MUST be a concrete character name from 'allCharactersInStory' and NEVER a generic placeholder like "seseorang misterius".
+        - For dialogue blocks, use type "dialogue", explicitly include the "speaker" name (e.g., 'Permaisuri', 'Kapten Drevan', or "${mcName}" for the MC). The speaker's name MUST be a concrete character name from 'allCharactersInStory' and NEVER a generic placeholder like "seseorang misterius". **STRICTLY AVOID USING THE NAMES "Arya" AND "Anya".**
         - The "text" of their dialogue. This text should ONLY contain the dialogue itself, without "Nama MC [Aku]:" or "Nama Karakter:". This prefix will be added by the client-side code. Quotes starting with '> ' can be part of any text block. **IMPORTANT: Ensure the dialogue sounds natural and is consistent with the speaker's personality and role as defined in 'allCharactersInStory'. Avoid stiff or unnatural phrasing.**
     - A set of 3 choices (dialogue or action) for the player.
     - A "consequenceNote" explaining what the choices will affect.
@@ -1374,6 +1398,8 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
             - Possible values for style: "Observasi", "Agresif", "Diplomatik", "Manipulatif", "Kritis", "Impulsif".
             - If a choice leans towards kindness, 'empathy' might become "Tinggi". If a choice is deceptive, 'honesty' might become "Rendah" and 'style' "Manipulatif". A decisive, action-oriented choice might make 'style' "Agresif". If a choice has no significant moral/stylistic implication, keep them "Netral" or "Observasi" or based on their current state. Only include the properties that *change*.
     - "rating": The determined rating for the chapter content based on the story's overall rating. This must be one of "SU", "PG-13", "16+", "18+", "21+".
+
+    Crucially, given the character naming style is "${selectedNameStyle}", ensure that any place names (cities, regions, provinces, villages, landmarks) mentioned in the chapter narrative or dialogue are *culturally appropriate* for that style. If the original story description or previous chapters contained specific place names that do not match this style, *replace them with culturally appropriate equivalents* (e.g., "Jawa Timur" becomes "Provinsi Shingyei" for "chinese" style). If no clear equivalent, use a generic but culturally fitting term (e.g., "desa di Tiongkok", "kota di Jepang").
 
     Perkaya narasi dan deskripsi adegan:
     - Tambahkan lebih banyak detail sensorik (apa yang terlihat, terdengar, tercium, terasa) untuk membuat adegan lebih hidup.
@@ -1418,7 +1444,14 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+, and 21+.
     `;
 
-    const chapterData = await callGeminiAPI(prompt, chapterSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), gameLoadingAdditionalText, null);
+    const chapterData = await callGeminiAPI(
+        prompt,
+        chapterSchema,
+        gameLoadingOverlay,
+        gameLoadingOverlay.querySelector('span'),
+        gameLoadingAdditionalText,
+        null // No button to disable for this loading
+    );
 
     if (chapterData) {
         renderGameContent(chapterData);
@@ -1467,10 +1500,10 @@ function renderGameContent(chapterData) {
             let dialogueText = block.text;
 
             if (block.speaker === selectedMainCharacter.name) {
-                dialogueCard.className = 'character-dialogue-card p-4 rounded-lg mb-3 shadow-sm transition-all duration-300 ease-in-out mc-dialogue-card ml-auto'; // Added ml-auto for right align
+                dialogueCard.className = 'character-dialogue-card p-4 rounded-lg mb-3 shadow-sm transition-all duration-300 ease-in-out mc-dialogue-card ml-auto';
                 speakerNameDisplay = `${selectedMainCharacter.name} [Aku]`;
             } else {
-                dialogueCard.className = 'character-dialogue-card p-4 rounded-lg mb-3 shadow-sm transition-all duration-300 ease-in-out other-dialogue-card mr-auto'; // Added mr-auto for left align
+                dialogueCard.className = 'character-dialogue-card p-4 rounded-lg mb-3 shadow-sm transition-all duration-300 ease-in-out other-dialogue-card mr-auto';
             }
 
             dialogueCard.innerHTML = `
@@ -1509,9 +1542,7 @@ function renderGameContent(chapterData) {
             });
         }
 
-        // --- DNA Profile Updates ---
         if (updates.dnaProfileChanges) {
-            // Only update the specific DNA aspects that are provided by the AI
             gameProgress.dnaProfile = { ...gameProgress.dnaProfile, ...updates.dnaProfileChanges };
         }
 
@@ -1602,7 +1633,7 @@ function renderDynamicSystems(updates, isInitial = false) {
         updates.trustUpdates.forEach(tu => {
             const trustItem = document.createElement('p');
             let icon = '🟡';
-            let textColorClass = 'text-amber-500'; // Tailwind class for neutral
+            let textColorClass = 'text-amber-500';
             if (tu.change > 0) { icon = '🔸'; textColorClass = 'text-green-500'; }
             else if (tu.change < 0) { icon = '⚠️'; textColorClass = 'text-red-500'; }
 
@@ -1656,13 +1687,13 @@ function getDnaColorClass(value) {
         case 'Diplomatik':
         case 'Kritis':
         case 'Impulsif':
-            return 'text-green-500 font-semibold'; // Positive/Active
+            return 'text-green-500 font-semibold';
         case 'Rendah':
         case 'Manipulatif':
-            return 'text-red-500 font-semibold'; // Negative/Cautionary
+            return 'text-red-500 font-semibold';
         case 'Netral':
         case 'Observasi':
-            return 'text-amber-500 font-semibold'; // Neutral/Balanced
+            return 'text-amber-500 font-semibold';
         default:
             return '';
     }
@@ -1680,6 +1711,7 @@ async function handleChoice(choice) {
     gameProgress.currentScene++;
 
     choiceContainer.innerHTML = '';
+    gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
     gameLoadingOverlay.style.display = 'flex';
 
     await generateChapter(gameProgress.currentChapter, choice.text);
