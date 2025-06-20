@@ -63,7 +63,7 @@ body.light-theme {
     --header-card-bg: #f0f0f0;
     --header-card-shadow: #ccc;
     --header-card-border: #bbb;
-    --footer-text-color: #888;
+    /* --footer-text-color: #888; */ /* Dihapus */
 }
 
 body.dark-theme {
@@ -116,7 +116,7 @@ body.dark-theme {
     --header-card-bg: #3a3a3a;
     --header-card-shadow: #111;
     --header-card-border: #666;
-    --footer-text-color: #999;
+    /* --footer-text-color: #999; */ /* Dihapus */
 }
 
 body.eye-protection-theme {
@@ -169,7 +169,7 @@ body.eye-protection-theme {
     --header-card-bg: #f0e0c0;
     --header-card-shadow: #c0b090;
     --header-card-border: #d0c0a0;
-    --footer-text-color: #8b7967;
+    /* --footer-text-color: #8b7967; */ /* Dihapus */
 }
 
 /* Apply theme variables */
@@ -571,14 +571,6 @@ input[type="number"]::-webkit-inner-spin-button {
     box-shadow: 5px 5px 0px 0px var(--button-primary-hover-shadow);
 }
 
-/* Footer text styling */
-.footer-text {
-    color: var(--footer-text-color);
-    font-size: 0.85rem;
-    margin-top: 30px;
-    transition: color 0.3s ease;
-}
-
 /* Character Creation Specific Styles */
 .character-card {
     background-color: var(--container-bg);
@@ -940,6 +932,28 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 .theme-toggle-button i {
     font-size: 1.1rem;
+}
+
+/* Animated Title */
+.animated-title {
+    animation: bounceIn 1s ease-out; /* Apply bounce animation */
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) translateY(-50px);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05) translateY(10px);
+    }
+    70% {
+        transform: scale(0.95) translateY(-5px);
+    }
+    100% {
+        transform: scale(1) translateY(0);
+    }
 }
 
 /* Responsive adjustments for small screens */

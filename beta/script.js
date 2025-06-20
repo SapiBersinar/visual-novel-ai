@@ -45,7 +45,7 @@ const backFromAiResultsBtn = document.getElementById('back-from-ai-results-btn')
 const characterCreationScreen = document.getElementById('character-creation-screen');
 // Removed numCharactersSelect as per request
 const characterClassInput = document.getElementById('character-class-input');
-const nameStyleSelect = document.getElementById('name-style-select'); 
+const nameStyleSelect = document.getElementById('name-style-select');
 const generateCharactersBtn = document.getElementById('generate-characters-btn');
 const backToStorySelectBtn = document.getElementById('back-to-story-select-btn');
 const loadingCharacters = document.getElementById('loading-characters');
@@ -122,7 +122,7 @@ let gameProgress = {
 function showScreen(screenId) {
     const screens = [apiKeyScreen, mainScreen, manualInputScreen, aiGenerateFormScreen, aiResultsScreen, characterCreationScreen, summaryScreen, gameScreen, gameOverScreen];
     screens.forEach(screen => {
-        if (screen) { 
+        if (screen) {
             if (screen.id === screenId) {
                 screen.style.display = 'block';
             } else {
@@ -159,7 +159,7 @@ function clearApiKey() {
     API_KEY = ""; // Clear global API_KEY
     showMessageBox(selectedLanguage === 'id' ? 'Kunci API Dihapus' : 'API Key Cleared', selectedLanguage === 'id' ? 'Kunci API telah dihapus dari browser Anda. Silakan masukkan kunci baru.' : 'API Key has been cleared from your browser. Please enter a new key.');
     // Reload or redirect to API key input screen
-    location.reload(); 
+    location.reload();
 }
 
 // --- Theme Toggling ---
@@ -232,20 +232,20 @@ clearApiKeyBtn.addEventListener('click', clearApiKey);
 
 manualInputBtn.addEventListener('click', () => {
     showScreen('manual-input-screen');
-    setMainButtonsEnabled(false); 
+    setMainButtonsEnabled(false);
 });
 aiGenerateBtn.addEventListener('click', () => {
     showScreen('ai-generate-form-screen');
-    setMainButtonsEnabled(false); 
+    setMainButtonsEnabled(false);
 });
 
 backFromManualBtn.addEventListener('click', () => {
     showScreen('main-screen');
-    setMainButtonsEnabled(true); 
+    setMainButtonsEnabled(true);
 });
 backFromAiFormBtn.addEventListener('click', () => {
     showScreen('main-screen');
-    setMainButtonsEnabled(true); 
+    setMainButtonsEnabled(true);
 });
 
 backFromAiResultsBtn.addEventListener('click', () => {
@@ -274,39 +274,6 @@ backToStorySelectBtn.addEventListener('click', () => {
     characterActionButtons.style.display = 'none';
     generatedCharacters = [];
     selectedMainCharacter = null;
-});
-
-backFromSummaryBtn.addEventListener('click', () => {
-    showScreen('character-creation-screen');
-    // Re-display only potential MCs if they were generated before
-    const potentialMCs = generatedCharacters.filter(char => char.isPotentialMC);
-    if (potentialMCs.length > 0) {
-        mcSelectionHeading.style.display = 'block';
-        characterActionButtons.style.display = 'flex';
-        characterResultsDiv.innerHTML = ''; // Clear current display
-        potentialMCs.forEach(char => {
-            const charCard = document.createElement('div');
-            charCard.className = 'character-card potential-mc';
-            charCard.dataset.characterId = char.id;
-            charCard.innerHTML = `
-                <h2><span class="icon-placeholder">✨</span> ${char.name}</h2>
-                <p><span class="char-detail">${selectedLanguage === 'id' ? 'Kelas' : 'Class'}:</span> ${char.class}</p>
-                <p><span class="char-detail">${selectedLanguage === 'id' ? 'Peran' : 'Role'}:</span> ${char.role}</p>
-                <p><span class="char-detail">${selectedLanguage === 'id' ? 'Sifat' : 'Personality'}:</span> ${char.personality}</p>
-                <p><span class="char-detail">${selectedLanguage === 'id' ? 'Tentang' : 'About'}:</span> ${char.description}</p>
-            `;
-            characterResultsDiv.appendChild(charCard);
-            addCharacterCardEventListener(charCard, char);
-
-            // Re-apply selected state if this character was the MC
-            if (selectedMainCharacter && selectedMainCharacter.id === char.id) {
-                charCard.classList.add('selected-mc');
-                charCard.style.backgroundColor = 'var(--char-card-selected-bg)'; // Use CSS variable
-                const iconSpan = charCard.querySelector('.icon-placeholder');
-                if (iconSpan) iconSpan.textContent = '😇';
-            }
-        });
-    }
 });
 
 messageBoxOkBtn.addEventListener('click', () => customMessageBox.style.display = 'none');
@@ -472,7 +439,7 @@ function updateLanguageText() {
         gameLoadingOverlay.querySelector('span').textContent = "Loading story...";
         gameLoadingAdditionalText.textContent = "Please wait, AI is processing.";
         startRealStoryBtn.textContent = "Start the real story";
-        
+
         gameOverScreen.querySelector('h1').textContent = "💀 GAME OVER 💀";
         retryGameBtn.textContent = "Retry";
         backToMainMenuBtn.textContent = "Back to Main Menu";
@@ -644,7 +611,7 @@ retryGameBtn.addEventListener('click', () => {
         playerChoices: []
     };
     showScreen('main-screen');
-    setMainButtonsEnabled(true); 
+    setMainButtonsEnabled(true);
 });
 
 backToMainMenuBtn.addEventListener('click', () => {
@@ -666,7 +633,7 @@ backToMainMenuBtn.addEventListener('click', () => {
         playerChoices: []
     };
     showScreen('main-screen');
-    setMainButtonsEnabled(true); 
+    setMainButtonsEnabled(true);
 });
 
 // Removed numCharactersSelect event listener as per request
@@ -695,7 +662,7 @@ async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtEl
 
     loadingElement.style.display = 'flex';
     if (buttonToDisable) buttonToDisable.disabled = true;
-    
+
     let loadingTimeout;
     if (loadingAdditionalElement) {
         loadingAdditionalElement.style.display = 'none'; // Hide initially
@@ -735,7 +702,7 @@ async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtEl
 
         const result = await response.json();
         console.log("Hasil Mentah API:", result); // Debugging: log raw result
-        
+
         if (result.candidates && result.candidates.length > 0 &&
             result.candidates[0].content && result.candidates[0].content.parts &&
             result.candidates[0].content.parts.length > 0) {
@@ -809,7 +776,7 @@ async function generateStoryContent() {
             "required": ["title", "description", "genres", "subgenres", "rating", "initialCharacterMentions"]
         }
     };
-    
+
     let prompt = `Generate ${numStories} *new and unique* visual novel story ideas. For each idea, provide:
     - A compelling story title.
     - A concise and intriguing story description (focus on premise, conflict, or theme). Character names CAN be included in the description if relevant.
@@ -817,7 +784,7 @@ async function generateStoryContent() {
     - A list of relevant subgenres.
     - An appropriate content rating from these options: "SU", "PG-13", "16+", "18+", "21+".
     - A list of any specific character names mentioned in the description (e.g., ["Lintang", "Budi"]). If no specific names, return an empty array.
-    
+
     Rating Guidelines:
     - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
     - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
@@ -843,7 +810,7 @@ async function generateStoryContent() {
 
         showScreen('ai-results-screen');
         storyListContainer.style.display = 'block';
-        
+
         filteredStories.forEach((story) => {
             const storyCard = document.createElement('div');
             storyCard.className = 'story-card';
@@ -865,16 +832,16 @@ async function generateStoryContent() {
                 storyCard.classList.add('selected');
 
                 selectedStoryDetails = JSON.parse(storyCard.dataset.story);
-                
+
                 displayTitle.textContent = selectedStoryDetails.title;
                 displayDescription.textContent = selectedStoryDetails.description;
                 displayGenres.textContent = selectedStoryDetails.genres.join(', ');
                 displaySubgenres.textContent = selectedStoryDetails.subgenres.join(', ');
                 displayRating.textContent = selectedStoryDetails.rating; // Set the rating text
-                
+
                 storyListContainer.style.display = 'none';
-                selectedStoryDisplay.style.display = 'block'; 
-                continueToCharacterSelectionBtn.style.display = 'block'; 
+                selectedStoryDisplay.style.display = 'block';
+                continueToCharacterSelectionBtn.style.display = 'block';
             });
         });
     } else {
@@ -888,13 +855,13 @@ async function generateSubgenres(mainGenre) {
     otherGenreInput.style.display = 'none';
     subgenreManualInput.style.display = 'none';
     loadingAi.style.display = 'flex';
-    generateAiBtn.disabled = true; 
+    generateAiBtn.disabled = true;
 
     const subgenreSchema = {
         type: "ARRAY",
         items: { "type": "STRING" }
     };
-    
+
     let prompt;
     if (selectedLanguage === 'id') {
         prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre utama "${mainGenre}". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string.`;
@@ -902,6 +869,14 @@ async function generateSubgenres(mainGenre) {
             prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Kesedihan". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Melankolis, Patah Hati, Kehilangan, Perpisahan, Kesendirian, Depresi.`;
         } else if (mainGenre === "Happiness") {
             prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Kebahagiaan". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Euforia, Kegembiraan, Ketenangan, Kedamaian, Sukacita, Optimisme.`;
+        } else if (mainGenre === "Time Travel") {
+            prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Time Travel". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Paradox Waktu, Sejarah Alternatif, Penjelajahan Masa Depan, Intervensi Masa Lalu, Perulangan Waktu.`;
+        } else if (mainGenre === "Legal") {
+            prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Legal". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Drama Pengadilan, Hukum Pidana, Hukum Perdata, Investigasi Hukum, Konspirasi Hukum.`;
+        } else if (mainGenre === "Conspiracy") {
+            prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Konspirasi". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Teori Konspirasi, Masyarakat Rahasia, Pemerintah Bayangan, Pengungkapan Kebenaran, Pembunuhan Terencana.`;
+        } else if (mainGenre === "War") {
+            prompt = `Sediakan daftar 5-10 subgenre yang relevan untuk genre "Perang". JANGAN sertakan subgenre atau tema apa pun yang terkait dengan konten eksplisit, konten seksual, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, atau tema dewasa/matang apa pun. Pastikan output dalam format array JSON string. Contoh: Perang Dunia, Perang Sipil, Konflik Futuristik, Taktik Militer, Survival di Medan Perang.`;
         }
     } else { // English
         prompt = `Provide a list of 5-10 relevant subgenres for the main genre "${mainGenre}". Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format.`;
@@ -909,9 +884,17 @@ async function generateSubgenres(mainGenre) {
             prompt = `Provide a list of 5-10 relevant subgenres for the "Sadness" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: Melancholy, Heartbreak, Loss, Farewell, Loneliness, Depression.`;
         } else if (mainGenre === "Happiness") {
             prompt = `Provide a list of 5-10 relevant subgenres for the "Happiness" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: Euphoria, Joy, Serenity, Peace, Cheer, Optimism.`;
+        } else if (mainGenre === "Time Travel") {
+            prompt = `Provide a list of 5-10 relevant subgenres for the "Time Travel" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: Time Paradox, Alternate History, Future Exploration, Past Intervention, Time Loop.`;
+        } else if (mainGenre === "Legal") {
+            prompt = `Provide a list of 5-10 relevant subgenres for the "Legal" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: Courtroom Drama, Criminal Law, Civil Law, Legal Investigation, Legal Conspiracy.`;
+        } else if (mainGenre === "Conspiracy") {
+            prompt = `Provide a list of 5-10 relevant subgenres for the "Conspiracy" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: Conspiracy Theory, Secret Societies, Shadow Government, Truth Unveiling, Assassination Plot.`;
+        } else if (mainGenre === "War") {
+            prompt = `Provide a list of 5-10 relevant subgenres for the "War" genre. Do NOT include any subgenres or themes related to explicit content, sexual content, LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem, or any mature/adult themes. Ensure the output is in JSON array of strings format. Example: World War, Civil War, Futuristic Conflict, Military Tactics, Battlefield Survival.`;
         }
     }
-    
+
     try {
         const subgenres = await callGeminiAPI(prompt, subgenreSchema, loadingAi, loadingText, loadingAdditionalText, generateAiBtn);
 
@@ -936,7 +919,7 @@ async function generateSubgenres(mainGenre) {
         }
     } finally {
         loadingAi.style.display = 'none';
-        generateAiBtn.disabled = false; 
+        generateAiBtn.disabled = false;
     }
 }
 
@@ -952,7 +935,7 @@ async function generateCharacters() {
     console.log("AI-determined totalNumChars:", totalNumChars);
 
     const charClassHint = characterClassInput.value.trim();
-    const nameStyle = nameStyleSelect.value; 
+    const nameStyle = nameStyleSelect.value;
 
     if (!selectedStoryDetails) {
          showMessageBox(selectedLanguage === 'id' ? 'Peringatan' : 'Warning', selectedLanguage === 'id' ? 'Silakan pilih cerita terlebih dahulu sebelum membuat karakter.' : 'Please select a story first before generating characters.');
@@ -1020,7 +1003,7 @@ async function generateCharacters() {
     if (charClassHint) { // Keep the optional class input
         prompt += ` One character should ideally have the class: "${charClassHint}".`;
     }
-    
+
     // Add naming style instruction, making it stricter and with examples
     switch (nameStyle) {
         case 'japanese':
@@ -1119,9 +1102,9 @@ function addCharacterCardEventListener(charCard, charData) {
             card.style.backgroundColor = 'var(--container-bg)'; // Reset background color to theme variable
             const iconSpan = card.querySelector('.icon-placeholder');
             // Reset icon for all cards to '✨' since only potential MCs are displayed
-            if (iconSpan) iconSpan.textContent = '✨'; 
+            if (iconSpan) iconSpan.textContent = '✨';
         });
-        
+
         // Apply selected style to the clicked card
         charCard.classList.add('selected-mc');
         charCard.style.backgroundColor = 'var(--char-card-selected-bg)'; // Set background color for selected card
@@ -1195,19 +1178,19 @@ async function generatePrologue() {
     🔒 4. Path Tracker: Menampilkan jalur besar cerita yang sedang ditempuh MC (contoh: “Bayangan Di Antara Dua Mahkota”). Jalur ini bisa berganti tergantung keputusan kunci. Path bisa berisi sub-jalur tersembunyi.
     🕊️ 5. Jalur Cerita Terkunci Potensial: Beberapa jalur hanya terbuka jika pemain memenuhi syarat tertentu: Trust tinggi/rendah, Flag terbuka, Tindakan rahasia, DNA Keputusan khusus.
     🎯 Catatan: [Peringatan atau info penting]
-    
+
     Format the output strictly as JSON according to the provided schema. The prologue should be in ${selectedLanguage === 'id' ? 'Indonesian' : 'English'}.
 
     When referencing MC, use "${mcName}" instead of "MC".
     Make sure the initial Flag Awal is relevant to the MC's personality and the story premise.
-    
+
     Rating Considerations:
     - Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse): STRICTLY FORBIDDEN.
     - Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
     - Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+ and 21+. For SU and PG-13, these themes must be absent or very mild/implied.
     - For 18+ rating: Allows stronger violence and harsh language than 16+, and **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
     `;
-    
+
     const prologData = await callGeminiAPI(prompt, prologSchema, gameLoadingOverlay, gameLoadingOverlay.querySelector('span'), gameLoadingAdditionalText, null);
 
     if (prologData) {
@@ -1244,10 +1227,10 @@ function displayPrologue(prologData) {
     gameProgress.pathTracker = prologData.initialSystems.pathTracker;
     gameProgress.lockedPaths = prologData.initialSystems.lockedPaths;
     gameProgress.flagAwal = prologData.initialSystems.flagAwal; // Store as string for now
-    
+
     // Render initial dynamic systems
     renderDynamicSystems(prologData.initialSystems, true); // True for initial display
-    
+
     choiceContainer.innerHTML = ''; // Clear choices
     startRealStoryBtn.style.display = 'block'; // Show "Mulai Cerita Sebenarnya" button
 }
@@ -1395,7 +1378,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     };
 
     let prompt = `Continue the visual novel story. The current game state is: ${JSON.stringify(currentGameStateForAI)}.
-    
+
     Generate the content for Chapter ${chapterNum}, including:
     - A concise chapter title.
     - "chapterMeta": An object containing "mcDisplay" (e.g., "MC: Renessa – Penjaga Bayangan") and "activePath" (e.g., "Jalur Aktif: Bayangan di Atas Takhta").
@@ -1413,7 +1396,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     - Sertakan lebih banyak pikiran dan perasaan internal Karakter Utama (MC) untuk membantu pemain terhubung lebih dalam dengan MC.
     - Variasikan kecepatan narasi (pacing dinamis); beberapa paragraf bisa cepat dan berurutan untuk adegan aksi, sementara yang lain lebih lambat dan deskriptif untuk adegan reflektif atau emosional.
     - "Show, Don't Tell": Tunjukkan emosi atau situasi melalui tindakan dan deskripsi, bukan hanya menyatakan.
-    
+
     The dynamic systems are:
     1. Trust System: Each character has trust points towards MC. Trust can increase or decrease. High trust unlocks secrets, unique paths, or positive endings. Low trust can trigger betrayal, character death, or bad endings.
     2. Death Trigger: MC or important characters can die based on choices. Death can be immediate or chain reaction. If MC dies, game over.
@@ -1429,9 +1412,9 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     12. Choice DNA / Decision Root System: Tracks player's moral patterns: Moral, Honesty, Empati, Decision Style. Format: 🧬 Decision Profile: - Moral: High, - Honesty: Low, - Empati: Netral, - Gaya: Manipulator Emosional. This DNA affects: secret paths, automatic trust, hidden endings.
     13. MC Dialogue Choice System: MC speaks with characters. Dialogue can trigger trust changes, emotions, or story paths. Choices are provided. Example: 💬 What will you say to Kael? a. “I promise to return” b. “If you die, it's not my business.” c. (Remain silent).
     14. Action / Behavior Choice System: Not all choices are dialogue. Some are direct actions. Actions can trigger new scenes, paths, or flags. Example: 🧭 What will you do? a. Go investigate the dungeon b. Report to the General c. Hide and observe from afar. Can be combined with dialogue.
-    
+
     Format the output strictly as JSON according to the provided schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} for all content.
-    
+
     For the "choices" emotes, ONLY use these specific characters: '💬' (dialogue), '🦶' (action/movement), '🧊' (silence/inaction), '✨' (magic/supernatural), '🗡️' (combat/threat), '❤️' (affection/emotion), '🧠' (thought/analysis), '🔍' (investigation/discovery), '⏳' (time-related action), '📜' (reading/lore). Do NOT use descriptive words like 'confused', 'question', 'silent'.
     Make sure all numerical trust changes are represented with positive or negative values like "+2.1" or "-1.2".
     Include at least 3 choices per step.
@@ -1509,7 +1492,7 @@ function renderGameContent(chapterData) {
             } else {
                 dialogueCard.className = 'character-dialogue-card other-dialogue-card';
             }
-            
+
             dialogueCard.innerHTML = `
                 <strong class="speaker-name">${speakerNameDisplay}:</strong>
                 <span>${dialogueText}</span>
@@ -1558,7 +1541,7 @@ function renderGameContent(chapterData) {
 
         // Update Time System
         if (updates.timeUpdate) {
-            gameProgress.timeSystem.display = updates.timeUpdate; 
+            gameProgress.timeSystem.display = updates.timeUpdate;
         }
 
         // Update Active Events
@@ -1601,7 +1584,7 @@ function renderGameContent(chapterData) {
 
 function renderDynamicSystems(updates, isInitial = false) {
     dynamicSystemsDisplay.innerHTML = `<h3>🎮 Sistem Aktif:</h3>`;
-    
+
     const appendSystemLine = (icon, title, value) => {
         if (value) { // Only append if value is not empty/null
             const p = document.createElement('p');
@@ -1613,7 +1596,7 @@ function renderDynamicSystems(updates, isInitial = false) {
     // Always display core systems from gameProgress state
     appendSystemLine('🧠', 'Trust System', selectedLanguage === 'id' ? 'Setiap karakter memiliki poin kepercayaan terhadap MC.' : 'Each character has trust points towards MC.');
     appendSystemLine('🩸', 'Death Trigger', selectedLanguage === 'id' ? 'MC atau karakter penting bisa mati jika pemain mengambil pilihan tertentu.' : 'MC or important characters can die based on choices.');
-    
+
     // Display initial flag from gameProgress.flagAwal (which stores the string from prologue)
     if (gameProgress.flagAwal) {
         // Check if flagAwal is an object with properties
@@ -1630,7 +1613,7 @@ function renderDynamicSystems(updates, isInitial = false) {
     if (gameProgress.lockedPaths && gameProgress.lockedPaths.length > 0) {
         appendSystemLine('🕊️', 'Jalur Cerita Terkunci Potensial', gameProgress.lockedPaths.join(', '));
     }
-    
+
     // Display current time/events if any
     if (gameProgress.timeSystem.display) {
         appendSystemLine('⏳', 'Waktu & Event', gameProgress.timeSystem.display);
@@ -1657,7 +1640,7 @@ function renderDynamicSystems(updates, isInitial = false) {
             let textColorClass = 'neutral';
             if (tu.change > 0) { icon = '🔸'; textColorClass = 'positive'; }
             else if (tu.change < 0) { icon = '⚠️'; textColorClass = 'negative'; }
-            
+
             trustItem.className = `trust-update-item ${textColorClass}`;
             trustItem.innerHTML = `${icon} ${tu.character}: ${tu.change > 0 ? '+' : ''}${tu.change}${tu.reason ? ` → "${tu.reason}"` : ''}`;
             dynamicSystemsDisplay.appendChild(trustItem);
