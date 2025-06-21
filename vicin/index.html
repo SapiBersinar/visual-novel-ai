@@ -10,13 +10,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css"> <!-- Link ke file CSS terpisah -->
 </head>
-<body class="light-theme flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8"> <!-- Default theme, updated body classes -->
-    <button id="theme-toggle" class="theme-toggle-button fixed top-4 left-4 z-50 p-2 rounded-full shadow-lg transition-all duration-300 ease-in-out hover:scale-105">
-        <i class="fas fa-moon text-lg"></i> <span id="theme-toggle-text" class="ml-2 hidden sm:inline-block">Mode Gelap</span>
-    </button>
+<body class="bw-theme flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8"> <!-- Tema hitam-putih diterapkan secara default -->
+    <!-- Tombol pengubah tema telah dihapus -->
 
     <div class="main-container bg-white dark:bg-gray-800 p-6 sm:p-8 md:p-10 rounded-2xl shadow-xl border-2 border-gray-300 dark:border-gray-700 w-full max-w-xl lg:max-w-2xl text-center relative overflow-hidden transition-all duration-300 ease-in-out">
-        <!-- API Key Input Screen -->
+        <!-- Layar Input Kunci API -->
         <div id="api-key-screen" class="screen" style="display:none;">
             <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">Masukkan Kunci API Gemini Anda</h1>
             <p class="text-base sm:text-lg mb-8 text-gray-700 dark:text-gray-300">
@@ -143,10 +141,10 @@
             <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">Pilih Cerita Anda</h1>
             <p class="text-base sm:text-lg mb-8 text-gray-700 dark:text-gray-300">Pilih salah satu cerita yang dihasilkan AI.</p>
             <div id="story-list-container" class="grid grid-cols-1 gap-6 mb-6">
-                <!-- AI generated stories will be added here -->
+                <!-- Cerita yang dihasilkan AI akan ditambahkan di sini -->
             </div>
 
-            <!-- This div will act as the selected story summary, displayed after a story is chosen -->
+            <!-- Div ini akan berfungsi sebagai ringkasan cerita terpilih, ditampilkan setelah cerita dipilih -->
             <div id="selected-story-display" class="story-card p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 transition-all duration-300 ease-in-out" style="display:none;">
                 <h2 id="display-title" class="text-2xl font-bold text-gray-900 dark:text-white mb-3"></h2>
                 <p id="display-description" class="text-gray-700 dark:text-gray-300 mb-4"></p>
@@ -161,7 +159,7 @@
             </div>
         </div>
 
-        <!-- Character Creation Screen -->
+        <!-- Layar Pembuatan Karakter -->
         <div id="character-creation-screen" class="screen" style="display:none;">
             <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">Buat Karakter</h1>
             <p class="text-base sm:text-lg mb-8 text-gray-700 dark:text-gray-300">AI akan merekomendasikan karakter untuk cerita Anda, termasuk beberapa kandidat Karakter Utama (MC).</p>
@@ -195,7 +193,7 @@
 
             <h2 class="text-2xl font-bold mt-8 mb-4 text-gray-800 dark:text-gray-200" id="mc-selection-heading" style="display:none;">Pilih Karakter Utama (MC):</h2>
             <div id="character-results" class="grid grid-cols-1 gap-6 mb-6">
-                <!-- Generated characters will be added here -->
+                <!-- Karakter yang dihasilkan akan ditambahkan di sini -->
             </div>
 
             <div class="button-group-spacing flex flex-col gap-4" id="character-action-buttons" style="display:none;">
@@ -204,7 +202,7 @@
             </div>
         </div>
 
-        <!-- Summary screen before starting the game -->
+        <!-- Layar Ringkasan sebelum memulai game -->
         <div id="summary-screen" class="screen" style="display:none;">
             <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">Ringkasan Cerita Anda</h1>
             <p class="text-base sm:text-lg mb-8 text-gray-700 dark:text-gray-300">Ini adalah ringkasan cerita dan karakter yang akan Anda mainkan.</p>
@@ -231,7 +229,7 @@
             </div>
         </div>
 
-        <!-- Game Screen (Main Visual Novel Display) -->
+        <!-- Layar Game (Tampilan Visual Novel Utama) -->
         <div id="game-screen" class="screen flex flex-col items-center" style="display:none;">
             <!-- Updated game-loading-overlay -->
             <div id="game-loading-overlay" class="loading-card w-full max-w-sm mx-auto flex flex-col items-center justify-center p-8 rounded-2xl shadow-xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 z-50 transition-all duration-300 ease-in-out" style="display:none;">
@@ -242,27 +240,27 @@
 
             <div id="game-play-screen" class="w-full flex flex-col items-center text-left p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out">
                 <div id="prolog-content-display" class="w-full">
-                    <!-- Prolog content generated by AI -->
+                    <!-- Konten prolog yang dihasilkan AI -->
                 </div>
 
                 <div id="chapter-content-display" class="w-full" style="display:none;">
-                    <!-- Chapter content generated by AI -->
+                    <!-- Konten bab yang dihasilkan AI -->
                 </div>
 
                 <div id="dynamic-systems-display" class="w-full bg-gray-50 dark:bg-gray-700 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mt-6">
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-3 text-center">🎮 Sistem Aktif:</h3>
-                    <!-- Dynamic systems will be displayed here -->
+                    <!-- Sistem dinamis akan ditampilkan di sini -->
                 </div>
 
                 <div id="choice-container" class="w-full flex flex-col gap-4 mt-6">
-                    <!-- Choices will be displayed here -->
+                    <!-- Pilihan akan ditampilkan di sini -->
                 </div>
 
                 <button class="btn btn-primary w-full py-3 mt-8 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out" id="start-real-story-btn" style="display:none;">Mulai ke cerita sebenarnya</button>
             </div>
         </div>
 
-        <!-- Game Over Screen (currently hidden) -->
+        <!-- Layar Game Over (saat ini tersembunyi) -->
         <div id="game-over-screen" class="screen" style="display:none;">
             <h1 class="animated-title text-4xl sm:text-5xl font-extrabold text-red-600 dark:text-red-400 mb-6 leading-tight">💀 GAME OVER 💀</h1>
             <p class="game-over-text text-base sm:text-lg mb-4 text-gray-700 dark:text-gray-300" id="game-over-message"></p>
@@ -273,7 +271,7 @@
             </div>
         </div>
 
-        <!-- Custom Message Box -->
+        <!-- Kotak Pesan Kustom -->
         <div id="custom-message-box" class="message-box fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[1000]" style="display:none;">
             <div class="message-box-content bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl border-2 border-gray-300 dark:border-gray-700 max-w-sm mx-auto text-center transition-all duration-300 ease-in-out">
                 <h3 id="message-box-title" class="text-2xl font-bold text-gray-900 dark:text-white mb-4"></h3>
@@ -286,3 +284,4 @@
     <script src="script.js"></script> <!-- Link ke file JavaScript terpisah -->
 </body>
 </html>
+
