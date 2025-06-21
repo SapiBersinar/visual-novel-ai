@@ -85,6 +85,59 @@
             pointer-events: auto;
         }
 
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 4px solid black;
+            box-shadow: 8px 8px 0px black;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-family: 'Comic Neue', cursive;
+        }
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
         /* Styling for output sections */
         .output-card {
             background-color: white;
@@ -148,7 +201,7 @@
             Dapatkan nama-nama lokasi fantasi atau realistis untuk cerita Anda!
         </p>
 
-        <!-- API Key Input Section -->
+        <!-- API Key Input Section - Always visible initially -->
         <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
             <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Generator Nama Lokasi:</label>
             <input type="password" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -157,70 +210,73 @@
             </button>
         </div>
 
-        <div class="w-full flex flex-col sm:flex-row gap-4 items-start justify-center">
-            <!-- Left Column for Selects -->
-            <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-2/5 lg:w-1/3">
-                <div class="flex items-center gap-2 w-full">
-                    <label for="naming-style-select" class="comic-font text-gray-800 text-base shrink-0">Gaya Nama:</label>
-                    <select id="naming-style-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
-                        <option value="Otomatis Random AI" selected>Otomatis Random AI</option>
-                        <option value="Fantasi">Fantasi</option>
-                        <option value="Normal/Modern">Normal/Modern</option>
-                        <option value="Mesir Kuno">Mesir Kuno</option>
-                        <option value="Abad Pertengahan Barat">Abad Pertengahan Barat</option>
-                        <option value="Jepang Tradisional">Jepang Tradisional</option>
-                        <option value="Tiongkok Tradisional">Tiongkok Tradisional</option>
-                        <option value="Sci-Fi/Futuristik">Sci-Fi/Futuristik</option>
-                        <option value="Suku Primitif">Suku Primitif</option>
-                        <option value="Nama ala Indonesia">Nama ala Indonesia</option>
-                        <option value="Nama ala Belanda">Nama ala Belanda</option>
-                        <option value="Nama ala Jerman">Nama ala Jerman</option>
-                        <option value="Nama ala Lain-lain">Nama ala Lain-lain (AI Bebas)</option>
-                    </select>
+        <!-- Main Content Area - Hidden until API Key is set -->
+        <div id="main-content" class="hidden w-full space-y-6">
+            <div class="w-full flex flex-col sm:flex-row gap-4 items-start justify-center">
+                <!-- Left Column for Selects -->
+                <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-2/5 lg:w-1/3">
+                    <div class="flex items-center gap-2 w-full">
+                        <label for="naming-style-select" class="comic-font text-gray-800 text-base shrink-0">Gaya Nama:</label>
+                        <select id="naming-style-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                            <option value="Otomatis Random AI" selected>Otomatis Random AI</option>
+                            <option value="Fantasi">Fantasi</option>
+                            <option value="Normal/Modern">Normal/Modern</option>
+                            <option value="Mesir Kuno">Mesir Kuno</option>
+                            <option value="Abad Pertengahan Barat">Abad Pertengahan Barat</option>
+                            <option value="Jepang Tradisional">Jepang Tradisional</option>
+                            <option value="Tiongkok Tradisional">Tiongkok Tradisional</option>
+                            <option value="Sci-Fi/Futuristik">Sci-Fi/Futuristik</option>
+                            <option value="Suku Primitif">Suku Primitif</option>
+                            <option value="Nama ala Indonesia">Nama ala Indonesia</option>
+                            <option value="Nama ala Belanda">Nama ala Belanda</option>
+                            <option value="Nama ala Jerman">Nama ala Jerman</option>
+                            <option value="Nama ala Lain-lain">Nama ala Lain-lain (AI Bebas)</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 w-full">
+                        <label for="location-type-select" class="comic-font text-gray-800 text-base shrink-0">Jenis Lokasi:</label>
+                        <select id="location-type-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                            <option value="Semuanya">Semuanya</option>
+                            <option value="Benua">Benua</option>
+                            <option value="Negara">Negara</option>
+                            <option value="Provinsi">Provinsi</option>
+                            <option value="Kecamatan">Kecamatan</option>
+                            <option value="Desa">Desa</option>
+                            <option value="Kota">Kota</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 w-full">
+                        <label for="include-datetime-select" class="comic-font text-gray-800 text-base shrink-0">Sertakan Tanggal/Waktu Fiksi?</label>
+                        <select id="include-datetime-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                            <option value="Tidak">Tidak</option>
+                            <option value="Ya">Ya</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2 w-full">
-                    <label for="location-type-select" class="comic-font text-gray-800 text-base shrink-0">Jenis Lokasi:</label>
-                    <select id="location-type-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
-                        <option value="Semuanya">Semuanya</option>
-                        <option value="Benua">Benua</option>
-                        <option value="Negara">Negara</option>
-                        <option value="Provinsi">Provinsi</option>
-                        <option value="Kecamatan">Kecamatan</option>
-                        <option value="Desa">Desa</option>
-                        <option value="Kota">Kota</option>
-                    </select>
+                
+                <!-- Right Column for Context and Generate Button -->
+                <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-3/5 lg:w-2/3">
+                    <textarea id="context-input" placeholder="Tambahkan konteks/detail lain (Opsional: Misal: 'Dunia pasca-apokaliptik', 'berdekatan dengan pegunungan es'). Jika kosong, AI akan berasumsi." class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+                    
+                    <button id="generate-names-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full flex items-center justify-center">
+                        <span id="button-text">Buat Nama!</span>
+                        <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+                    </button>
                 </div>
-                <div class="flex items-center gap-2 w-full">
-                    <label for="include-datetime-select" class="comic-font text-gray-800 text-base shrink-0">Sertakan Tanggal/Waktu Fiksi?</label>
-                    <select id="include-datetime-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
-                        <option value="Tidak">Tidak</option>
-                        <option value="Ya">Ya</option>
-                    </select>
-                </div>
+            </div>
+
+            <div id="output-section" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 generated-name-font overflow-y-auto mt-6">
+                <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                    Pilih gaya dan jenis lokasi, lalu klik "Buat Nama!"
+                </p>
+                <!-- Generated content will appear here -->
             </div>
             
-            <!-- Right Column for Context and Generate Button -->
-            <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-3/5 lg:w-2/3">
-                <textarea id="context-input" placeholder="Tambahkan konteks/detail lain (Opsional: Misal: 'Dunia pasca-apokaliptik', 'berdekatan dengan pegunungan es'). Jika kosong, AI akan berasumsi." class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
-                
-                <button id="generate-names-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full flex items-center justify-center">
-                    <span id="button-text">Buat Nama!</span>
-                    <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+                <button id="clear-output-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                    Bersihkan
                 </button>
             </div>
-        </div>
-
-        <div id="output-section" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 generated-name-font overflow-y-auto mt-6">
-            <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
-                Pilih gaya dan jenis lokasi, lalu klik "Buat Nama!"
-            </p>
-            <!-- Generated content will appear here -->
-        </div>
-        
-        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
-            <button id="clear-output-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
-                Bersihkan
-            </button>
         </div>
     </div>
 
@@ -230,12 +286,25 @@
         <span id="overlay-message" class="comic-font">Menghasilkan nama lokasi...</span>
     </div>
 
+    <!-- Custom Alert/Confirm Modal -->
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" class="comic-font"></h3>
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button id="modal-confirm-btn" class="comic-button bg-blue-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">OK</button>
+                <button id="modal-cancel-btn" class="comic-button bg-red-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">Batal</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let API_KEY = localStorage.getItem('geminiApiKeyLocGen') || ""; // API Key will be loaded from localStorage
 
         const apiKeyInput = document.getElementById('api-key-input');
         const saveApiKeyBtn = document.getElementById('save-api-key-btn');
         const apiKeySection = document.getElementById('api-key-section');
+        const mainContent = document.getElementById('main-content'); // Main content container
 
         const namingStyleSelect = document.getElementById('naming-style-select');
         const locationTypeSelect = document.getElementById('location-type-select');
@@ -251,6 +320,13 @@
         const fullLoadingOverlay = document.getElementById('full-loading-overlay');
         const overlayMessage = document.getElementById('overlay-message');
 
+        // Modal elements
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
         const loadingMessages = [
             "Menjelajahi peta imajinasi...",
             "Mencari nama-nama tersembunyi...",
@@ -259,6 +335,31 @@
             "Menciptakan identitas tempat..."
         ];
 
+        // --- Custom Modal Functions (replaces alert/confirm) ---
+        function showModal(title, message, type = 'alert') {
+            return new Promise((resolve) => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                customModal.classList.add('active');
+
+                modalConfirmBtn.classList.remove('hidden');
+                modalConfirmBtn.onclick = () => {
+                    customModal.classList.remove('active');
+                    resolve(true);
+                };
+
+                if (type === 'confirm') {
+                    modalCancelBtn.classList.remove('hidden');
+                    modalCancelBtn.onclick = () => {
+                        customModal.classList.remove('active');
+                        resolve(false);
+                    };
+                } else {
+                    modalCancelBtn.classList.add('hidden');
+                }
+            });
+        }
+
         // --- API Key Handling ---
         function loadApiKey() {
             const storedKey = localStorage.getItem('geminiApiKeyLocGen');
@@ -266,18 +367,23 @@
                 API_KEY = storedKey;
                 apiKeyInput.value = storedKey;
                 apiKeySection.classList.add('hidden'); // Hide the input section if key is found
+                mainContent.classList.remove('hidden'); // Show main content
+            } else {
+                apiKeySection.classList.remove('hidden'); // Ensure API key input is visible
+                mainContent.classList.add('hidden'); // Ensure main content is hidden
             }
         }
 
-        saveApiKeyBtn.addEventListener('click', () => {
+        saveApiKeyBtn.addEventListener('click', async () => {
             const key = apiKeyInput.value.trim();
             if (key) {
                 localStorage.setItem('geminiApiKeyLocGen', key);
                 API_KEY = key;
-                alert('API Key berhasil disimpan!');
+                await showModal('Berhasil!', 'API Key berhasil disimpan!');
                 apiKeySection.classList.add('hidden'); // Hide after saving
+                mainContent.classList.remove('hidden'); // Show main content
             } else {
-                alert('Masukkan API Key terlebih dahulu!');
+                await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
             }
         });
 
@@ -303,7 +409,7 @@
         }
 
         // Function to copy text to clipboard
-        function copyToClipboard(text, alertMessage = 'Teks berhasil disalin ke clipboard!') {
+        async function copyToClipboard(text, alertMessage = 'Teks berhasil disalin ke clipboard!') {
             const textarea = document.createElement('textarea');
             textarea.value = text;
             textarea.style.position = 'fixed';
@@ -317,10 +423,10 @@
             textarea.select();
             try {
                 document.execCommand('copy');
-                alert(alertMessage);
+                await showModal('Berhasil!', alertMessage);
             } catch (err) {
                 console.error('Gagal menyalin teks: ', err);
-                alert('Gagal menyalin. Silakan salin manual.');
+                await showModal('Gagal!', 'Gagal menyalin. Silakan salin manual.');
             } finally {
                 document.body.removeChild(textarea);
             }
@@ -329,8 +435,9 @@
         // Core Function: Generate Location Names and/or Date/Time
         async function generateLocationNames() {
             if (!API_KEY) {
-                alert("Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
                 apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                mainContent.classList.add('hidden'); // Hide main content
                 return;
             }
 
@@ -340,7 +447,7 @@
             let context = contextInput.value.trim(); // Get user input context
 
             if (!namingStyle || !locationType) {
-                alert('Silakan pilih gaya nama dan jenis lokasi.');
+                await showModal('Peringatan!', 'Silakan pilih gaya nama dan jenis lokasi.');
                 return;
             }
 
@@ -566,18 +673,21 @@
         // --- Event Listeners ---
         generateNamesBtn.addEventListener('click', generateLocationNames);
 
-        clearOutputBtn.addEventListener('click', () => {
-            namingStyleSelect.value = 'Otomatis Random AI'; // Reset to default
-            locationTypeSelect.value = 'Semuanya'; // Reset to default
-            includeDatetimeSelect.value = 'Tidak'; // Reset new select to default
-            contextInput.value = '';
-            outputSection.innerHTML = `
-                <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
-                    Pilih gaya dan jenis lokasi, lalu klik "Buat Nama!"
-                </p>
-            `;
-            initialMessage.classList.remove('hidden');
-            clearOutputBtn.classList.add('hidden');
+        clearOutputBtn.addEventListener('click', async () => {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus semua output dan mengulang input?', 'confirm');
+            if (confirmed) {
+                namingStyleSelect.value = 'Otomatis Random AI'; // Reset to default
+                locationTypeSelect.value = 'Semuanya'; // Reset to default
+                includeDatetimeSelect.value = 'Tidak'; // Reset new select to default
+                contextInput.value = '';
+                outputSection.innerHTML = `
+                    <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                        Pilih gaya dan jenis lokasi, lalu klik "Buat Nama!"
+                    </p>
+                `;
+                initialMessage.classList.remove('hidden');
+                clearOutputBtn.classList.add('hidden');
+            }
         });
 
         // Initial setup on page load

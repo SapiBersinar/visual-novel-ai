@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-F8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hanzercopy.cloud - Petualangan Komik Visual Novel Interaktif</title>
+    <title>Hanzercopy.cloud - Platform Kreatif & Cerita Interaktif</title>
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Hanzercopy.cloud adalah platform visual novel interaktif yang menghadirkan cerita komik mendalam dengan pilihan yang menentukan nasib Kamu. Rasakan petualangan fantasi, misteri, dan romansa dalam gaya komik hitam putih yang unik.">
-    <meta name="keywords" content="visual novel, komik interaktif, cerita pilihan, game cerita, fantasi, misteri, romansa, game visual novel, hanzercopy, game komik, cerita digital, petualangan naratif">
+    <meta name="description" content="Hanzercopy.cloud adalah platform inovatif untuk penulis dan penggemar cerita. Jelajahi generator karakter, ide judul & slogan, nama lokasi, arsip data dunia, perancang artefak legendaris, dan cerita visual novel interaktif serta non-interaktif. Mulai petualangan kreatif Anda hari ini!">
+    <meta name="keywords" content="visual novel, komik interaktif, cerita pilihan, game cerita, fantasi, misteri, romansa, game visual novel, hanzercopy, game komik, cerita digital, petualangan naratif, generator karakter, generator judul cerita, generator lokasi, arsip dunia, perancang artefak, item legendaris, dunia fiksi">
     <meta name="author" content="Hanzercopy">
-    <meta property="og:title" content="Hanzercopy.cloud -  Visual Novel Interaktif">
-    <meta property="og:description" content="Hanzercopy.cloud adalah platform visual novel interaktif yang menghadirkan cerita mendalam dengan pilihan yang menentukan. Rasakan petualangan fantasi, misteri, dan romansa dalam gaya komik hitam putih yang unik.">
+    <meta property="og:title" content="Hanzercopy.cloud - Platform Kreatif Komik & Cerita Interaktif">
+    <meta property="og:description" content="Hanzercopy.cloud adalah platform inovatif untuk penulis dan penggemar cerita. Jelajahi generator karakter, ide judul & slogan, nama lokasi, arsip data dunia, perancang artefak legendaris, dan cerita visual novel interaktif serta non-interaktif. Mulai petualangan kreatif Anda hari ini!">
     <meta property="og:url" content="https://hanzercopy.cloud/">
     <meta property="og:type" content="website">
 
@@ -123,6 +123,34 @@
             margin-bottom: 25px;
             color: #cccccc;
         }
+
+        /* --- API Key Info Section --- */
+        .api-key-info {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #f0f0f0;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #555;
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+        }
+        .api-key-info p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+        .api-key-info a {
+            color: #87CEEB; /* Sky blue */
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        .api-key-info a:hover {
+            color: #ADD8E6; /* Lighter sky blue */
+        }
+
 
         /* --- CARD GRID STYLES --- */
         .card-grid-container {
@@ -324,6 +352,12 @@
 <body>
     <!-- Background is now handled by animated gradient in body CSS -->
 
+    <!-- API Key Information Section -->
+    <div class="api-key-info">
+        <p>Sangat direkomendasikan untuk membuat API Key Anda sendiri agar tidak ada batasan. Dapatkan di: <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a></p>
+        <p>Atau, Anda bisa menyalin API Key terbatas dari sini: <a href="https://anotepad.com/notes/7itw6738" target="_blank">Coba API Key Terbatas</a></p>
+    </div>
+
     <div class="container">
         <h1>
             <span>H</span><span>A</span><span>N</span><span>Z</span><span>E</span><span>R</span><span>C</span><span>O</span><span>P</span><span>Y</span><span style="color:#ffffff;">.</span><span>C</span><span>L</span><span>O</span><span>U</span><span>D</span>
@@ -368,7 +402,18 @@
             </a>
         </div>
 
-        <!-- Card 4: Arsip Data Cerita -->
+        <!-- Card 4: Perancang Item & Artefak Legendaris -->
+        <div class="card">
+            <h2 class="card-title">Perancang Item & Artefak Legendaris</h2>
+            <p class="card-description">
+                **Cara Kerja:** Rancang item dan artefak unik dengan asal-usul, kekuatan, dan kisah legendarisnya. Lengkap dengan rank dan implikasi cerita.
+            </p>
+            <a href="/artefak/" class="comic-button bg-red-700 text-white px-8 py-3 rounded-full text-lg font-bold">
+                Rancang Artefak
+            </a>
+        </div>
+
+        <!-- Card 5: Arsip Data Cerita -->
         <div class="card">
             <h2 class="card-title">Arsip Data Cerita</h2>
             <p class="card-description">
@@ -379,7 +424,7 @@
             </a>
         </div>
 
-        <!-- Card 5: Cerita Interaktif -->
+        <!-- Card 6: Cerita Interaktif -->
         <div class="card">
             <h2 class="card-title">Cerita Interaktif</h2>
             <p class="card-description">
@@ -390,7 +435,7 @@
             </a>
         </div>
 
-        <!-- Card 6: Cerita Non-Interaktif -->
+        <!-- Card 7: Cerita Non-Interaktif -->
         <div class="card">
             <h2 class="card-title">Cerita Non-Interaktif</h2>
             <p class="card-description">

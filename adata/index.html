@@ -79,6 +79,59 @@
             opacity: 1;
             pointer-events: auto;
         }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 4px solid black;
+            box-shadow: 8px 8px 0px black;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-family: 'Comic Neue', cursive;
+        }
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
     </style>
 </head>
 <body class="bg-black text-white flex flex-col items-center p-4 min-h-screen">
@@ -90,7 +143,7 @@
             Bangun dunia cerita Anda dengan detail yang konsisten dan menarik!
         </p>
 
-        <!-- API Key Input Section -->
+        <!-- API Key Input Section - Always visible initially -->
         <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
             <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Arsip Data Cerita:</label>
             <input type="password" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -99,45 +152,48 @@
             </button>
         </div>
 
-        <div class="w-full flex flex-col sm:flex-row gap-4 items-center">
-            <textarea id="world-concept-input" placeholder="Misal: 'Jenis sihir kristal', 'Organisasi pemburu naga', 'Teknologi teleportasi' " class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
-            <button id="generate-entry-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
-                <span id="button-text">Buat Entri!</span>
-                <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
-            </button>
-        </div>
+        <!-- Main Content Area - Hidden until API Key is set -->
+        <div id="main-content" class="hidden w-full space-y-6">
+            <div class="w-full flex flex-col sm:flex-row gap-4 items-center">
+                <textarea id="world-concept-input" placeholder="Misal: 'Jenis sihir kristal', 'Organisasi pemburu naga', 'Teknologi teleportasi' " class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+                <button id="generate-entry-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
+                    <span id="button-text">Buat Entri!</span>
+                    <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+                </button>
+            </div>
 
-        <div id="entry-output-section" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 mono-font overflow-y-auto mt-6">
-            <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
-                Jelaskan sebuah konsep dunia fiksi, lalu klik "Buat Entri!"
-            </p>
-            <!-- Encyclopedia entry will appear here -->
-        </div>
-        
-        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
-            <button id="save-entry-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
-                Simpan Entri
-            </button>
-            <button id="load-entry-list-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold">
-                Arsip Tersimpan
-            </button>
-            <button id="copy-entry-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
-                Salin Entri
-            </button>
-            <button id="clear-entry-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
-                Bersihkan
-            </button>
-        </div>
+            <div id="entry-output-section" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 mono-font overflow-y-auto mt-6">
+                <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                    Jelaskan sebuah konsep dunia fiksi, lalu klik "Buat Entri!"
+                </p>
+                <!-- Encyclopedia entry will appear here -->
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+                <button id="save-entry-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                    Simpan Entri
+                </button>
+                <button id="load-entry-list-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold">
+                    Arsip Tersimpan
+                </button>
+                <button id="copy-entry-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                    Salin Entri
+                </button>
+                <button id="clear-entry-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                    Bersihkan
+                </button>
+            </div>
 
-        <!-- Saved Entries Section -->
-        <div id="saved-entries-section" class="hidden bg-white p-6 rounded-lg shadow-xl border-4 border-black mt-6 w-full max-w-4xl">
-            <h2 class="text-2xl font-bold mb-4 comic-font text-black text-center">Arsip Entri Tersimpan</h2>
-            <ul id="saved-entries-list" class="text-black text-left mono-font">
-                <!-- Saved entries will be loaded here -->
-            </ul>
-            <button id="close-saved-entries-btn" class="comic-button bg-gray-600 text-white px-6 py-2 rounded-full text-md font-bold mt-4">
-                Tutup
-            </button>
+            <!-- Saved Entries Section -->
+            <div id="saved-entries-section" class="hidden bg-white p-6 rounded-lg shadow-xl border-4 border-black mt-6 w-full max-w-4xl">
+                <h2 class="text-2xl font-bold mb-4 comic-font text-black text-center">Arsip Entri Tersimpan</h2>
+                <ul id="saved-entries-list" class="text-black text-left mono-font">
+                    <!-- Saved entries will be loaded here -->
+                </ul>
+                <button id="close-saved-entries-btn" class="comic-button bg-gray-600 text-white px-6 py-2 rounded-full text-md font-bold mt-4">
+                    Tutup
+                </button>
+            </div>
         </div>
     </div>
 
@@ -147,6 +203,18 @@
         <span id="overlay-message" class="comic-font">Membangun dunia...</span>
     </div>
 
+    <!-- Custom Alert/Confirm Modal -->
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" class="comic-font"></h3>
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button id="modal-confirm-btn" class="comic-button bg-blue-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">OK</button>
+                <button id="modal-cancel-btn" class="comic-button bg-red-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">Batal</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // API Key will be loaded from localStorage, default is blank
         let API_KEY = localStorage.getItem('geminiApiKeyStoryArchive') || ""; 
@@ -154,6 +222,7 @@
         const apiKeyInput = document.getElementById('api-key-input');
         const saveApiKeyBtn = document.getElementById('save-api-key-btn');
         const apiKeySection = document.getElementById('api-key-section');
+        const mainContent = document.getElementById('main-content'); // Main content container
 
         const worldConceptInput = document.getElementById('world-concept-input');
         const generateEntryBtn = document.getElementById('generate-entry-btn');
@@ -173,6 +242,13 @@
         const savedEntriesList = document.getElementById('saved-entries-list');
         const closeSavedEntriesBtn = document.getElementById('close-saved-entries-btn');
 
+        // Modal elements
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
         const loadingMessages = [
             "Membangun konsep dunia...",
             "Menyusun sejarah fiksi...",
@@ -181,6 +257,31 @@
             "Memadukan elemen naratif..."
         ];
 
+        // --- Custom Modal Functions (replaces alert/confirm) ---
+        function showModal(title, message, type = 'alert') {
+            return new Promise((resolve) => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                customModal.classList.add('active');
+
+                modalConfirmBtn.classList.remove('hidden');
+                modalConfirmBtn.onclick = () => {
+                    customModal.classList.remove('active');
+                    resolve(true);
+                };
+
+                if (type === 'confirm') {
+                    modalCancelBtn.classList.remove('hidden');
+                    modalCancelBtn.onclick = () => {
+                        customModal.classList.remove('active');
+                        resolve(false);
+                    };
+                } else {
+                    modalCancelBtn.classList.add('hidden');
+                }
+            });
+        }
+
         // --- API Key Handling ---
         function loadApiKey() {
             const storedKey = localStorage.getItem('geminiApiKeyStoryArchive');
@@ -188,18 +289,23 @@
                 API_KEY = storedKey;
                 apiKeyInput.value = storedKey;
                 apiKeySection.classList.add('hidden'); // Hide the input section if key is found
+                mainContent.classList.remove('hidden'); // Show main content
+            } else {
+                apiKeySection.classList.remove('hidden'); // Ensure API key input is visible
+                mainContent.classList.add('hidden'); // Ensure main content is hidden
             }
         }
 
-        saveApiKeyBtn.addEventListener('click', () => {
+        saveApiKeyBtn.addEventListener('click', async () => {
             const key = apiKeyInput.value.trim();
             if (key) {
                 localStorage.setItem('geminiApiKeyStoryArchive', key);
                 API_KEY = key;
-                alert('API Key berhasil disimpan!');
+                await showModal('Berhasil!', 'API Key berhasil disimpan!');
                 apiKeySection.classList.add('hidden'); // Hide after saving
+                mainContent.classList.remove('hidden'); // Show main content
             } else {
-                alert('Masukkan API Key terlebih dahulu!');
+                await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
             }
         });
 
@@ -256,14 +362,15 @@
         // Core Function: Generate Encyclopedia Entry
         async function generateEncyclopediaEntry() {
             if (!API_KEY) {
-                alert("Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
                 apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                mainContent.classList.add('hidden'); // Hide main content
                 return;
             }
 
             const worldConcept = worldConceptInput.value.trim();
             if (!worldConcept) {
-                alert('Silakan jelaskan sebuah konsep dunia fiksi.');
+                await showModal('Peringatan!', 'Silakan jelaskan sebuah konsep dunia fiksi.');
                 return;
             }
 
@@ -332,7 +439,7 @@
             const currentEntryText = getRawEntryContent();
 
             if (!currentConcept || !currentEntryText || currentEntryText.trim().length < 50) {
-                alert('Tidak ada entri yang valid untuk disimpan.');
+                showModal('Peringatan!', 'Tidak ada entri yang valid untuk disimpan.');
                 return;
             }
 
@@ -348,13 +455,13 @@
             // Check if entry with same concept already exists to prevent duplicates
             const exists = entries.some(e => e.concept === newEntry.concept);
             if (exists) {
-                alert('Entri dengan konsep yang sama sudah tersimpan!');
+                showModal('Peringatan!', 'Entri dengan konsep yang sama sudah tersimpan!');
                 return;
             }
 
             entries.push(newEntry);
             localStorage.setItem('hanzercopyStoryArchiveEntries', JSON.stringify(entries)); // Changed key
-            alert('Entri berhasil disimpan!');
+            showModal('Berhasil!', 'Entri berhasil disimpan!');
             renderSavedEntries(); // Refresh the list if it's open
         }
 
@@ -378,8 +485,9 @@
             }
         }
 
-        function deleteEntry(index) {
-            if (confirm('Anda yakin ingin menghapus entri ini dari arsip?')) {
+        async function deleteEntry(index) {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus entri ini dari arsip?', 'confirm');
+            if (confirmed) {
                 const entries = JSON.parse(localStorage.getItem('hanzercopyStoryArchiveEntries') || '[]'); // Changed key
                 entries.splice(index, 1);
                 localStorage.setItem('hanzercopyStoryArchiveEntries', JSON.stringify(entries)); // Changed key
@@ -442,7 +550,7 @@
             savedEntriesSection.classList.add('hidden');
         });
 
-        copyEntryBtn.addEventListener('click', () => {
+        copyEntryBtn.addEventListener('click', async () => {
             const textToCopy = getRawEntryContent();
             
             const textarea = document.createElement('textarea');
@@ -458,17 +566,18 @@
             textarea.select();
             try {
                 document.execCommand('copy');
-                alert('Entri berhasil disalin ke clipboard!');
+                await showModal('Berhasil!', 'Entri berhasil disalin ke clipboard!');
             } catch (err) {
                 console.error('Gagal menyalin teks: ', err);
-                alert('Gagal menyalin entri. Silakan salin manual.');
+                await showModal('Gagal!', 'Gagal menyalin entri. Silakan salin manual.');
             } finally {
                 document.body.removeChild(textarea);
             }
         });
 
-        clearEntryBtn.addEventListener('click', () => {
-            if (confirm('Anda yakin ingin menghapus entri yang sedang ditampilkan dan input?')) {
+        clearEntryBtn.addEventListener('click', async () => {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus entri yang sedang ditampilkan dan input?', 'confirm');
+            if (confirmed) {
                 worldConceptInput.value = '';
                 entryOutputSection.innerHTML = `
                     <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">

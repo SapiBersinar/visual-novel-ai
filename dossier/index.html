@@ -95,6 +95,59 @@
             pointer-events: auto;
         }
 
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 4px solid black;
+            box-shadow: 8px 8px 0px black;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-family: 'Comic Neue', cursive;
+        }
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
         /* Print styles */
         @media print {
             body {
@@ -103,7 +156,7 @@
                 margin: 0;
                 padding: 0;
             }
-            .bg-black, .text-white, .comic-button, .loading-overlay-full,
+            .bg-black, .text-white, .comic-button, .loading-overlay-full, .modal,
             .p-4.min-h-screen, .mb-6, .mt-4, .w-full.flex, .gap-4,
             .rounded-lg.shadow-xl.border-4.border-black,
             #api-key-section, /* Hide API key input section */
@@ -178,7 +231,7 @@
             Alat bantu Anda untuk menemukan dan mengembangkan karakter fiksi yang menarik untuk cerita atau novel!
         </p>
 
-        <!-- API Key Input Section -->
+        <!-- API Key Input Section - Always visible initially -->
         <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
             <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0">API Key Anda:</label>
             <input type="password" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -187,79 +240,92 @@
             </button>
         </div>
 
-        <div class="w-full flex flex-col sm:flex-row gap-4 items-center">
-            <div class="flex flex-col w-full sm:w-1/4">
-                <input type="text" id="character-name-input" placeholder="Nama Karakter (Opsional)" class="p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
-                <button id="random-name-btn" class="comic-button bg-gray-500 text-white text-sm px-3 py-1 mt-2 rounded-full font-bold">
-                    Nama Acak
+        <!-- Main Content Area - Hidden until API Key is set -->
+        <div id="main-content" class="hidden w-full space-y-6">
+            <div class="w-full flex flex-col sm:flex-row gap-4 items-center">
+                <div class="flex flex-col w-full sm:w-1/4">
+                    <input type="text" id="character-name-input" placeholder="Nama Karakter (Opsional)" class="p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
+                    <button id="random-name-btn" class="comic-button bg-gray-500 text-white text-sm px-3 py-1 mt-2 rounded-full font-bold">
+                        Nama Acak
+                    </button>
+                </div>
+                
+                <!-- Changed from input to textarea for multi-line support -->
+                <textarea id="character-concept-input" placeholder="Konsep Dasar (misal: 'detektif alien yang menyukai kopi', 'prajurit naga terakhir yang mencari kedamaian di dunia modern')" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[80px]"></textarea>
+                
+                <button id="random-concept-btn" class="comic-button bg-gray-700 text-white px-6 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
+                    Acak Konsep
+                </button>
+                <button id="generate-dossier-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
+                    <span id="button-text">Buat Dossier!</span>
+                    <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
                 </button>
             </div>
-            
-            <!-- Changed from input to textarea for multi-line support -->
-            <textarea id="character-concept-input" placeholder="Konsep Dasar (misal: 'detektif alien yang menyukai kopi', 'prajurit naga terakhir yang mencari kedamaian di dunia modern')" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[80px]"></textarea>
-            
-            <button id="random-concept-btn" class="comic-button bg-gray-700 text-white px-6 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
-                Acak Konsep
-            </button>
-            <button id="generate-dossier-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
-                <span id="button-text">Buat Dossier!</span>
-                <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
-            </button>
-        </div>
 
-        <div id="dossier-output" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 mono-font overflow-y-auto mt-6">
-            <h2 class="text-3xl font-bold mb-4 text-center comic-font" id="dossier-title"></h2>
-            <div id="dossier-content" class="text-base sm:text-lg leading-relaxed">
-                <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-dossier-message">
-                    Masukkan nama dan konsep karakter di atas, lalu klik "Buat Dossier!"
-                </p>
-                <!-- Konten dossier akan muncul di sini -->
+            <div id="dossier-output" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 mono-font overflow-y-auto mt-6">
+                <h2 class="text-3xl font-bold mb-4 text-center comic-font" id="dossier-title"></h2>
+                <div id="dossier-content" class="text-base sm:text-lg leading-relaxed">
+                    <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-dossier-message">
+                        Masukkan nama dan konsep karakter di atas, lalu klik "Buat Dossier!"
+                    </p>
+                    <!-- Konten dossier akan muncul di sini -->
+                </div>
+                <div id="image-prompt-section" class="border-t-2 border-dashed border-gray-400 mt-6 pt-4 hidden">
+                    <h3 class="text-xl font-bold mb-2 comic-font">Contoh Prompt Gambar AI:</h3>
+                    <p id="image-prompt-text" class="text-sm sm:text-base italic"></p>
+                </div>
             </div>
-            <div id="image-prompt-section" class="border-t-2 border-dashed border-gray-400 mt-6 pt-4 hidden">
-                <h3 class="text-xl font-bold mb-2 comic-font">Contoh Prompt Gambar AI:</h3>
-                <p id="image-prompt-text" class="text-sm sm:text-base italic"></p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+                <button id="save-dossier-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                    Simpan Dossier
+                </button>
+                <button id="load-dossier-list-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold">
+                    Dossier Tersimpan
+                </button>
+                <button id="copy-dossier-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                    Salin Dossier
+                </button>
+                <button id="export-txt-btn" class="comic-button bg-yellow-500 text-black px-8 py-3 rounded-full text-lg font-bold hidden">
+                    Ekspor (.txt)
+                </button>
+                <button id="export-md-btn" class="comic-button bg-yellow-500 text-black px-8 py-3 rounded-full text-lg font-bold hidden">
+                    Ekspor (.md)
+                </button>
+                <button id="clear-dossier-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                    Bersihkan
+                </button>
+            </div>
+
+            <!-- Saved Dossiers Section -->
+            <div id="saved-dossiers-section" class="hidden bg-white p-6 rounded-lg shadow-xl border-4 border-black mt-6 w-full max-w-4xl">
+                <h2 class="text-2xl font-bold mb-4 comic-font text-black text-center">Dossier Tersimpan</h2>
+                <ul id="saved-dossiers-list" class="text-black text-left mono-font">
+                    <!-- Saved dossiers will be loaded here -->
+                </ul>
+                <button id="close-saved-dossiers-btn" class="comic-button bg-gray-600 text-white px-6 py-2 rounded-full text-md font-bold mt-4">
+                    Tutup
+                </button>
             </div>
         </div>
-        
-        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
-            <button id="save-dossier-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
-                Simpan Dossier
-            </button>
-            <button id="load-dossier-list-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold">
-                Dossier Tersimpan
-            </button>
-            <button id="copy-dossier-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
-                Salin Dossier
-            </button>
-            <button id="export-txt-btn" class="comic-button bg-yellow-500 text-black px-8 py-3 rounded-full text-lg font-bold hidden">
-                Ekspor (.txt)
-            </button>
-            <button id="export-md-btn" class="comic-button bg-yellow-500 text-black px-8 py-3 rounded-full text-lg font-bold hidden">
-                Ekspor (.md)
-            </button>
-            <button id="clear-dossier-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
-                Bersihkan
-            </button>
-        </div>
-
-        <!-- Saved Dossiers Section -->
-        <div id="saved-dossiers-section" class="hidden bg-white p-6 rounded-lg shadow-xl border-4 border-black mt-6 w-full max-w-4xl">
-            <h2 class="text-2xl font-bold mb-4 comic-font text-black text-center">Dossier Tersimpan</h2>
-            <ul id="saved-dossiers-list" class="text-black text-left mono-font">
-                <!-- Saved dossiers will be loaded here -->
-            </ul>
-            <button id="close-saved-dossiers-btn" class="comic-button bg-gray-600 text-white px-6 py-2 rounded-full text-md font-bold mt-4">
-                Tutup
-            </button>
-        </div>
-
-        <!-- Footer removed -->
     </div>
 
     <!-- Full-screen loading overlay -->
     <div id="full-loading-overlay" class="loading-overlay-full">
         <div class="loader ease-linear rounded-full border-8 border-t-8 border-white h-20 w-20 mb-4"></div>
         <span id="overlay-message" class="comic-font">Menganalisis data intelijen...</span>
+    </div>
+
+    <!-- Custom Alert/Confirm Modal -->
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" class="comic-font"></h3>
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button id="modal-confirm-btn" class="comic-button bg-blue-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">OK</button>
+                <button id="modal-cancel-btn" class="comic-button bg-red-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">Batal</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -269,6 +335,7 @@
         const apiKeyInput = document.getElementById('api-key-input');
         const saveApiKeyBtn = document.getElementById('save-api-key-btn');
         const apiKeySection = document.getElementById('api-key-section'); // For initial check and hiding
+        const mainContent = document.getElementById('main-content'); // Main content container
 
         const characterNameInput = document.getElementById('character-name-input');
         const randomNameBtn = document.getElementById('random-name-btn');
@@ -296,6 +363,13 @@
         const savedDossiersSection = document.getElementById('saved-dossiers-section');
         const savedDossiersList = document.getElementById('saved-dossiers-list');
         const closeSavedDossiersBtn = document.getElementById('close-saved-dossiers-btn');
+
+        // Modal elements
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
 
         const randomConcepts = [
             "Penyihir muda yang kikuk dan takut ketinggian",
@@ -325,6 +399,31 @@
             "Menggali potensi karakter..."
         ];
 
+        // --- Custom Modal Functions (replaces alert/confirm) ---
+        function showModal(title, message, type = 'alert') {
+            return new Promise((resolve) => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                customModal.classList.add('active');
+
+                modalConfirmBtn.classList.remove('hidden');
+                modalConfirmBtn.onclick = () => {
+                    customModal.classList.remove('active');
+                    resolve(true);
+                };
+
+                if (type === 'confirm') {
+                    modalCancelBtn.classList.remove('hidden');
+                    modalCancelBtn.onclick = () => {
+                        customModal.classList.remove('active');
+                        resolve(false);
+                    };
+                } else {
+                    modalCancelBtn.classList.add('hidden');
+                }
+            });
+        }
+
         // --- API Key Handling ---
         function loadApiKey() {
             const storedKey = localStorage.getItem('geminiApiKey');
@@ -332,18 +431,23 @@
                 API_KEY = storedKey;
                 apiKeyInput.value = storedKey;
                 apiKeySection.classList.add('hidden'); // Hide the input section if key is found
+                mainContent.classList.remove('hidden'); // Show main content
+            } else {
+                apiKeySection.classList.remove('hidden'); // Ensure API key input is visible
+                mainContent.classList.add('hidden'); // Ensure main content is hidden
             }
         }
 
-        saveApiKeyBtn.addEventListener('click', () => {
+        saveApiKeyBtn.addEventListener('click', async () => {
             const key = apiKeyInput.value.trim();
             if (key) {
                 localStorage.setItem('geminiApiKey', key);
                 API_KEY = key;
-                alert('API Key berhasil disimpan!');
+                await showModal('Berhasil!', 'API Key berhasil disimpan!');
                 apiKeySection.classList.add('hidden'); // Hide after saving
+                mainContent.classList.remove('hidden'); // Show main content
             } else {
-                alert('Masukkan API Key terlebih dahulu!');
+                await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
             }
         });
 
@@ -429,8 +533,9 @@
         // Function to generate dossier using Gemini API
         async function generateDossier() {
             if (!API_KEY) {
-                alert("Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
                 apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                mainContent.classList.add('hidden'); // Hide main content
                 return;
             }
 
@@ -438,7 +543,7 @@
             const characterConcept = characterConceptInput.value.trim(); // Get value from textarea
 
             if (!characterConcept) {
-                alert('Silakan masukkan konsep dasar karakter.');
+                await showModal('Peringatan!', 'Silakan masukkan konsep dasar karakter.');
                 return;
             }
 
@@ -503,12 +608,12 @@
                         dossierContent.innerHTML = '<p class="text-center text-gray-600 comic-font text-lg pt-20">AI tidak dapat membuat dossier yang valid dari konsep ini. Coba lagi dengan konsep yang berbeda.</p>';
                     }
                 } else {
-                    alert("Maaf, AI gagal membuat dossier. Coba lagi atau ganti konsep!");
+                    await showModal('Gagal!', "Maaf, AI gagal membuat dossier. Coba lagi atau ganti konsep!");
                     console.error("Unexpected API response structure:", result);
                     initialDossierMessage.classList.remove('hidden');
                 }
             } catch (error) {
-                alert("Terjadi kesalahan saat memuat dossier. Periksa koneksi Anda atau API Key Anda mungkin tidak valid.");
+                await showModal('Kesalahan!', "Terjadi kesalahan saat memuat dossier. Periksa koneksi Anda atau API Key Anda mungkin tidak valid.");
                 console.error("Error fetching dossier:", error);
                 initialDossierMessage.classList.remove('hidden');
             } finally {
@@ -532,13 +637,13 @@
                 d.concept === currentDossier.concept
             );
             if (exists) {
-                alert('Dossier dengan nama dan konsep yang sama sudah tersimpan!');
+                showModal('Peringatan!', 'Dossier dengan nama dan konsep yang sama sudah tersimpan!');
                 return;
             }
 
             dossiers.push(currentDossier);
             localStorage.setItem('hanzercopyDossiers', JSON.stringify(dossiers));
-            alert('Dossier berhasil disimpan!');
+            showModal('Berhasil!', 'Dossier berhasil disimpan!');
             renderSavedDossiers(); // Refresh the list if it's open
         }
 
@@ -574,8 +679,9 @@
             }
         }
 
-        function deleteDossier(index) {
-            if (confirm('Anda yakin ingin menghapus dossier ini?')) {
+        async function deleteDossier(index) {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus dossier ini?', 'confirm');
+            if (confirmed) {
                 const dossiers = JSON.parse(localStorage.getItem('hanzercopyDossiers') || '[]');
                 dossiers.splice(index, 1);
                 localStorage.setItem('hanzercopyDossiers', JSON.stringify(dossiers));
@@ -649,7 +755,7 @@
             characterNameInput.value = randomNames[randomIndex];
         });
 
-        copyDossierBtn.addEventListener('click', () => {
+        copyDossierBtn.addEventListener('click', async () => {
             const textToCopy = getRawDossierContent();
             
             const textarea = document.createElement('textarea');
@@ -665,10 +771,10 @@
             textarea.select();
             try {
                 document.execCommand('copy');
-                alert('Dossier berhasil disalin ke clipboard!');
+                await showModal('Berhasil!', 'Dossier berhasil disalin ke clipboard!');
             } catch (err) {
                 console.error('Gagal menyalin teks: ', err);
-                alert('Gagal menyalin dossier. Silakan salin manual.');
+                await showModal('Gagal!', 'Gagal menyalin dossier. Silakan salin manual.');
             } finally {
                 document.body.removeChild(textarea);
             }
@@ -701,8 +807,9 @@
             downloadFile(markdownContent, filename, 'text/markdown');
         });
 
-        clearDossierBtn.addEventListener('click', () => {
-            if (confirm('Anda yakin ingin menghapus dossier yang sedang ditampilkan dan input?')) {
+        clearDossierBtn.addEventListener('click', async () => {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus dossier yang sedang ditampilkan dan input?', 'confirm');
+            if (confirmed) {
                 characterNameInput.value = '';
                 characterConceptInput.value = '';
                 dossierTitle.textContent = '';

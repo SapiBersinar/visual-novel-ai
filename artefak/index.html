@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perancang Item & Artefak Legendaris - Hanzercopy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fallback font Inter for general text */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Mencegah scroll horizontal */
+        }
+        /* Comic-like font for titles and specific elements */
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Share+Tech+Mono&display=swap');
+        .comic-font {
+            font-family: 'Comic Neue', cursive;
+        }
+        /* Monospace font for AI generated content */
+        .mono-font {
+            font-family: 'Share Tech Mono', monospace; /* Font ala mesin tik/komputer */
+        }
+        /* Default font for inputs and general readability - ensure Inter */
+        .default-font {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Gaya khusus untuk tombol komik */
+        .comic-button {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px black;
+            transition: all 0.2s ease-in-out;
+        }
+        .comic-button:hover {
+            box-shadow: 2px 2px 0px black;
+            transform: translate(4px, 4px);
+        }
+
+        /* Loader spinner */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Full-screen loading overlay */
+        .loading-overlay-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Overlay semi-transparan gelap */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Pastikan di atas semua elemen */
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Izinkan klik untuk melewati saat tidak aktif */
+        }
+        .loading-overlay-full.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 4px solid black;
+            box-shadow: 8px 8px 0px black;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-family: 'Comic Neue', cursive;
+        }
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        /* Styling for the artifact output card */
+        .artifact-output-card {
+            background-color: #e0e0e0; /* Light gray background */
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .artifact-output-card h3 {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-family: 'Comic Neue', cursive;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+        }
+        .artifact-output-card p {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .artifact-output-card .detail-section {
+            margin-top: 15px;
+        }
+        .artifact-output-card .detail-section strong {
+            font-family: 'Comic Neue', cursive;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body class="bg-black text-white flex flex-col items-center p-4 min-h-screen">
+    <div class="text-center space-y-6 max-w-4xl w-full p-6 bg-white text-black rounded-lg shadow-xl border-4 border-black mb-6">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold comic-font leading-tight">
+            Perancang Item & Artefak Legendaris
+        </h1>
+        <p class="text-lg sm:text-xl default-font">
+            Rancang item dan artefak unik dengan asal-usul, kekuatan, dan kisah legendarisnya!
+        </p>
+
+        <!-- API Key Input Section - Always visible initially -->
+        <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
+            <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Perancang Item & Artefak Legendaris:</label>
+            <input type="password" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
+                Simpan API Key
+            </button>
+        </div>
+
+        <!-- Main Content Area - Hidden until API Key is set -->
+        <div id="main-content" class="hidden w-full space-y-6">
+            <div class="w-full flex flex-col sm:flex-row gap-4 items-start justify-center">
+                <!-- Left Column for Item Type, Effect, Rank -->
+                <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-2/5 lg:w-1/3">
+                    <!-- Item Type Selection -->
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2 w-full">
+                            <label for="item-type-select" class="comic-font text-gray-800 text-base shrink-0">Jenis Item:</label>
+                            <select id="item-type-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                                <option value="Lainnya" selected>Lainnya</option> <!-- Default to Lainnya -->
+                                <option value="Random AI">Random AI</option>
+                                <option value="Pedang">Pedang</option>
+                                <option value="Tameng">Tameng</option>
+                                <option value="Armor/Baju Zirah">Armor/Baju Zirah</option>
+                                <option value="Pemanah">Pemanah</option>
+                                <option value="Tongkat/Staf">Tongkat/Staf</option>
+                                <option value="Buku/Gulungan">Buku/Gulungan</option>
+                                <option value="Cincin">Cincin</option>
+                                <option value="Kalung">Kalung</option>
+                                <option value="Gelang">Gelang</option>
+                                <option value="Jubah">Jubah</option>
+                                <option value="Helm">Helm</option>
+                                <option value="Sarung Tangan">Sarung Tangan</option>
+                                <option value="Sepatu/Bot">Sepatu/Bot</option>
+                                <option value="Ramuan">Ramuan</option>
+                                <option value="Perhiasan">Perhiasan</option>
+                                <option value="Pakaian">Pakaian</option>
+                                <option value="Senjata Jarak Dekat">Senjata Jarak Dekat</option>
+                                <option value="Senjata Jarak Jauh">Senjata Jarak Jauh</option>
+                                <option value="Senjata Tumpul">Senjata Tumpul</option>
+                                <option value="Senjata Tajam">Senjata Tajam</option>
+                                <option value="Senjata Polearm">Senjata Polearm</option>
+                                <option value="Alat">Alat</option>
+                                <option value="Peralatan">Peralatan</option>
+                                <option value="Kendaraan">Kendaraan</option>
+                                <option value="Bangunan">Bangunan</option>
+                                <option value="Tanaman/Herbal">Tanaman/Herbal</option>
+                                <option value="Hewan/Makhluk">Hewan/Makhluk</option>
+                                <option value="Mantra/Keahlian">Mantra/Keahlian</option>
+                                <option value="Material">Material</option>
+                                <option value="Fragmen/Puing">Fragmen/Puing</option>
+                                <option value="Jimat/Azimat">Jimat/Azimat</option>
+                                <option value="Perangkat">Perangkat</option>
+                                <option value="Komponen">Komponen</option>
+                                <option value="Relik">Relik</option>
+                                <option value="Peninggalan">Peninggalan</option>
+                                <option value="Kristal">Kristal</option>
+                                <option value="Permata">Permata</option>
+                                <option value="Ramuan">Ramuan</option>
+                                <option value="Tablet/Lempengan">Tablet/Lempengan</option>
+                                <option value="Bunga">Bunga</option>
+                                <option value="Buah">Buah</option>
+                                <option value="Obat">Obat</option>
+                                <option value="Makanan">Makanan</option>
+                                <option value="Minuman">Minuman</option>
+                            </select>
+                        </div>
+                        <input type="text" id="manual-item-type-input" placeholder="Masukkan Jenis Item Kustom" class="p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <textarea id="effect-input" placeholder="Efek/karakteristik (misal: 'memberikan kekuatan super', 'menyebabkan halusinasi', 'membuka portal waktu')" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[80px]"></textarea>
+                        <button id="generate-effect-btn" class="comic-button bg-gray-500 text-white text-sm px-3 py-1 rounded-full font-bold default-font">
+                            Acak Efek
+                        </button>
+                    </div>
+                    
+                    <!-- Rank Selection -->
+                    <div class="flex items-center gap-2 w-full">
+                        <label for="rank-select" class="comic-font text-gray-800 text-base shrink-0">Rank:</label>
+                        <select id="rank-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                            <option value="F">F</option>
+                            <option value="D">D</option>
+                            <option value="C">C</option>
+                            <option value="B">B</option>
+                            <option value="A">A</option>
+                            <option value="A+">A+</option>
+                            <option value="S">S</option>
+                            <option value="SS">SS</option>
+                            <option value="SS+">SS+</option>
+                            <option value="SSS+">SSS+</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <input type="text" id="manual-rank-input" placeholder="Masukkan Rank Kustom (misal: 'Mitologis', 'Alpha')" class="p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hidden">
+                </div>
+                
+                <!-- Right Column for Context and Generate Button -->
+                <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-3/5 lg:w-2/3">
+                    <textarea id="context-input" placeholder="Tambahkan konteks/detail lain (Opsional: Misal: 'Dibuat oleh penyihir kuno', 'Ditemukan di reruntuhan kota yang hilang'). Jika kosong, AI akan berasumsi." class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+                    
+                    <button id="generate-artifact-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full flex items-center justify-center default-font">
+                        <span id="button-text">Rancang Artefak!</span>
+                        <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+                    </button>
+                </div>
+            </div>
+
+            <div id="artifact-output-section" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 mono-font overflow-y-auto mt-6">
+                <p class="text-center text-gray-600 default-font text-lg pt-20" id="initial-message">
+                    Pilih jenis item dan efek, lalu klik "Rancang Artefak!"
+                </p>
+                <!-- Generated artifact details will appear here -->
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+                <button id="copy-artifact-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold default-font hidden">
+                    Salin Deskripsi
+                </button>
+                <button id="clear-artifact-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold default-font hidden">
+                    Bersihkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full-screen loading overlay -->
+    <div id="full-loading-overlay" class="loading-overlay-full">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-white h-20 w-20 mb-4"></div>
+        <span id="overlay-message" class="comic-font">Menciptakan artefak...</span>
+    </div>
+
+    <!-- Custom Alert/Confirm Modal -->
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" class="comic-font"></h3>
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button id="modal-confirm-btn" class="comic-button bg-blue-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">OK</button>
+                <button id="modal-cancel-btn" class="comic-button bg-red-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Key will be loaded from localStorage, default is blank
+        let API_KEY = localStorage.getItem('geminiApiKeyArtifact') || ""; 
+
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const apiKeySection = document.getElementById('api-key-section');
+        const mainContent = document.getElementById('main-content'); // Main content container
+
+        const itemTypeSelect = document.getElementById('item-type-select');
+        const manualItemTypeInput = document.getElementById('manual-item-type-input');
+        const generateEffectBtn = document.getElementById('generate-effect-btn');
+        const effectInput = document.getElementById('effect-input');
+        const rankSelect = document.getElementById('rank-select');
+        const manualRankInput = document.getElementById('manual-rank-input');
+        const contextInput = document.getElementById('context-input');
+        const generateArtifactBtn = document.getElementById('generate-artifact-btn');
+        const copyArtifactBtn = document.getElementById('copy-artifact-btn');
+        const clearArtifactBtn = document.getElementById('clear-artifact-btn');
+        
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const artifactOutputSection = document.getElementById('artifact-output-section');
+        const initialMessage = document.getElementById('initial-message');
+        const fullLoadingOverlay = document.getElementById('full-loading-overlay');
+        const overlayMessage = document.getElementById('overlay-message');
+
+        // Modal elements
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+        const loadingMessages = [
+            "Memahat detail artefak...",
+            "Menuliskan kisah legendaris...",
+            "Menggali kekuatan tersembunyi...",
+            "Menciptakan objek unik...",
+            "Menyelaraskan kutukan dan berkah..."
+        ];
+
+        // --- Custom Modal Functions (replaces alert/confirm) ---
+        function showModal(title, message, type = 'alert') {
+            return new Promise((resolve) => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                customModal.classList.add('active');
+
+                modalConfirmBtn.classList.remove('hidden');
+                modalConfirmBtn.onclick = () => {
+                    customModal.classList.remove('active');
+                    resolve(true);
+                };
+
+                if (type === 'confirm') {
+                    modalCancelBtn.classList.remove('hidden');
+                    modalCancelBtn.onclick = () => {
+                        customModal.classList.remove('active');
+                        resolve(false);
+                    };
+                } else {
+                    modalCancelBtn.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- API Key Handling ---
+        function loadApiKey() {
+            const storedKey = localStorage.getItem('geminiApiKeyArtifact');
+            if (storedKey) {
+                API_KEY = storedKey;
+                apiKeyInput.value = storedKey;
+                apiKeySection.classList.add('hidden'); // Hide the input section if key is found
+                mainContent.classList.remove('hidden'); // Show main content
+            } else {
+                apiKeySection.classList.remove('hidden'); // Ensure API key input is visible
+                mainContent.classList.add('hidden'); // Ensure main content is hidden
+            }
+        }
+
+        saveApiKeyBtn.addEventListener('click', async () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                localStorage.setItem('geminiApiKeyArtifact', key);
+                API_KEY = key;
+                await showModal('Berhasil!', 'API Key berhasil disimpan!');
+                apiKeySection.classList.add('hidden'); // Hide after saving
+                mainContent.classList.remove('hidden'); // Show main content
+            } else {
+                await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
+            }
+        });
+
+        // --- Event Listeners for Selects and Manual Inputs ---
+        itemTypeSelect.addEventListener('change', () => {
+            if (itemTypeSelect.value === 'Lainnya') {
+                manualItemTypeInput.classList.remove('hidden');
+                manualItemTypeInput.focus();
+            } else {
+                manualItemTypeInput.classList.add('hidden');
+                manualItemTypeInput.value = ''; // Clear manual input
+            }
+        });
+
+        rankSelect.addEventListener('change', () => {
+            if (rankSelect.value === 'Lainnya') {
+                manualRankInput.classList.remove('hidden');
+                manualRankInput.focus();
+            } else {
+                manualRankInput.classList.add('hidden');
+                manualRankInput.value = ''; // Clear manual input
+            }
+        });
+
+        // Function to show loading state
+        function showLoading() {
+            overlayMessage.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            fullLoadingOverlay.classList.add('active');
+            generateArtifactBtn.disabled = true;
+            generateEffectBtn.disabled = true;
+            itemTypeSelect.disabled = true; // Disable item type select during generation
+            manualItemTypeInput.disabled = true; // Disable manual item type input
+            rankSelect.disabled = true; // Disable rank select
+            manualRankInput.disabled = true; // Disable manual rank input
+            effectInput.disabled = true; // Disable effect input
+            contextInput.disabled = true; // Disable context input
+            copyArtifactBtn.classList.add('hidden');
+            clearArtifactBtn.classList.add('hidden');
+            buttonText.textContent = "Membuat...";
+            loadingSpinner.classList.remove('hidden');
+            artifactOutputSection.innerHTML = ''; // Clear previous content
+            initialMessage.classList.add('hidden'); // Hide initial message
+        }
+
+        // Function to hide loading state
+        function hideLoading() {
+            fullLoadingOverlay.classList.remove('active');
+            generateArtifactBtn.disabled = false;
+            generateEffectBtn.disabled = false;
+            itemTypeSelect.disabled = false; // Re-enable item type select
+            manualItemTypeInput.disabled = false; // Re-enable manual item type input
+            rankSelect.disabled = false; // Re-enable rank select
+            manualRankInput.disabled = false; // Re-enable manual rank input
+            effectInput.disabled = false; // Re-enable effect input
+            contextInput.disabled = false; // Re-enable context input
+            copyArtifactBtn.classList.remove('hidden');
+            clearArtifactBtn.classList.remove('hidden');
+            buttonText.textContent = "Rancang Artefak!";
+            loadingSpinner.classList.add('hidden');
+        }
+
+        // Function to copy text to clipboard
+        async function copyToClipboard(text, alertMessage = 'Deskripsi berhasil disalin ke clipboard!') {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.top = 0;
+            textarea.style.left = 0;
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.opacity = 0;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                await showModal('Berhasil!', alertMessage);
+            } catch (err) {
+                console.error('Gagal menyalin teks: ', err);
+                await showModal('Gagal!', 'Gagal menyalin. Silakan salin manual.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // Function to render the artifact output from JSON
+        function renderArtifact(artifactData) {
+            let htmlContent = `<h2 class="text-3xl font-bold mb-4 text-center comic-font">${artifactData.itemNameEnglish} (${artifactData.itemNameIndonesian})</h2>`; // Combined name for display
+
+            if (artifactData.rank) {
+                htmlContent += `<div class="detail-section"><strong>Rank:</strong><p class="default-font">${artifactData.rank}</p></div>`;
+            }
+            if (artifactData.physicalDescription) {
+                htmlContent += `<div class="detail-section"><strong>Penampilan Fisik:</strong><p class="default-font">${artifactData.physicalDescription}</p></div>`;
+            }
+            if (artifactData.originStory) {
+                htmlContent += `<div class="detail-section"><strong>Kisah Asal-Usul:</strong><p class="default-font">${artifactData.originStory}</p></div>`;
+            }
+            if (artifactData.powersCursesEffects) {
+                htmlContent += `<div class="detail-section"><strong>Kekuatan/Kutukan/Efek:</strong><p class="default-font">${artifactData.powersCursesEffects}</p></div>`;
+            }
+            if (artifactData.weaknesses) {
+                htmlContent += `<div class="detail-section"><strong>Kelemahan/Keterbatasan:</strong><p class="default-font">${artifactData.weaknesses}</p></div>`;
+            }
+            if (artifactData.storyImplications) {
+                htmlContent += `<div class="detail-section"><strong>Implikasi dalam Cerita:</strong><p class="default-font">${artifactData.storyImplications}</p></div>`;
+            }
+            
+            artifactOutputSection.innerHTML = htmlContent;
+        }
+
+        // Function to get raw text for copying
+        function getRawArtifactContent(artifactData) {
+            // Use combined name for copying
+            let rawText = `Nama Item: ${artifactData.itemNameEnglish} (${artifactData.itemNameIndonesian})\n\n`;
+            if (artifactData.rank) rawText += `Rank: ${artifactData.rank}\n\n`;
+            if (artifactData.physicalDescription) rawText += `Penampilan Fisik: ${artifactData.physicalDescription}\n\n`;
+            if (artifactData.originStory) rawText += `Kisah Asal-Usul: ${artifactData.originStory}\n\n`;
+            if (artifactData.powersCursesEffects) rawText += `Kekuatan/Kutukan/Efek: ${artifactData.powersCursesEffects}\n\n`;
+            if (artifactData.weaknesses) rawText += `Kelemahan/Keterbatasan: ${artifactData.weaknesses}\n\n`;
+            if (artifactData.storyImplications) rawText += `Implikasi dalam Cerita: ${artifactData.storyImplications}\n\n`;
+            return rawText.trim();
+        }
+
+        // Helper function to generate a random item type via AI (used when "Random AI" is selected)
+        async function generateAiItemType() {
+            try {
+                let prompt = `Hasilkan satu jenis item fiksi fantasi acak. Contoh: 'pedang besar', 'kalung permata', 'buku mantra kuno', 'ramuan ajaib', 'perisai', 'sarung tangan', 'jubah', 'sepatu bot', 'cincin', 'gelang', 'topi', 'helm', 'gloves', 'amulet', 'kunci', 'orb', 'kristal', 'senjata', 'armor', 'perhiasan', 'perlengkapan'. Berikan hanya jenis itemnya saja, tidak perlu penjelasan lain.`;
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text.trim().replace(/"/g, '');
+                } else {
+                    console.error('AI failed to generate item type.');
+                    return null;
+                }
+            } catch (error) {
+                console.error("Error generating random item type via AI:", error);
+                return null;
+            }
+        }
+
+
+        // Core Function: Generate Artifact
+        async function generateArtifact() {
+            if (!API_KEY) {
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                mainContent.classList.add('hidden'); // Hide main content
+                return;
+            }
+
+            let itemType = itemTypeSelect.value;
+            if (itemType === 'Lainnya') {
+                itemType = manualItemTypeInput.value.trim();
+                if (!itemType) {
+                    await showModal('Peringatan!', 'Mohon masukkan Jenis Item Kustom.');
+                    return;
+                }
+            } else if (itemType === 'Random AI') {
+                showLoading(); // Show loading earlier if AI generation for item type is needed
+                itemType = await generateAiItemType();
+                if (!itemType) {
+                    hideLoading();
+                    await showModal('Gagal!', 'Gagal mendapatkan jenis item dari AI. Silakan coba lagi atau pilih jenis item manual.');
+                    return;
+                }
+                // Update the input field with the AI-generated type for user visibility
+                itemTypeSelect.value = 'Lainnya'; // Change select to "Lainnya"
+                manualItemTypeInput.classList.remove('hidden'); // Show manual input
+                manualItemTypeInput.value = itemType; // Put AI result here
+            }
+
+            const effect = effectInput.value.trim();
+            let selectedRank = rankSelect.value;
+            const manualRank = manualRankInput.value.trim();
+
+            if (selectedRank === 'Lainnya') {
+                selectedRank = manualRank;
+                if (!selectedRank) {
+                    await showModal('Peringatan!', 'Mohon masukkan Rank Kustom atau pilih Rank dari daftar.');
+                    return;
+                }
+            }
+
+            let context = contextInput.value.trim();
+
+            if (!itemType || !effect) {
+                await showModal('Peringatan!', 'Silakan masukkan jenis item dan efek/karakteristik yang diinginkan.');
+                return;
+            }
+
+            showLoading(); // If not already shown by Random AI option, show it now.
+
+            try {
+                let prompt = `Rancang item/artefak legendaris untuk cerita fiksi.
+                
+                Jenis Item: ${itemType}
+                Efek/Karakteristik: ${effect}
+                Rank Item: ${selectedRank}
+                ${context ? `Konteks Tambahan: ${context}` : 'Konteks Tambahan: (Asumsikan konteks relevan berdasarkan jenis item, efek, dan rank yang diberikan)'}
+
+                Sertakan bagian-bagian berikut dalam deskripsi:
+                -   Nama Item (English): Berikan nama yang unik dan berkesan untuk artefak ini dalam Bahasa Inggris, dengan gaya fantasi.
+                -   Nama Item (Indonesia): Berikan terjemahan atau versi nama yang berkesan dalam Bahasa Indonesia, juga dengan gaya fantasi.
+                -   Rank: Ulangi rank yang diberikan atau jelaskan maknanya jika itu rank kustom.
+                -   Penampilan Fisik: Jelaskan detail visual artefak (bahan, bentuk, ukiran, ukuran).
+                -   Kisah Asal-Usul: Ceritakan bagaimana artefak ini diciptakan atau ditemukan, mitos atau legenda yang melingkupinya.
+                -   Kekuatan/Kutukan/Efek: Jelaskan apa yang artefak ini lakukan atau berikan kepada penggunanya, dengan mempertimbangkan rank-nya dan **harus sangat sesuai dengan Jenis Item**.
+                -   Kelemahan/Keterbatasan: Sebutkan jika ada kelemahan artefak atau hal yang membatasi karakter.
+                -   Implikasi dalam Cerita: Bagaimana artefak ini bisa memengaruhi plot, konflik, atau perkembangan karakter dalam cerita.
+
+                Format respons Anda sebagai JSON dengan properti berikut, semua dalam Bahasa Indonesia kecuali jika ditandai (English):
+                {
+                  "itemNameEnglish": "STRING",
+                  "itemNameIndonesian": "STRING",
+                  "rank": "STRING",
+                  "physicalDescription": "STRING",
+                  "originStory": "STRING",
+                  "powersCursesEffects": "STRING",
+                  "weaknesses": "STRING",
+                  "storyImplications": "STRING"
+                }
+                `;
+
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+
+                const payload = { 
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "itemNameEnglish": { "type": "STRING" },
+                                "itemNameIndonesian": { "type": "STRING" },
+                                "rank": { "type": "STRING" },
+                                "physicalDescription": { "type": "STRING" },
+                                "originStory": { "type": "STRING" },
+                                "powersCursesEffects": { "type": "STRING" },
+                                "weaknesses": { "type": "STRING" },
+                                "storyImplications": { "type": "STRING" }
+                            },
+                            "required": ["itemNameEnglish", "itemNameIndonesian", "rank", "physicalDescription", "originStory", "powersCursesEffects", "storyImplications"]
+                        }
+                    }
+                };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const artifactData = JSON.parse(result.candidates[0].content.parts[0].text);
+                    renderArtifact(artifactData);
+                    artifactOutputSection.currentArtifactData = artifactData;
+                } else {
+                    artifactOutputSection.innerHTML = `
+                        <p class="text-center text-red-700 default-font text-lg pt-10">
+                            Maaf, AI gagal merancang artefak. Pastikan permintaan Anda jelas dan spesifik.
+                        </p>
+                    `;
+                    console.error("Unexpected API response structure:", result);
+                }
+            } catch (error) {
+                artifactOutputSection.innerHTML = `
+                    <p class="text-center text-red-700 default-font text-lg pt-10">
+                        Terjadi kesalahan saat memuat artefak.
+                    </p>
+                `;
+                console.error("Error fetching artifact:", error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Function to generate random effect
+        async function generateRandomEffect() {
+            if (!API_KEY) {
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                mainContent.classList.add('hidden'); // Hide main content
+                return;
+            }
+
+            generateEffectBtn.disabled = true;
+            generateEffectBtn.textContent = "Mengacak...";
+            try {
+                let currentItemType = itemTypeSelect.value;
+                if (currentItemType === 'Lainnya') {
+                    currentItemType = manualItemTypeInput.value.trim();
+                } else if (currentItemType === 'Random AI') {
+                    // If Random AI is selected for item type, generate that first
+                    currentItemType = await generateAiItemType();
+                    if (!currentItemType) {
+                        await showModal('Gagal!', 'Gagal mendapatkan jenis item dari AI untuk mengacak efek. Coba lagi atau pilih jenis item manual.');
+                        return;
+                    }
+                     // Update the input field with the AI-generated type for user visibility
+                    itemTypeSelect.value = 'Lainnya'; 
+                    manualItemTypeInput.classList.remove('hidden');
+                    manualItemTypeInput.value = currentItemType; 
+                }
+                
+                if (!currentItemType) {
+                     await showModal('Peringatan!', 'Mohon pilih atau tentukan jenis item terlebih dahulu untuk mengacak efek.');
+                     return;
+                }
+
+                let prompt = `Hasilkan satu efek atau karakteristik item fiksi fantasi acak yang **sangat sesuai dengan jenis item: ${currentItemType}**.
+                Contoh efek untuk pedang: 'membuat tebasan api', 'menyerap energi musuh'.
+                Contoh efek untuk pelindung: 'memantulkan serangan sihir', 'meningkatkan daya tahan terhadap racun'.
+                Berikan hanya efeknya saja, tidak perlu penjelasan lain.`;
+                
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                    effectInput.value = result.candidates[0].content.parts[0].text.trim().replace(/"/g, '');
+                } else {
+                    await showModal('Gagal!', 'Gagal mengacak efek. Coba lagi.');
+                }
+            } catch (error) {
+                await showModal('Kesalahan!', 'Terjadi kesalahan saat mengacak efek. Periksa koneksi.');
+                console.error("Error generating random effect:", error);
+            } finally {
+                generateEffectBtn.disabled = false;
+                generateEffectBtn.textContent = "Acak Efek";
+            }
+        }
+
+        // --- Event Listeners ---
+        generateArtifactBtn.addEventListener('click', generateArtifact);
+        generateEffectBtn.addEventListener('click', generateRandomEffect);
+
+        copyArtifactBtn.addEventListener('click', async () => {
+            if (artifactOutputSection.currentArtifactData) {
+                const rawText = getRawArtifactContent(artifactOutputSection.currentArtifactData);
+                await copyToClipboard(rawText);
+            } else {
+                await showModal('Peringatan!', 'Tidak ada artefak untuk disalin.');
+            }
+        });
+
+        clearArtifactBtn.addEventListener('click', async () => {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus deskripsi artefak yang sedang ditampilkan dan input?', 'confirm');
+            if (confirmed) {
+                itemTypeSelect.value = 'Lainnya'; // Reset to default
+                manualItemTypeInput.value = ''; // Clear manual input
+                manualItemTypeInput.classList.remove('hidden'); // Ensure visible for default
+                effectInput.value = '';
+                rankSelect.value = 'F'; // Reset rank
+                manualRankInput.value = ''; // Clear manual rank
+                manualRankInput.classList.add('hidden'); // Hide manual rank input
+                contextInput.value = '';
+                artifactOutputSection.innerHTML = `
+                    <p class="text-center text-gray-600 default-font text-lg pt-20" id="initial-message">
+                        Pilih jenis item dan efek, lalu klik "Rancang Artefak!"
+                    </p>
+                `;
+                initialMessage.classList.remove('hidden');
+                copyArtifactBtn.classList.add('hidden');
+                clearArtifactBtn.classList.add('hidden');
+                artifactOutputSection.currentArtifactData = null; // Clear stored data
+            }
+        });
+
+        // Initial setup on page load
+        window.onload = () => {
+            loadApiKey();
+            // Set initial state for item type: "Lainnya" selected and manual input visible
+            // This is done after loadApiKey to ensure visibility logic is correct.
+            itemTypeSelect.value = 'Lainnya';
+            manualItemTypeInput.classList.remove('hidden');
+        };
+    </script>
+</body>
+</html>
+
