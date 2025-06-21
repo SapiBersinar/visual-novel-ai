@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Dossier Karakter - Hanzercopy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fallback font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Mencegah scroll horizontal */
+        }
+        /* Comic-like font */
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Share+Tech+Mono&display=swap');
+        .comic-font {
+            font-family: 'Comic Neue', cursive;
+        }
+        .mono-font {
+            font-family: 'Share Tech Mono', monospace; /* Font ala mesin tik/komputer */
+        }
+        /* Default font for inputs and general readability */
+        .default-font {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Gaya khusus untuk tombol komik */
+        .comic-button {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px black;
+            transition: all 0.2s ease-in-out;
+        }
+        .comic-button:hover {
+            box-shadow: 2px 2px 0px black;
+            transform: translate(4px, 4px);
+        }
+
+        /* Loader spinner */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Style for redacted areas */
+        .redacted {
+            background-color: black;
+            color: black;
+            display: inline-block;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            cursor: help;
+            padding: 0 4px; /* Slight padding for visual block */
+            border-radius: 2px;
+        }
+        .redacted:hover {
+            background-color: transparent;
+            color: inherit;
+        }
+        
+        /* Full-screen loading overlay */
+        .loading-overlay-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Overlay semi-transparan gelap */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Pastikan di atas semua elemen */
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Izinkan klik untuk melewati saat tidak aktif */
+        }
+        .loading-overlay-full.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white !important;
+                color: black !important;
+                margin: 0;
+                padding: 0;
+            }
+            .bg-black, .text-white, .comic-button, .loading-overlay-full,
+            .p-4.min-h-screen, .mb-6, .mt-4, .w-full.flex, .gap-4,
+            .rounded-lg.shadow-xl.border-4.border-black,
+            #api-key-section, /* Hide API key input section */
+            #character-name-input, #random-name-btn, #character-concept-input,
+            #random-concept-btn, #generate-dossier-btn, #copy-dossier-btn, #save-dossier-btn, #clear-dossier-btn, #load-dossier-list-btn, #export-txt-btn, #export-md-btn, #saved-dossiers-section { 
+                display: none !important;
+            }
+            /* Ensure main container and dossier output are visible and styled for print */
+            .text-center.space-y-6, #dossier-output {
+                background-color: white !important;
+                color: black !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: none !important;
+            }
+            #dossier-output {
+                min-height: auto !important;
+                overflow: visible !important;
+            }
+            /* Hide page title and intro text, only show dossier content */
+            h1, p:not(#initial-dossier-message) { 
+                display: none !important;
+            }
+            #dossier-title {
+                display: block !important; /* Show dossier title */
+                text-align: left !important;
+                font-size: 2em !important;
+                margin-top: 20px !important;
+            }
+            #dossier-content {
+                display: block !important;
+            }
+            #dossier-content h3 {
+                font-size: 1.5em !important;
+                margin-top: 15px !important;
+                border-bottom: 1px solid black;
+                padding-bottom: 5px;
+            }
+            #dossier-content p, #dossier-content li {
+                font-size: 1em !important;
+                line-height: 1.4 !important;
+            }
+            .redacted {
+                background-color: transparent !important;
+                color: black !important;
+                text-decoration: underline; /* To indicate it was redacted */
+            }
+            #image-prompt-section {
+                display: block !important;
+                border-top: 1px dashed gray !important;
+                padding-top: 10px !important;
+                margin-top: 15px !important;
+            }
+            #image-prompt-text {
+                font-size: 0.9em !important;
+            }
+            #initial-dossier-message {
+                display: none !important; /* Ensure initial message is hidden when printing generated dossier */
+            }
+        }
+    </style>
+</head>
+<body class="bg-black text-white flex flex-col items-center p-4 min-h-screen">
+    <div class="text-center space-y-6 max-w-4xl w-full p-6 bg-white text-black rounded-lg shadow-xl border-4 border-black mb-6">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold comic-font leading-tight">
+            Generator Dossier Karakter
+        </h1>
+        <p class="text-lg sm:text-xl comic-font">
+            Alat bantu Anda untuk menemukan dan mengembangkan karakter fiksi yang menarik untuk cerita atau novel!
+        </p>
+
+        <!-- API Key Input Section -->
+        <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
+            <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0">API Key Anda:</label>
+            <input type="password" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
+                Simpan API Key
+            </button>
+        </div>
+
+        <div class="w-full flex flex-col sm:flex-row gap-4 items-center">
+            <div class="flex flex-col w-full sm:w-1/4">
+                <input type="text" id="character-name-input" placeholder="Nama Karakter (Opsional)" class="p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full">
+                <button id="random-name-btn" class="comic-button bg-gray-500 text-white text-sm px-3 py-1 mt-2 rounded-full font-bold">
+                    Nama Acak
+                </button>
+            </div>
+            
+            <!-- Changed from input to textarea for multi-line support -->
+            <textarea id="character-concept-input" placeholder="Konsep Dasar (misal: 'detektif alien yang menyukai kopi', 'prajurit naga terakhir yang mencari kedamaian di dunia modern')" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[80px]"></textarea>
+            
+            <button id="random-concept-btn" class="comic-button bg-gray-700 text-white px-6 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
+                Acak Konsep
+            </button>
+            <button id="generate-dossier-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
+                <span id="button-text">Buat Dossier!</span>
+                <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+            </button>
+        </div>
+
+        <div id="dossier-output" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 mono-font overflow-y-auto mt-6">
+            <h2 class="text-3xl font-bold mb-4 text-center comic-font" id="dossier-title"></h2>
+            <div id="dossier-content" class="text-base sm:text-lg leading-relaxed">
+                <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-dossier-message">
+                    Masukkan nama dan konsep karakter di atas, lalu klik "Buat Dossier!"
+                </p>
+                <!-- Konten dossier akan muncul di sini -->
+            </div>
+            <div id="image-prompt-section" class="border-t-2 border-dashed border-gray-400 mt-6 pt-4 hidden">
+                <h3 class="text-xl font-bold mb-2 comic-font">Contoh Prompt Gambar AI:</h3>
+                <p id="image-prompt-text" class="text-sm sm:text-base italic"></p>
+            </div>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+            <button id="save-dossier-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                Simpan Dossier
+            </button>
+            <button id="load-dossier-list-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold">
+                Dossier Tersimpan
+            </button>
+            <button id="copy-dossier-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                Salin Dossier
+            </button>
+            <button id="export-txt-btn" class="comic-button bg-yellow-500 text-black px-8 py-3 rounded-full text-lg font-bold hidden">
+                Ekspor (.txt)
+            </button>
+            <button id="export-md-btn" class="comic-button bg-yellow-500 text-black px-8 py-3 rounded-full text-lg font-bold hidden">
+                Ekspor (.md)
+            </button>
+            <button id="clear-dossier-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                Bersihkan
+            </button>
+        </div>
+
+        <!-- Saved Dossiers Section -->
+        <div id="saved-dossiers-section" class="hidden bg-white p-6 rounded-lg shadow-xl border-4 border-black mt-6 w-full max-w-4xl">
+            <h2 class="text-2xl font-bold mb-4 comic-font text-black text-center">Dossier Tersimpan</h2>
+            <ul id="saved-dossiers-list" class="text-black text-left mono-font">
+                <!-- Saved dossiers will be loaded here -->
+            </ul>
+            <button id="close-saved-dossiers-btn" class="comic-button bg-gray-600 text-white px-6 py-2 rounded-full text-md font-bold mt-4">
+                Tutup
+            </button>
+        </div>
+
+        <!-- Footer removed -->
+    </div>
+
+    <!-- Full-screen loading overlay -->
+    <div id="full-loading-overlay" class="loading-overlay-full">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-white h-20 w-20 mb-4"></div>
+        <span id="overlay-message" class="comic-font">Menganalisis data intelijen...</span>
+    </div>
+
+    <script>
+        // API Key will be loaded from localStorage, default is blank
+        let API_KEY = localStorage.getItem('geminiApiKey') || ""; 
+
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const apiKeySection = document.getElementById('api-key-section'); // For initial check and hiding
+
+        const characterNameInput = document.getElementById('character-name-input');
+        const randomNameBtn = document.getElementById('random-name-btn');
+        const characterConceptInput = document.getElementById('character-concept-input'); // Now a textarea
+        const generateButton = document.getElementById('generate-dossier-btn');
+        const randomConceptBtn = document.getElementById('random-concept-btn');
+        const copyDossierBtn = document.getElementById('copy-dossier-btn');
+        const saveDossierBtn = document.getElementById('save-dossier-btn');
+        const loadDossierListBtn = document.getElementById('load-dossier-list-btn');
+        const exportTxtBtn = document.getElementById('export-txt-btn');
+        const exportMdBtn = document.getElementById('export-md-btn');
+        const clearDossierBtn = document.getElementById('clear-dossier-btn');
+        
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const dossierOutput = document.getElementById('dossier-output');
+        const dossierTitle = document.getElementById('dossier-title');
+        const dossierContent = document.getElementById('dossier-content');
+        const initialDossierMessage = document.getElementById('initial-dossier-message');
+        const imagePromptSection = document.getElementById('image-prompt-section');
+        const imagePromptText = document.getElementById('image-prompt-text');
+        const fullLoadingOverlay = document.getElementById('full-loading-overlay');
+        const overlayMessage = document.getElementById('overlay-message');
+
+        const savedDossiersSection = document.getElementById('saved-dossiers-section');
+        const savedDossiersList = document.getElementById('saved-dossiers-list');
+        const closeSavedDossiersBtn = document.getElementById('close-saved-dossiers-btn');
+
+        const randomConcepts = [
+            "Penyihir muda yang kikuk dan takut ketinggian",
+            "Robot detektif dengan rasa humor yang aneh di kota futuristik",
+            "Prajurit naga terakhir yang mencari kedamaian",
+            "Kucing peliharaan yang secara rahasia adalah agen mata-mata",
+            "Penjelajah waktu yang terus-menerus kehilangan kunci portalnya",
+            "Koki yang dulunya adalah petarung jalanan",
+            "Hantu yang mencoba menjadi stand-up comedian",
+            "Pemburu monster yang alergi terhadap bulu",
+            "Putri dongeng yang lebih suka memperbaiki mesin daripada berdansa",
+            "Alien yang bingung dengan kebiasaan manusia di bumi"
+        ];
+
+        const randomNames = [
+            "Anya", "Bima", "Candra", "Dharma", "Elara", "Faris", "Galih", "Hana", "Indra", "Jelita",
+            "Kaito", "Laras", "Mirza", "Nara", "Orion", "Putri", "Qiana", "Rizky", "Sinta", "Tegar",
+            "Ulysses", "Vanya", "Wira", "Xena", "Yudha", "Zara", "Aidan", "Briar", "Caleb", "Daphne"
+        ];
+
+        const loadingMessages = [
+            "Menganalisis data intelijen...",
+            "Mengumpulkan informasi rahasia...",
+            "Menyusun profil karakter...",
+            "Memproses data krusial...",
+            "Mengurai benang-benang narasi...",
+            "Menggali potensi karakter..."
+        ];
+
+        // --- API Key Handling ---
+        function loadApiKey() {
+            const storedKey = localStorage.getItem('geminiApiKey');
+            if (storedKey) {
+                API_KEY = storedKey;
+                apiKeyInput.value = storedKey;
+                apiKeySection.classList.add('hidden'); // Hide the input section if key is found
+            }
+        }
+
+        saveApiKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                localStorage.setItem('geminiApiKey', key);
+                API_KEY = key;
+                alert('API Key berhasil disimpan!');
+                apiKeySection.classList.add('hidden'); // Hide after saving
+            } else {
+                alert('Masukkan API Key terlebih dahulu!');
+            }
+        });
+
+        // Function to show loading state
+        function showLoading() {
+            overlayMessage.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            fullLoadingOverlay.classList.add('active');
+            generateButton.disabled = true;
+            randomConceptBtn.disabled = true;
+            randomNameBtn.disabled = true;
+            copyDossierBtn.classList.add('hidden');
+            saveDossierBtn.classList.add('hidden');
+            exportTxtBtn.classList.add('hidden');
+            exportMdBtn.classList.add('hidden');
+            clearDossierBtn.classList.add('hidden');
+            loadDossierListBtn.disabled = true;
+            buttonText.textContent = "Membuat...";
+            loadingSpinner.classList.remove('hidden');
+            dossierTitle.textContent = '';
+            dossierContent.innerHTML = '';
+            initialDossierMessage.classList.add('hidden');
+            imagePromptSection.classList.add('hidden');
+            imagePromptText.textContent = '';
+            savedDossiersSection.classList.add('hidden'); // Hide saved dossiers section
+        }
+
+        // Function to hide loading state
+        function hideLoading() {
+            fullLoadingOverlay.classList.remove('active');
+            generateButton.disabled = false;
+            randomConceptBtn.disabled = false;
+            randomNameBtn.disabled = false;
+            copyDossierBtn.classList.remove('hidden');
+            saveDossierBtn.classList.remove('hidden');
+            exportTxtBtn.classList.remove('hidden');
+            exportMdBtn.classList.remove('hidden');
+            clearDossierBtn.classList.remove('hidden');
+            loadDossierListBtn.disabled = false;
+            buttonText.textContent = "Buat Dossier!";
+            loadingSpinner.classList.add('hidden');
+        }
+
+        // Function to format the text from Markdown and apply "redacted" style
+        function formatDossierText(text) {
+            let formattedText = text;
+
+            // Extract Image Prompt before other formatting
+            const imagePromptRegex = /\[PROMPT_GAMBAR_AI:(.+?)\]/s;
+            const match = formattedText.match(imagePromptRegex);
+            let extractedImagePrompt = '';
+            if (match && match[1]) {
+                extractedImagePrompt = match[1].trim();
+                formattedText = formattedText.replace(imagePromptRegex, '').trim();
+            }
+
+            // Replace Markdown headings with HTML
+            formattedText = formattedText.replace(/^### (.*)$/gm, '<h3 class="text-2xl font-bold mb-2 mt-4 comic-font">$1</h3>');
+            formattedText = formattedText.replace(/^## (.*)$/gm, '<h2 class="text-xl font-bold mb-2 mt-4 comic-font">$1</h2>');
+            formattedText = formattedText.replace(/^\* (.*)$/gm, '<li class="ml-4 list-disc">$1</li>');
+            
+            // Apply "redacted" style
+            formattedText = formattedText.replace(/\[REDACTED:(.+?)\]/g, '<span class="redacted">$1</span>');
+            
+            // Replace newlines with <br> for paragraph display
+            formattedText = formattedText.replace(/\n/g, '<br>');
+
+            return { formattedText, extractedImagePrompt };
+        }
+
+        // Function to get the full raw text content for saving/exporting
+        function getRawDossierContent() {
+            const title = dossierTitle.textContent.replace('Dossier: ', '');
+            const content = dossierContent.innerText; // Use innerText to get raw text
+            const imagePrompt = imagePromptText.textContent;
+
+            let fullText = `Dossier: ${title}\n\n${content}`;
+            if (imagePrompt) {
+                fullText += `\n\nContoh Prompt Gambar AI: ${imagePrompt}`;
+            }
+            return fullText;
+        }
+
+        // Function to generate dossier using Gemini API
+        async function generateDossier() {
+            if (!API_KEY) {
+                alert("Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                return;
+            }
+
+            const characterName = characterNameInput.value.trim();
+            const characterConcept = characterConceptInput.value.trim(); // Get value from textarea
+
+            if (!characterConcept) {
+                alert('Silakan masukkan konsep dasar karakter.');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                let prompt = `Buat dossier karakter fiksi yang mendetail dan unik.
+                
+                Karakter: ${characterName ? characterName : "Karakter Tak Dikenal"}
+                Konsep Dasar: ${characterConcept}
+
+                Sertakan bagian-bagian berikut dalam dossier:
+                - **Data Pokok:** Nama, Usia (jika relevan, tentukan jika tidak diketahui), Spesies/Ras, Afiliasi (jika ada).
+                - **Kepribadian:** Deskripsi singkat tentang sifat dan temperamen utama.
+                - **Latar Belakang:** Sejarah singkat atau asal-usul.
+                - **Gaya Berbicara & Bahasa Tubuh:** Bagaimana karakter ini berbicara (misal: lugas, puitis, gagap)? Bagaimana bahasa tubuh mereka (misal: sering gelisah, tegap, santai)?
+                - **Aksesoris/Pakaian Khas & Ciri Fisik Menonjol:** Apakah ada barang atau pakaian tertentu yang selalu mereka kenakan? Ciri fisik unik yang langsung dikenali (misal: bekas luka, tato, warna mata yang aneh)?
+                - **Fakta Sepele/Kebiasaan Aneh:** Detail kecil yang membuat karakter terasa lebih 'hidup' (misal: selalu mengunyah permen karet, takut pada laba-laba, suka mengoleksi tutup botol).
+                - **Kemampuan/Kekuatan:** Keahlian unik atau kekuatan (jika ada).
+                - **Kelemahan/Keterbatasan:** Kelemahan atau hal yang membatasi karakter.
+                - **Kutipan Ciri Khas:** Satu atau dua kutipan yang mewakili karakter.
+                - **Detail Tambahan (REDACTED):** Satu fakta rahasia yang relevan dengan karakter yang harus disensor. Gunakan format '[REDACTED:Fakta Rahasia Anda di sini]'.
+
+                Sertakan juga satu prompt gambar AI yang relevan dengan karakter ini. Prompt ini harus fokus pada gaya visual anime dan ditandai dengan '[PROMPT_GAMBAR_AI:Prompt gambar AI Anda di sini anime]'.
+
+                Berikan semua informasi dalam bahasa Indonesia, gunakan format markdown untuk bagian-bagian.
+                `;
+
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const fullDossierText = result.candidates[0].content.parts[0].text;
+                    const { formattedText, extractedImagePrompt } = formatDossierText(fullDossierText);
+                    
+                    const charNameDisplay = characterName ? characterName : "Karakter Tak Dikenal";
+                    dossierTitle.textContent = `Dossier: ${charNameDisplay}`;
+                    dossierContent.innerHTML = formattedText;
+                    
+                    if (extractedImagePrompt) {
+                        imagePromptText.textContent = extractedImagePrompt;
+                        imagePromptSection.classList.remove('hidden');
+                    } else {
+                        imagePromptSection.classList.add('hidden');
+                    }
+
+                    if (fullDossierText.trim().length < 50) {
+                        initialDossierMessage.classList.remove('hidden');
+                        dossierTitle.textContent = '';
+                        dossierContent.innerHTML = '<p class="text-center text-gray-600 comic-font text-lg pt-20">AI tidak dapat membuat dossier yang valid dari konsep ini. Coba lagi dengan konsep yang berbeda.</p>';
+                    }
+                } else {
+                    alert("Maaf, AI gagal membuat dossier. Coba lagi atau ganti konsep!");
+                    console.error("Unexpected API response structure:", result);
+                    initialDossierMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                alert("Terjadi kesalahan saat memuat dossier. Periksa koneksi Anda atau API Key Anda mungkin tidak valid.");
+                console.error("Error fetching dossier:", error);
+                initialDossierMessage.classList.remove('hidden');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // --- Local Storage Functions ---
+        function saveDossier() {
+            const dossiers = JSON.parse(localStorage.getItem('hanzercopyDossiers') || '[]');
+            const currentDossier = {
+                name: characterNameInput.value.trim() || 'Karakter Tak Dikenal',
+                concept: characterConceptInput.value.trim(),
+                fullText: getRawDossierContent(),
+                timestamp: new Date().toISOString()
+            };
+
+            // Check if dossier with same name and concept already exists to prevent duplicates
+            const exists = dossiers.some(d => 
+                d.name === currentDossier.name && 
+                d.concept === currentDossier.concept
+            );
+            if (exists) {
+                alert('Dossier dengan nama dan konsep yang sama sudah tersimpan!');
+                return;
+            }
+
+            dossiers.push(currentDossier);
+            localStorage.setItem('hanzercopyDossiers', JSON.stringify(dossiers));
+            alert('Dossier berhasil disimpan!');
+            renderSavedDossiers(); // Refresh the list if it's open
+        }
+
+        function loadDossier(index) {
+            const dossiers = JSON.parse(localStorage.getItem('hanzercopyDossiers') || '[]');
+            if (index >= 0 && index < dossiers.length) {
+                const dossierToLoad = dossiers[index];
+                
+                // Set input fields
+                characterNameInput.value = dossierToLoad.name;
+                characterConceptInput.value = dossierToLoad.concept;
+
+                // Render the dossier content directly
+                const { formattedText, extractedImagePrompt } = formatDossierText(dossierToLoad.fullText);
+                dossierTitle.textContent = `Dossier: ${dossierToLoad.name}`;
+                dossierContent.innerHTML = formattedText;
+                
+                if (extractedImagePrompt) {
+                    imagePromptText.textContent = extractedImagePrompt;
+                    imagePromptSection.classList.remove('hidden');
+                } else {
+                    imagePromptSection.classList.add('hidden');
+                }
+
+                initialDossierMessage.classList.add('hidden');
+                copyDossierBtn.classList.remove('hidden');
+                saveDossierBtn.classList.remove('hidden');
+                exportTxtBtn.classList.remove('hidden');
+                exportMdBtn.classList.remove('hidden');
+                clearDossierBtn.classList.remove('hidden');
+
+                savedDossiersSection.classList.add('hidden'); // Close saved list after loading
+            }
+        }
+
+        function deleteDossier(index) {
+            if (confirm('Anda yakin ingin menghapus dossier ini?')) {
+                const dossiers = JSON.parse(localStorage.getItem('hanzercopyDossiers') || '[]');
+                dossiers.splice(index, 1);
+                localStorage.setItem('hanzercopyDossiers', JSON.stringify(dossiers));
+                renderSavedDossiers(); // Refresh the list
+            }
+        }
+
+        function renderSavedDossiers() {
+            const dossiers = JSON.parse(localStorage.getItem('hanzercopyDossiers') || '[]');
+            savedDossiersList.innerHTML = ''; // Clear current list
+
+            if (dossiers.length === 0) {
+                savedDossiersList.innerHTML = '<li class="text-gray-600 text-center py-4">Belum ada dossier tersimpan.</li>';
+                return;
+            }
+
+            dossiers.forEach((dossier, index) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('flex', 'items-center', 'justify-between', 'p-3', 'border-b', 'border-gray-300', 'last:border-b-0');
+                
+                const infoSpan = document.createElement('span');
+                infoSpan.classList.add('flex-grow', 'cursor-pointer', 'hover:text-blue-700');
+                infoSpan.textContent = `${dossier.name} (${dossier.concept.substring(0, 30)}...) - ${new Date(dossier.timestamp).toLocaleDateString()}`;
+                infoSpan.onclick = () => loadDossier(index);
+
+                const buttonGroup = document.createElement('div');
+                buttonGroup.classList.add('flex', 'gap-2', 'ml-4');
+
+                const loadBtn = document.createElement('button');
+                loadBtn.classList.add('comic-button', 'bg-blue-500', 'text-white', 'px-3', 'py-1', 'rounded-full', 'text-sm', 'font-bold');
+                loadBtn.textContent = 'Muat';
+                loadBtn.onclick = () => loadDossier(index);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.classList.add('comic-button', 'bg-red-500', 'text-white', 'px-3', 'py-1', 'rounded-full', 'text-sm', 'font-bold');
+                deleteBtn.textContent = 'Hapus';
+                deleteBtn.onclick = () => deleteDossier(index);
+
+                buttonGroup.appendChild(loadBtn);
+                buttonGroup.appendChild(deleteBtn);
+                listItem.appendChild(infoSpan);
+                listItem.appendChild(buttonGroup);
+                savedDossiersList.appendChild(listItem);
+            });
+        }
+
+
+        // --- Export Functions ---
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- Event Listeners ---
+        generateButton.addEventListener('click', generateDossier);
+
+        randomConceptBtn.addEventListener('click', () => {
+            const randomIndex = Math.floor(Math.random() * randomConcepts.length);
+            characterConceptInput.value = randomConcepts[randomIndex];
+        });
+
+        randomNameBtn.addEventListener('click', () => {
+            const randomIndex = Math.floor(Math.random() * randomNames.length);
+            characterNameInput.value = randomNames[randomIndex];
+        });
+
+        copyDossierBtn.addEventListener('click', () => {
+            const textToCopy = getRawDossierContent();
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            textarea.style.position = 'fixed';
+            textarea.style.top = 0;
+            textarea.style.left = 0;
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.opacity = 0;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('Dossier berhasil disalin ke clipboard!');
+            } catch (err) {
+                console.error('Gagal menyalin teks: ', err);
+                alert('Gagal menyalin dossier. Silakan salin manual.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        });
+
+        saveDossierBtn.addEventListener('click', saveDossier);
+
+        loadDossierListBtn.addEventListener('click', () => {
+            savedDossiersSection.classList.toggle('hidden');
+            if (!savedDossiersSection.classList.contains('hidden')) {
+                renderSavedDossiers();
+            }
+        });
+
+        closeSavedDossiersBtn.addEventListener('click', () => {
+            savedDossiersSection.classList.add('hidden');
+        });
+
+        exportTxtBtn.addEventListener('click', () => {
+            const filename = (characterNameInput.value.trim() || 'Karakter Tak Dikenal').replace(/\s/g, '_') + '_dossier.txt';
+            downloadFile(getRawDossierContent(), filename, 'text/plain');
+        });
+
+        exportMdBtn.addEventListener('click', () => {
+            const filename = (characterNameInput.value.trim() || 'Karakter Tak Dikenal').replace(/\s/g, '_') + '_dossier.md';
+            
+            let markdownContent = getRawDossierContent();
+            markdownContent = markdownContent.replace(/<br>/g, '\n'); 
+            
+            downloadFile(markdownContent, filename, 'text/markdown');
+        });
+
+        clearDossierBtn.addEventListener('click', () => {
+            if (confirm('Anda yakin ingin menghapus dossier yang sedang ditampilkan dan input?')) {
+                characterNameInput.value = '';
+                characterConceptInput.value = '';
+                dossierTitle.textContent = '';
+                dossierContent.innerHTML = '';
+                initialDossierMessage.classList.remove('hidden');
+                imagePromptSection.classList.add('hidden');
+                imagePromptText.textContent = '';
+                copyDossierBtn.classList.add('hidden');
+                saveDossierBtn.classList.add('hidden');
+                exportTxtBtn.classList.add('hidden');
+                exportMdBtn.classList.add('hidden');
+                clearDossierBtn.classList.add('hidden');
+            }
+        });
+
+        // Initial load of API Key and check if it's set
+        window.onload = () => {
+            loadApiKey();
+        };
+    </script>
+</body>
+</html>
+
