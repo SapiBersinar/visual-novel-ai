@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Nama Lokasi - Hanzercopy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fallback font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Mencegah scroll horizontal */
+        }
+        /* Comic-like font */
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Share+Tech+Mono&display=swap');
+        .comic-font {
+            font-family: 'Comic Neue', cursive;
+        }
+        .mono-font {
+            font-family: 'Share Tech Mono', monospace; /* Font ala mesin tik/komputer */
+        }
+        /* Default font for inputs and general readability */
+        .default-font {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Font for generated names - keep monospace for clarity */
+        .generated-name-font {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.05rem;
+        }
+
+        /* Gaya khusus untuk tombol komik */
+        .comic-button {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px black;
+            transition: all 0.2s ease-in-out;
+        }
+        .comic-button:hover {
+            box-shadow: 2px 2px 0px black;
+            transform: translate(4px, 4px);
+        }
+
+        /* Loader spinner */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Full-screen loading overlay */
+        .loading-overlay-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Overlay semi-transparan gelap */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Pastikan di atas semua elemen */
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Izinkan klik untuk melewati saat tidak aktif */
+        }
+        .loading-overlay-full.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Styling for output sections */
+        .output-card {
+            background-color: white;
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #000;
+            box-shadow: 3px 3px 0px #000;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .output-card h3 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-family: 'Comic Neue', cursive;
+        }
+        .output-card ul {
+            list-style: none; /* Remove default list style for custom formatting */
+            padding-left: 0;
+            margin-left: 0;
+            margin-bottom: 10px;
+        }
+        .output-card li {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 5px; /* Spacing between list items */
+        }
+        .output-card p {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .output-card .copy-all-button {
+            background-color: #3B82F6;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: 2px solid #2563EB;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+            margin-top: 10px;
+        }
+        .output-card .copy-all-button:hover {
+            background-color: #2563EB;
+            box-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+            transform: translate(1px, 1px);
+        }
+    </style>
+</head>
+<body class="bg-black text-white flex flex-col items-center p-4 min-h-screen">
+    <div class="text-center space-y-6 max-w-4xl w-full p-6 bg-white text-black rounded-lg shadow-xl border-4 border-black mb-6">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold comic-font leading-tight">
+            Generator Nama Lokasi
+        </h1>
+        <p class="text-lg sm:text-xl comic-font">
+            Dapatkan nama-nama lokasi fantasi atau realistis untuk cerita Anda!
+        </p>
+
+        <!-- API Key Input Section -->
+        <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
+            <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Generator Nama Lokasi:</label>
+            <input type="password" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
+                Simpan API Key
+            </button>
+        </div>
+
+        <div class="w-full flex flex-col sm:flex-row gap-4 items-start justify-center">
+            <!-- Left Column for Selects -->
+            <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-2/5 lg:w-1/3">
+                <div class="flex items-center gap-2 w-full">
+                    <label for="naming-style-select" class="comic-font text-gray-800 text-base shrink-0">Gaya Nama:</label>
+                    <select id="naming-style-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                        <option value="Otomatis Random AI" selected>Otomatis Random AI</option>
+                        <option value="Fantasi">Fantasi</option>
+                        <option value="Normal/Modern">Normal/Modern</option>
+                        <option value="Mesir Kuno">Mesir Kuno</option>
+                        <option value="Abad Pertengahan Barat">Abad Pertengahan Barat</option>
+                        <option value="Jepang Tradisional">Jepang Tradisional</option>
+                        <option value="Tiongkok Tradisional">Tiongkok Tradisional</option>
+                        <option value="Sci-Fi/Futuristik">Sci-Fi/Futuristik</option>
+                        <option value="Suku Primitif">Suku Primitif</option>
+                        <option value="Nama ala Indonesia">Nama ala Indonesia</option>
+                        <option value="Nama ala Belanda">Nama ala Belanda</option>
+                        <option value="Nama ala Jerman">Nama ala Jerman</option>
+                        <option value="Nama ala Lain-lain">Nama ala Lain-lain (AI Bebas)</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 w-full">
+                    <label for="location-type-select" class="comic-font text-gray-800 text-base shrink-0">Jenis Lokasi:</label>
+                    <select id="location-type-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                        <option value="Semuanya">Semuanya</option>
+                        <option value="Benua">Benua</option>
+                        <option value="Negara">Negara</option>
+                        <option value="Provinsi">Provinsi</option>
+                        <option value="Kecamatan">Kecamatan</option>
+                        <option value="Desa">Desa</option>
+                        <option value="Kota">Kota</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 w-full">
+                    <label for="include-datetime-select" class="comic-font text-gray-800 text-base shrink-0">Sertakan Tanggal/Waktu Fiksi?</label>
+                    <select id="include-datetime-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                        <option value="Tidak">Tidak</option>
+                        <option value="Ya">Ya</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Right Column for Context and Generate Button -->
+            <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-3/5 lg:w-2/3">
+                <textarea id="context-input" placeholder="Tambahkan konteks/detail lain (Opsional: Misal: 'Dunia pasca-apokaliptik', 'berdekatan dengan pegunungan es'). Jika kosong, AI akan berasumsi." class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+                
+                <button id="generate-names-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full flex items-center justify-center">
+                    <span id="button-text">Buat Nama!</span>
+                    <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+                </button>
+            </div>
+        </div>
+
+        <div id="output-section" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 generated-name-font overflow-y-auto mt-6">
+            <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                Pilih gaya dan jenis lokasi, lalu klik "Buat Nama!"
+            </p>
+            <!-- Generated content will appear here -->
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+            <button id="clear-output-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                Bersihkan
+            </button>
+        </div>
+    </div>
+
+    <!-- Full-screen loading overlay -->
+    <div id="full-loading-overlay" class="loading-overlay-full">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-white h-20 w-20 mb-4"></div>
+        <span id="overlay-message" class="comic-font">Menghasilkan nama lokasi...</span>
+    </div>
+
+    <script>
+        let API_KEY = localStorage.getItem('geminiApiKeyLocGen') || ""; // API Key will be loaded from localStorage
+
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const apiKeySection = document.getElementById('api-key-section');
+
+        const namingStyleSelect = document.getElementById('naming-style-select');
+        const locationTypeSelect = document.getElementById('location-type-select');
+        const includeDatetimeSelect = document.getElementById('include-datetime-select');
+        const contextInput = document.getElementById('context-input');
+        const generateNamesBtn = document.getElementById('generate-names-btn');
+        const clearOutputBtn = document.getElementById('clear-output-btn');
+        
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const outputSection = document.getElementById('output-section');
+        const initialMessage = document.getElementById('initial-message');
+        const fullLoadingOverlay = document.getElementById('full-loading-overlay');
+        const overlayMessage = document.getElementById('overlay-message');
+
+        const loadingMessages = [
+            "Menjelajahi peta imajinasi...",
+            "Mencari nama-nama tersembunyi...",
+            "Menyusun geografi cerita...",
+            "Menggali legenda kuno...",
+            "Menciptakan identitas tempat..."
+        ];
+
+        // --- API Key Handling ---
+        function loadApiKey() {
+            const storedKey = localStorage.getItem('geminiApiKeyLocGen');
+            if (storedKey) {
+                API_KEY = storedKey;
+                apiKeyInput.value = storedKey;
+                apiKeySection.classList.add('hidden'); // Hide the input section if key is found
+            }
+        }
+
+        saveApiKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                localStorage.setItem('geminiApiKeyLocGen', key);
+                API_KEY = key;
+                alert('API Key berhasil disimpan!');
+                apiKeySection.classList.add('hidden'); // Hide after saving
+            } else {
+                alert('Masukkan API Key terlebih dahulu!');
+            }
+        });
+
+        // Function to show loading state
+        function showLoading() {
+            overlayMessage.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            fullLoadingOverlay.classList.add('active');
+            generateNamesBtn.disabled = true;
+            clearOutputBtn.classList.add('hidden');
+            buttonText.textContent = "Membuat...";
+            loadingSpinner.classList.remove('hidden');
+            outputSection.innerHTML = ''; // Clear previous content
+            initialMessage.classList.add('hidden'); // Hide initial message
+        }
+
+        // Function to hide loading state
+        function hideLoading() {
+            fullLoadingOverlay.classList.remove('active');
+            generateNamesBtn.disabled = false;
+            clearOutputBtn.classList.remove('hidden');
+            buttonText.textContent = "Buat Nama!";
+            loadingSpinner.classList.add('hidden');
+        }
+
+        // Function to copy text to clipboard
+        function copyToClipboard(text, alertMessage = 'Teks berhasil disalin ke clipboard!') {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.top = 0;
+            textarea.style.left = 0;
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.opacity = 0;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert(alertMessage);
+            } catch (err) {
+                console.error('Gagal menyalin teks: ', err);
+                alert('Gagal menyalin. Silakan salin manual.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // Core Function: Generate Location Names and/or Date/Time
+        async function generateLocationNames() {
+            if (!API_KEY) {
+                alert("Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                return;
+            }
+
+            const namingStyle = namingStyleSelect.value;
+            const locationType = locationTypeSelect.value;
+            const includeDateTime = includeDatetimeSelect.value;
+            let context = contextInput.value.trim(); // Get user input context
+
+            if (!namingStyle || !locationType) {
+                alert('Silakan pilih gaya nama dan jenis lokasi.');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                let prompt = `Anda adalah generator nama lokasi dan tanggal/waktu fiksi ahli. Berikan ide untuk cerita fiksi.
+                
+                Gaya Penamaan Umum: ${namingStyle}
+                `;
+
+                // Add context to prompt, or tell AI to assume it if empty
+                if (context) {
+                    prompt += `Konteks/Detail Tambahan: ${context}\n`;
+                } else {
+                    prompt += `Konteks/Detail Tambahan: (Asumsikan konteks relevan berdasarkan gaya nama dan jenis lokasi yang dipilih)\n`;
+                }
+                
+                const isNativeStyle = ["Nama ala Indonesia", "Nama ala Jepang", "Nama ala Tiongkok"].includes(namingStyle);
+
+                // --- Prompt for Locations ---
+                if (locationType === "Semuanya") {
+                    prompt += `
+                    Jenis Lokasi yang Diminta: Semuanya (Benua, Negara, Provinsi, Kecamatan, Kota, Desa).
+                    Untuk setiap jenis lokasi, berikan 3-5 nama.
+                    Pastikan nama-nama dan deskripsi situasi/atmosfer terasa kohesif dan berasal dari dunia yang sama dengan Gaya Penamaan Umum.
+                    Berikan nama dalam format Bahasa Inggris dan Bahasa Indonesia (jika Gaya Penamaan Umum bukan 'Nama ala Indonesia', 'Nama ala Jepang', atau 'Nama ala Tiongkok'). Jika Gaya Penamaan Umum adalah 'Nama ala Indonesia', 'Nama ala Jepang', atau 'Nama ala Tiongkok', berikan nama langsung dalam bahasa tersebut dan gunakan itu untuk kedua format (english_name dan indonesian_name).
+                    `;
+                } else {
+                    prompt += `
+                    Jenis Lokasi yang Diminta: ${locationType}.
+                    Berikan 5-10 nama untuk jenis lokasi ini.
+                    Berikan nama dalam format Bahasa Inggris dan Bahasa Indonesia (jika Gaya Penamaan Umum bukan 'Nama ala Indonesia', 'Nama ala Jepang', atau 'Nama ala Tiongkok'). Jika Gaya Penamaan Umum adalah 'Nama ala Indonesia', 'Nama ala Jepang', atau 'Nama ala Tiongkok', berikan nama langsung dalam bahasa tersebut dan gunakan itu untuk kedua format (english_name dan indonesian_name).
+                    `;
+                }
+
+                // --- Prompt for Date/Time if requested ---
+                if (includeDateTime === "Ya") {
+                    prompt += `
+                    Sertakan juga 3-5 format tanggal/waktu fiksi yang konsisten dengan Gaya Penamaan Umum (${namingStyle}).
+                    Untuk setiap format tanggal/waktu:
+                    -   Jika Gaya Penamaan Umum adalah 'Nama ala Indonesia', 'Nama ala Jepang', atau 'Nama ala Tiongkok', format tanggal/waktu harus langsung dalam gaya bahasa tersebut (misal: "tanggal 23, bulan Fersuop, dalam kalender Geruiso, tahun 1792." atau setara dalam bahasa Jepang/Tiongkok), dan isi english_format serta indonesian_format dengan nilai yang sama.
+                    -   Untuk gaya nama lainnya, berikan english_format (misal: "The third day of Hearthmonth, in the year 142 AI.") dan indonesian_format (terjemahan/interpretasi dalam Bahasa Indonesia).
+                    -   Sertakan juga penjelasan singkat ('explanation') tentang format tanggal/waktu ini (misal: "Menggunakan sistem bulan dan tahun yang berulang setiap 7 siklus.").
+                    `;
+                }
+
+                prompt += `
+                Pastikan semua penjelasan situasi dan atmosfer lokasi, serta penjelasan format tanggal/waktu, selalu dalam Bahasa Indonesia.
+
+                Format respons Anda sebagai JSON object tunggal yang berisi dua properti utama: 'locations' (array, bisa kosong jika tidak ada lokasi yang dihasilkan) dan 'fiction_date_time' (objek, bisa null/tidak ada jika tidak diminta).
+
+                Contoh struktur JSON:
+                {
+                  "locations": [
+                    {
+                      "type": "Benua",
+                      "names": [
+                        {"english_name": "Aethelgard", "indonesian_name": "Aethelgard (Taman Para Elf)"}
+                      ],
+                      "situation": "Benua kuno yang diselimuti kabut misterius...",
+                      "atmosphere": "Atmosfer yang tegang dan penuh rahasia."
+                    },
+                    // ... lokasi lainnya ...
+                  ],
+                  "fiction_date_time": {
+                    "formats": [
+                      {"english_format": "The third day of Hearthmonth, in the year 142 AI.", "indonesian_format": "tanggal tiga, bulan Hati, dalam tahun 142 Era Astral.", "explanation": "Menggunakan kalender berbasis musim dan peristiwa penting."}
+                      // ... format tanggal/waktu lainnya ...
+                    ],
+                    "general_explanation": "Format tanggal dan waktu ini konsisten dengan gaya ${namingStyle}."
+                  }
+                }
+                Jika hanya lokasi yang diminta, properti "fiction_date_time" bisa kosong atau tidak ada.
+                Jika hanya tanggal/waktu yang diminta, properti "locations" bisa kosong atau tidak ada (meskipun UI ini selalu meminta jenis lokasi).
+                `;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { 
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json"
+                    }
+                };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const jsonResponse = JSON.parse(result.candidates[0].content.parts[0].text);
+                    renderOutput(jsonResponse, namingStyle); 
+                } else {
+                    outputSection.innerHTML = `
+                        <p class="text-center text-red-700 comic-font text-lg pt-10">
+                            Maaf, AI gagal membuat nama lokasi atau tanggal/waktu. Pastikan permintaan Anda jelas dan spesifik.
+                        </p>
+                    `;
+                    console.error("Unexpected API response structure:", result);
+                }
+            } catch (error) {
+                outputSection.innerHTML = `
+                    <p class="text-center text-red-700 comic-font text-lg pt-10">
+                        Terjadi kesalahan saat memuat. Periksa koneksi atau API Key Anda.
+                    </p>
+                `;
+                console.error("Error fetching data:", error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Function to render the AI output
+        function renderOutput(data, namingStyle) {
+            outputSection.innerHTML = ''; // Clear previous content
+
+            const isNativeStyle = ["Nama ala Indonesia", "Nama ala Jepang", "Nama ala Tiongkok"].includes(namingStyle);
+
+            // Render Locations
+            if (data.locations && Array.isArray(data.locations) && data.locations.length > 0) {
+                data.locations.forEach(item => {
+                    const card = document.createElement('div');
+                    card.classList.add('output-card');
+
+                    const typeTitle = document.createElement('h3');
+                    typeTitle.textContent = item.type;
+                    card.appendChild(typeTitle);
+
+                    if (item.names && item.names.length > 0) {
+                        const namesList = document.createElement('ul');
+                        item.names.forEach(nameObj => {
+                            const listItem = document.createElement('li');
+                            if (isNativeStyle) {
+                                listItem.textContent = nameObj.indonesian_name;
+                            } else {
+                                listItem.textContent = `${nameObj.english_name} (${nameObj.indonesian_name})`;
+                            }
+                            namesList.appendChild(listItem);
+                        });
+                        card.appendChild(namesList);
+                    }
+
+                    if (item.situation) {
+                        const situationP = document.createElement('p');
+                        situationP.innerHTML = `<strong>Situasi:</strong> ${item.situation}`;
+                        card.appendChild(situationP);
+                    }
+                    if (item.atmosphere) {
+                        const atmosphereP = document.createElement('p');
+                        atmosphereP.innerHTML = `<strong>Atmosfer:</strong> ${item.atmosphere}`;
+                        card.appendChild(atmosphereP);
+                    }
+
+                    const copyAllBtn = document.createElement('button');
+                    copyAllBtn.classList.add('copy-all-button', 'comic-button');
+                    copyAllBtn.textContent = `Salin Semua ${item.type}`;
+                    copyAllBtn.onclick = () => {
+                        let textToCopy = `${item.type}:\n${item.names.map(nameObj => isNativeStyle ? nameObj.indonesian_name : `${nameObj.english_name} (${nameObj.indonesian_name})`).join('\n')}\n`;
+                        if (item.situation) textToCopy += `Situasi: ${item.situation}\n`;
+                        if (item.atmosphere) textToCopy += `Atmosfer: ${item.atmosphere}\n`;
+                        copyToClipboard(textToCopy, `Semua data ${item.type} berhasil disalin!`);
+                    };
+                    card.appendChild(copyAllBtn);
+                    outputSection.appendChild(card);
+                });
+            }
+
+            // Render Date/Time
+            if (data.fiction_date_time && data.fiction_date_time.formats && Array.isArray(data.fiction_date_time.formats) && data.fiction_date_time.formats.length > 0) {
+                const card = document.createElement('div');
+                card.classList.add('output-card');
+
+                const typeTitle = document.createElement('h3');
+                typeTitle.textContent = "Tanggal & Waktu Fiksi:";
+                card.appendChild(typeTitle);
+
+                const formatsList = document.createElement('ul');
+                data.fiction_date_time.formats.forEach(formatObj => {
+                    const listItem = document.createElement('li');
+                    // For date/time, always display the Indonesian format (which holds the combined string)
+                    listItem.textContent = formatObj.indonesian_format; 
+                    formatsList.appendChild(listItem);
+                });
+                card.appendChild(formatsList);
+
+                if (data.fiction_date_time.general_explanation) {
+                    const explanationP = document.createElement('p');
+                    explanationP.innerHTML = `<strong>Penjelasan:</strong> ${data.fiction_date_time.general_explanation}`;
+                    card.appendChild(explanationP);
+                }
+
+                const copyAllBtn = document.createElement('button');
+                copyAllBtn.classList.add('copy-all-button', 'comic-button');
+                copyAllBtn.textContent = `Salin Semua Tanggal/Waktu`;
+                copyAllBtn.onclick = () => {
+                    let textToCopy = data.fiction_date_time.formats.map(formatObj => formatObj.indonesian_format).join('\n'); // Always copy Indonesian format for date/time
+                    if (data.fiction_date_time.general_explanation) textToCopy += `\nPenjelasan: ${data.fiction_date_time.general_explanation}`;
+                    copyToClipboard(textToCopy, `Semua tanggal/waktu fiksi berhasil disalin!`);
+                };
+                card.appendChild(copyAllBtn);
+                outputSection.appendChild(card);
+            }
+
+            if (outputSection.innerHTML.trim() === '') {
+                 outputSection.innerHTML = `
+                    <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                        Pilih gaya dan jenis lokasi, serta apakah akan menyertakan tanggal/waktu, lalu klik "Buat Nama!"
+                    </p>
+                `;
+                initialMessage.classList.remove('hidden'); // Re-show initial message if nothing was rendered.
+            }
+        }
+
+        // --- Event Listeners ---
+        generateNamesBtn.addEventListener('click', generateLocationNames);
+
+        clearOutputBtn.addEventListener('click', () => {
+            namingStyleSelect.value = 'Otomatis Random AI'; // Reset to default
+            locationTypeSelect.value = 'Semuanya'; // Reset to default
+            includeDatetimeSelect.value = 'Tidak'; // Reset new select to default
+            contextInput.value = '';
+            outputSection.innerHTML = `
+                <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                    Pilih gaya dan jenis lokasi, lalu klik "Buat Nama!"
+                </p>
+            `;
+            initialMessage.classList.remove('hidden');
+            clearOutputBtn.classList.add('hidden');
+        });
+
+        // Initial setup on page load
+        window.onload = loadApiKey;
+    </script>
+</body>
+</html>
+

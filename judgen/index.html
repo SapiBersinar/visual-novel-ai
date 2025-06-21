@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Judul & Slogan Cerita - Hanzercopy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fallback font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        /* Comic-like font */
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
+        .comic-font {
+            font-family: 'Comic Neue', cursive;
+        }
+        /* Default font for inputs and general readability */
+        .default-font {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom styles for comic button */
+        .comic-button {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px black;
+            transition: all 0.2s ease-in-out;
+        }
+        .comic-button:hover {
+            box-shadow: 2px 2px 0px black;
+            transform: translate(4px, 4px);
+        }
+
+        /* Loader spinner */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Full-screen loading overlay */
+        .loading-overlay-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent overlay */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Ensure it's on top */
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Allow clicks to pass through when not active */
+        }
+        .loading-overlay-full.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Styling for the output section grid */
+        #ideas-output-section {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column on small screens */
+            gap: 20px; /* Space between cards */
+            padding: 20px; /* Padding for the entire section */
+            background-color: #f3f4f6; /* Light gray background */
+            border-radius: 8px;
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px black;
+            min-height: 300px;
+            margin-top: 24px;
+            align-content: start; /* Align content to the top */
+        }
+        @media (min-width: 768px) { /* Medium screens and up */
+            #ideas-output-section {
+                grid-template-columns: repeat(2, 1fr); /* Two columns */
+            }
+        }
+        @media (min-width: 1024px) { /* Large screens and up */
+            #ideas-output-section {
+                grid-template-columns: repeat(3, 1fr); /* Three columns */
+            }
+        }
+        /* Styling for the idea cards */
+        .idea-card {
+            background-color: white; /* White background for card */
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #000;
+            box-shadow: 3px 3px 0px #000;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Space out content vertically */
+            height: 100%; /* Ensure cards fill grid cell height */
+        }
+        .idea-card h3 {
+            font-size: 1.6rem; /* Slightly smaller for better fit */
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+            line-height: 1.2;
+            font-family: 'Comic Neue', cursive; /* Apply comic font to titles */
+        }
+        .idea-card .card-description-text { /* Specific class for description */
+            font-size: 0.95rem;
+            color: #333;
+            margin-bottom: 12px;
+            line-height: 1.5;
+            font-family: 'Inter', sans-serif;
+            flex-grow: 1; /* Allow description to take more space */
+        }
+        .idea-card .card-slogan-text { /* Specific class for slogan */
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            font-family: 'Inter', sans-serif;
+            font-style: italic; /* Slogan often italic */
+        }
+        .copy-button-group {
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap */
+            justify-content: center;
+            gap: 8px; /* Space between copy buttons */
+            margin-top: auto; /* Push buttons to the bottom */
+        }
+        .copy-button {
+            background-color: #3B82F6; /* Tailwind blue-500 */
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: 2px solid #2563EB; /* Darker blue border */
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+        }
+        .copy-button:hover {
+            background-color: #2563EB; /* Tailwind blue-600 */
+            box-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+            transform: translate(1px, 1px);
+        }
+    </style>
+</head>
+<body class="bg-black text-white flex flex-col items-center p-4 min-h-screen">
+    <div class="text-center space-y-6 max-w-4xl w-full p-6 bg-white text-black rounded-lg shadow-xl border-4 border-black mb-6">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold comic-font leading-tight">
+            Generator Judul & Slogan Cerita
+        </h1>
+        <p class="text-lg sm:text-xl comic-font">
+            Dapatkan ide judul, deskripsi, dan slogan yang menarik untuk proyek kreatif Anda!
+        </p>
+
+        <!-- API Key Input Section -->
+        <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
+            <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Generator Judul & Slogan:</label>
+            <input type="password" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
+                Simpan API Key
+            </button>
+        </div>
+
+        <div class="w-full flex flex-col sm:flex-row gap-4 items-center">
+            <textarea id="story-idea-input" placeholder="Misal: 'Fantasi tentang pahlawan yang menemukan pedang ajaib', 'Thriller psikologis di kota yang sunyi'" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+            
+            <div class="flex flex-col gap-4 w-full sm:w-auto">
+                <div class="flex items-center justify-center gap-2 w-full">
+                    <label for="description-length-select" class="comic-font text-gray-800 text-base shrink-0">Panjang Deskripsi:</label>
+                    <select id="description-length-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                        <option value="short">Singkat</option>
+                        <option value="long">Panjang</option>
+                    </select>
+                </div>
+                <button id="generate-ideas-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full flex items-center justify-center">
+                    <span id="button-text">Buat Ide!</span>
+                    <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+                </button>
+            </div>
+        </div>
+
+        <div id="ideas-output-section" class="relative">
+            <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                Jelaskan genre atau tema cerita Anda, lalu klik "Buat Ide!"
+            </p>
+            <!-- Ideas will be loaded here -->
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+            <button id="clear-output-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                Bersihkan
+            </button>
+        </div>
+    </div>
+
+    <!-- Full-screen loading overlay -->
+    <div id="full-loading-overlay" class="loading-overlay-full">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-white h-20 w-20 mb-4"></div>
+        <span id="overlay-message" class="comic-font">Menciptakan ide...</span>
+    </div>
+
+    <script>
+        let API_KEY = localStorage.getItem('geminiApiKeyStoryGenerator') || ""; // API Key will be loaded from localStorage
+
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const apiKeySection = document.getElementById('api-key-section');
+
+        const storyIdeaInput = document.getElementById('story-idea-input');
+        const descriptionLengthSelect = document.getElementById('description-length-select'); // New select element
+        const generateIdeasBtn = document.getElementById('generate-ideas-btn');
+        const clearOutputBtn = document.getElementById('clear-output-btn');
+        
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const ideasOutputSection = document.getElementById('ideas-output-section');
+        const initialMessage = document.getElementById('initial-message');
+        const fullLoadingOverlay = document.getElementById('full-loading-overlay');
+        const overlayMessage = document.getElementById('overlay-message');
+
+        const loadingMessages = [
+            "Menciptakan ide brilian...",
+            "Mempertimbangkan setiap kata...",
+            "Menggali esensi cerita...",
+            "Menyusun judul yang memikat...",
+            "Menulis slogan yang tak terlupakan..."
+        ];
+
+        // --- API Key Handling ---
+        function loadApiKey() {
+            const storedKey = localStorage.getItem('geminiApiKeyStoryGenerator');
+            if (storedKey) {
+                API_KEY = storedKey;
+                apiKeyInput.value = storedKey;
+                apiKeySection.classList.add('hidden'); // Hide the input section if key is found
+            }
+        }
+
+        saveApiKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                localStorage.setItem('geminiApiKeyStoryGenerator', key);
+                API_KEY = key;
+                alert('API Key berhasil disimpan!');
+                apiKeySection.classList.add('hidden'); // Hide after saving
+            } else {
+                alert('Masukkan API Key terlebih dahulu!');
+            }
+        });
+
+        // Function to show loading state
+        function showLoading() {
+            overlayMessage.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            fullLoadingOverlay.classList.add('active');
+            generateIdeasBtn.disabled = true;
+            clearOutputBtn.classList.add('hidden');
+            buttonText.textContent = "Membuat...";
+            loadingSpinner.classList.remove('hidden');
+            ideasOutputSection.innerHTML = ''; // Clear previous content
+            initialMessage.classList.add('hidden'); // Hide initial message
+        }
+
+        // Function to hide loading state
+        function hideLoading() {
+            fullLoadingOverlay.classList.remove('active');
+            generateIdeasBtn.disabled = false;
+            clearOutputBtn.classList.remove('hidden');
+            buttonText.textContent = "Buat Ide!";
+            loadingSpinner.classList.add('hidden');
+        }
+
+        // Function to create and append an idea card
+        function appendIdeaCard(title, description, slogan) {
+            const cardDiv = document.createElement('div');
+            cardDiv.classList.add('idea-card');
+
+            const titleElement = document.createElement('h3');
+            titleElement.textContent = title;
+
+            const descriptionElement = document.createElement('p');
+            descriptionElement.classList.add('card-description-text');
+            descriptionElement.textContent = description;
+
+            const sloganElement = document.createElement('p');
+            sloganElement.classList.add('card-slogan-text');
+            sloganElement.textContent = slogan;
+
+            const buttonGroup = document.createElement('div');
+            buttonGroup.classList.add('copy-button-group');
+
+            const copyTitleBtn = document.createElement('button');
+            copyTitleBtn.classList.add('copy-button');
+            copyTitleBtn.textContent = 'Salin Judul';
+            copyTitleBtn.onclick = () => copyToClipboard(title);
+
+            const copyDescriptionBtn = document.createElement('button');
+            copyDescriptionBtn.classList.add('copy-button');
+            copyDescriptionBtn.textContent = 'Salin Deskripsi';
+            copyDescriptionBtn.onclick = () => copyToClipboard(description);
+
+            const copySloganBtn = document.createElement('button');
+            copySloganBtn.classList.add('copy-button');
+            copySloganBtn.textContent = 'Salin Slogan';
+            copySloganBtn.onclick = () => copyToClipboard(slogan);
+
+            buttonGroup.appendChild(copyTitleBtn);
+            buttonGroup.appendChild(copyDescriptionBtn);
+            buttonGroup.appendChild(copySloganBtn);
+
+            cardDiv.appendChild(titleElement);
+            cardDiv.appendChild(descriptionElement);
+            cardDiv.appendChild(sloganElement);
+            cardDiv.appendChild(buttonGroup);
+
+            ideasOutputSection.appendChild(cardDiv);
+        }
+
+        // Function to copy text to clipboard
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.top = 0;
+            textarea.style.left = 0;
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.opacity = 0;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('Teks berhasil disalin ke clipboard!');
+            } catch (err) {
+                console.error('Gagal menyalin teks: ', err);
+                alert('Gagal menyalin. Silakan salin manual.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+
+        // Core Function: Generate Title, Description, and Slogan Ideas
+        async function generateIdeas() {
+            if (!API_KEY) {
+                alert("Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                return;
+            }
+
+            const storyIdea = storyIdeaInput.value.trim();
+            const descriptionLength = descriptionLengthSelect.value; // Get selected length
+
+            if (!storyIdea) {
+                alert('Silakan jelaskan genre atau tema cerita Anda.');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                let prompt = `Buatkan 3-5 ide judul, deskripsi singkat (sinopsis/konsep cerita), dan slogan yang menarik untuk sebuah cerita dengan tema atau genre berikut: "${storyIdea}".
+                
+                Deskripsi harus ${descriptionLength === 'long' ? 'panjang (5-8 kalimat)' : 'singkat (2-3 kalimat)'}.
+
+                Setiap ide harus dalam format JSON object terpisah dalam array.
+                Format JSON:
+                [
+                  {
+                    "title": "Judul Cerita Anda",
+                    "description": "Ringkasan singkat yang menjelaskan inti cerita atau konsepnya.",
+                    "slogan": "Slogan yang Menarik untuk Cerita Anda"
+                  }
+                ]
+                Berikan dalam Bahasa Indonesia.`;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { 
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    "title": { "type": "STRING" },
+                                    "description": { "type": "STRING" }, 
+                                    "slogan": { "type": "STRING" }
+                                },
+                                "required": ["title", "description", "slogan"] 
+                            }
+                        }
+                    }
+                };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const jsonResponse = JSON.parse(result.candidates[0].content.parts[0].text);
+                    
+                    if (jsonResponse.length > 0) {
+                        jsonResponse.forEach(idea => {
+                            appendIdeaCard(idea.title, idea.description, idea.slogan); 
+                        });
+                    } else {
+                        ideasOutputSection.innerHTML = `
+                            <p class="text-center text-red-700 comic-font text-lg pt-10">
+                                Maaf, AI tidak dapat membuat ide. Coba lagi dengan deskripsi yang berbeda.
+                            </p>
+                        `;
+                    }
+                } else {
+                    ideasOutputSection.innerHTML = `
+                        <p class="text-center text-red-700 comic-font text-lg pt-10">
+                            Maaf, AI gagal membuat ide. Pastikan permintaan Anda jelas dan spesifik.
+                        </p>
+                    `;
+                    console.error("Unexpected API response structure:", result);
+                }
+            } catch (error) {
+                ideasOutputSection.innerHTML = `
+                    <p class="text-center text-red-700 comic-font text-lg pt-10">
+                        Terjadi kesalahan saat memuat ide. Periksa koneksi atau API Key Anda.
+                    </p>
+                `;
+                console.error("Error fetching ideas:", error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // --- Event Listeners ---
+        generateIdeasBtn.addEventListener('click', generateIdeas);
+
+        clearOutputBtn.addEventListener('click', () => {
+            storyIdeaInput.value = '';
+            ideasOutputSection.innerHTML = `
+                <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                    Jelaskan genre atau tema cerita Anda, lalu klik "Buat Ide!"
+                </p>
+            `;
+            clearOutputBtn.classList.add('hidden');
+            initialMessage.classList.remove('hidden');
+        });
+
+        // Initial setup on page load
+        window.onload = loadApiKey;
+    </script>
+</body>
+</html>
+

@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-F8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hanzercopy.cloud - Petualangan Komik Visual Novel Interaktif</title>
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Hanzercopy.cloud adalah platform visual novel interaktif yang menghadirkan cerita komik mendalam dengan pilihan yang menentukan alur cerita. Rasakan petualangan fantasi, misteri, dan drama dalam gaya komik hitam putih yang unik.">
+    <meta name="description" content="Hanzercopy.cloud adalah platform visual novel interaktif yang menghadirkan cerita komik mendalam dengan pilihan yang menentukan nasib Kamu. Rasakan petualangan fantasi, misteri, dan romansa dalam gaya komik hitam putih yang unik.">
     <meta name="keywords" content="visual novel, komik interaktif, cerita pilihan, game cerita, fantasi, misteri, romansa, game visual novel, hanzercopy, game komik, cerita digital, petualangan naratif">
     <meta name="author" content="Hanzercopy">
-    <meta property="og:title" content="Hanzercopy.cloud - Petualangan cerita Visual Novel Interaktif">
-    <meta property="og:description" content="Hanzercopy.cloud adalah platform visual novel interaktif yang menghadirkan cerita komik mendalam dengan pilihan yang menentukan nasib Kamu. Rasakan petualangan fantasi, misteri, dan romansa dalam gaya komik hitam putih yang unik.">
+    <meta property="og:title" content="Hanzercopy.cloud -  Visual Novel Interaktif">
+    <meta property="og:description" content="Hanzercopy.cloud adalah platform visual novel interaktif yang menghadirkan cerita mendalam dengan pilihan yang menentukan. Rasakan petualangan fantasi, misteri, dan romansa dalam gaya komik hitam putih yang unik.">
     <meta property="og:url" content="https://hanzercopy.cloud/">
     <meta property="og:type" content="website">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Font Awesome untuk ikon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha555-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* General Body Styling */
         body {
@@ -124,7 +124,7 @@
             color: #cccccc;
         }
 
-        /* --- NEW CARD STYLES --- */
+        /* --- CARD GRID STYLES --- */
         .card-grid-container {
             width: 100%;
             max-width: 1000px; /* Allow wider layout for cards */
@@ -140,6 +140,17 @@
                 grid-template-columns: repeat(3, 1fr); /* 3 columns on medium screens and up */
             }
         }
+        /* Adjust for 5 cards: 3 on first row, 2 on second row */
+        @media (min-width: 768px) and (max-width: 999px) {
+            .card-grid-container {
+                grid-template-columns: repeat(2, 1fr); /* 2 columns for wider tablets */
+            }
+        }
+        @media (min-width: 1000px) { /* Larger screens for 3 columns */
+            .card-grid-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
 
         .card {
             background-color: rgba(51, 51, 51, 0.95); /* Same as main container */
@@ -153,6 +164,7 @@
             text-align: center;
             gap: 16px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%; /* Ensure cards are same height */
         }
         .card:hover {
             transform: translateY(-5px);
@@ -277,42 +289,17 @@
             }
             h1 {
                 font-size: 2.5rem;
-                text-shadow: 3px 3px 0px #000000;
+                text-shadow: 3px 3pt 0px #000000; /* Adjusted for smaller screens */
                 letter-spacing: -1px;
             }
             p {
                 font-size: 1rem;
-            }
-            .cta-button { /* No longer directly used, but keeping for reference */
-                padding: 15px 25px;
-                font-size: 1.1rem;
-                box-shadow: 4px 4px 0px 0px #cccccc;
-            }
-            .cta-button:hover { /* No longer directly used, but keeping for reference */
-                box-shadow: 6px 6px 0px 0px #ffffff;
             }
             .version-links {
                 margin-top: 20px;
             }
             .version-links a {
                 font-size: 0.85rem;
-            }
-            .how-it-works { /* Removed */
-                padding: 20px;
-                margin-top: 20px;
-            }
-            .how-it-works h2 { /* Removed */
-                font-size: 1.7rem;
-                margin-bottom: 20px;
-            }
-            .how-it-works-item h3 { /* Removed */
-                font-size: 1.3rem;
-            }
-            .how-it-works-item h3 .icon { /* Removed */
-                font-size: 1.5rem;
-            }
-            .how-it-works-item p { /* Removed */
-                font-size: 0.9rem;
             }
             .custom-message-box {
                 padding: 20px;
@@ -354,29 +341,62 @@
             <p class="card-description">
                 **Cara Kerja:** Buat profil karakter fiksi mendalam (kepribadian, latar belakang, kekuatan, kelemahan, dll.) hanya dengan beberapa kata kunci. Dapatkan inspirasi untuk karakter Anda secara instan!
             </p>
-            <a href="/dossier.html" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold">
+            <a href="/dossier/" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold">
                 Kunjungi Dossier
             </a>
         </div>
 
-        <!-- Card 2: Cerita Interaktif -->
+        <!-- Card 2: Generator Judul & Slogan -->
+        <div class="card">
+            <h2 class="card-title">Judul & Slogan Cerita</h2>
+            <p class="card-description">
+                **Cara Kerja:** Hasilkan ide judul, deskripsi singkat, dan slogan yang menarik untuk cerita, novel, atau proyek kreatif Anda. Temukan *hook* yang sempurna!
+            </p>
+            <a href="/judgen/" class="comic-button bg-orange-500 text-white px-8 py-3 rounded-full text-lg font-bold">
+                Buat Judul & Slogan
+            </a>
+        </div>
+
+        <!-- Card 3: Generator Nama Lokasi -->
+        <div class="card">
+            <h2 class="card-title">Generator Nama Lokasi</h2>
+            <p class="card-description">
+                **Cara Kerja:** Buat nama-nama lokasi (benua, desa, negara, dll.) dengan berbagai gaya (fantasi, kuno, modern) lengkap dengan deskripsi situasi dan atmosfer, serta tanggal/waktu fiksi yang konsisten.
+            </p>
+            <a href="/locgen/" class="comic-button bg-yellow-600 text-white px-8 py-3 rounded-full text-lg font-bold">
+                Buat Nama Lokasi
+            </a>
+        </div>
+
+        <!-- Card 4: Arsip Data Cerita -->
+        <div class="card">
+            <h2 class="card-title">Arsip Data Cerita</h2>
+            <p class="card-description">
+                **Cara Kerja:** Buat entri arsip untuk konsep dunia fiksi Anda (misal: jenis sihir, organisasi, teknologi), menjaga konsistensi dan detail. Bangun arsip cerita Anda!
+            </p>
+            <a href="/adata/" class="comic-button bg-gray-600 text-white px-8 py-3 rounded-full text-lg font-bold">
+                Kunjungi Arsip
+            </a>
+        </div>
+
+        <!-- Card 5: Cerita Interaktif -->
         <div class="card">
             <h2 class="card-title">Cerita Interaktif</h2>
             <p class="card-description">
                 **Cara Kerja:** Selami alur cerita yang berkembang sesuai pilihan Anda. Setiap keputusan akan membuka cabang narasi dan konsekuensi unik. Petualangan di tangan Anda!
             </p>
-            <a href="/interaktif.html" class="comic-button bg-green-500 text-white px-8 py-3 rounded-full text-lg font-bold">
+            <a href="/vicin/" class="comic-button bg-green-500 text-white px-8 py-3 rounded-full text-lg font-bold">
                 Mulai Petualangan
             </a>
         </div>
 
-        <!-- Card 3: Cerita Non-Interaktif -->
+        <!-- Card 6: Cerita Non-Interaktif -->
         <div class="card">
             <h2 class="card-title">Cerita Non-Interaktif</h2>
             <p class="card-description">
                 **Cara Kerja:** Nikmati beragam cerita fiksi yang dibuat oleh AI. Dari berbagai genre, temukan narasi baru dan mendalam yang siap memikat imajinasi Anda.
             </p>
-            <a href="/non-interaktif.html" class="comic-button bg-purple-500 text-white px-8 py-3 rounded-full text-lg font-bold">
+            <a href="/tes.html" class="comic-button bg-purple-500 text-white px-8 py-3 rounded-full text-lg font-bold">
                 Baca Cerita
             </a>
         </div>
@@ -388,8 +408,8 @@
         </p>
         <p>
             <a href="https://hanzercopy.cloud/tes.html" target="_blank" rel="noopener noreferrer">Versi Tidak Rekomendasi (sebelumnya)</a>
-        </p>
-    </div>
+            </p>
+        </div>
 
     <!-- Custom Message Box for AI Alert -->
     <div id="aiMessageBoxOverlay" class="custom-message-box-overlay">

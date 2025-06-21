@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hanzercopy Arsip Data Cerita</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fallback font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Mencegah scroll horizontal */
+        }
+        /* Comic-like font */
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Share+Tech+Mono&display=swap');
+        .comic-font {
+            font-family: 'Comic Neue', cursive;
+        }
+        .mono-font {
+            font-family: 'Share Tech Mono', monospace; /* Font ala mesin tik/komputer */
+        }
+        /* Default font for inputs and general readability */
+        .default-font {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Gaya khusus untuk tombol komik */
+        .comic-button {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px black;
+            transition: all 0.2s ease-in-out;
+        }
+        .comic-button:hover {
+            box-shadow: 2px 2px 0px black;
+            transform: translate(4px, 4px);
+        }
+
+        /* Loader spinner */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Full-screen loading overlay */
+        .loading-overlay-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Overlay semi-transparan gelap */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Pastikan di atas semua elemen */
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Izinkan klik untuk melewati saat tidak aktif */
+        }
+        .loading-overlay-full.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="bg-black text-white flex flex-col items-center p-4 min-h-screen">
+    <div class="text-center space-y-6 max-w-4xl w-full p-6 bg-white text-black rounded-lg shadow-xl border-4 border-black mb-6">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold comic-font leading-tight">
+            Hanzercopy Arsip Data Cerita
+        </h1>
+        <p class="text-lg sm:text-xl comic-font">
+            Bangun dunia cerita Anda dengan detail yang konsisten dan menarik!
+        </p>
+
+        <!-- API Key Input Section -->
+        <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
+            <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Arsip Data Cerita:</label>
+            <input type="password" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
+                Simpan API Key
+            </button>
+        </div>
+
+        <div class="w-full flex flex-col sm:flex-row gap-4 items-center">
+            <textarea id="world-concept-input" placeholder="Misal: 'Jenis sihir kristal', 'Organisasi pemburu naga', 'Teknologi teleportasi' " class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+            <button id="generate-entry-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
+                <span id="button-text">Buat Entri!</span>
+                <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+            </button>
+        </div>
+
+        <div id="entry-output-section" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 mono-font overflow-y-auto mt-6">
+            <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                Jelaskan sebuah konsep dunia fiksi, lalu klik "Buat Entri!"
+            </p>
+            <!-- Encyclopedia entry will appear here -->
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+            <button id="save-entry-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                Simpan Entri
+            </button>
+            <button id="load-entry-list-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold">
+                Arsip Tersimpan
+            </button>
+            <button id="copy-entry-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                Salin Entri
+            </button>
+            <button id="clear-entry-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold hidden">
+                Bersihkan
+            </button>
+        </div>
+
+        <!-- Saved Entries Section -->
+        <div id="saved-entries-section" class="hidden bg-white p-6 rounded-lg shadow-xl border-4 border-black mt-6 w-full max-w-4xl">
+            <h2 class="text-2xl font-bold mb-4 comic-font text-black text-center">Arsip Entri Tersimpan</h2>
+            <ul id="saved-entries-list" class="text-black text-left mono-font">
+                <!-- Saved entries will be loaded here -->
+            </ul>
+            <button id="close-saved-entries-btn" class="comic-button bg-gray-600 text-white px-6 py-2 rounded-full text-md font-bold mt-4">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- Full-screen loading overlay -->
+    <div id="full-loading-overlay" class="loading-overlay-full">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-white h-20 w-20 mb-4"></div>
+        <span id="overlay-message" class="comic-font">Membangun dunia...</span>
+    </div>
+
+    <script>
+        // API Key will be loaded from localStorage, default is blank
+        let API_KEY = localStorage.getItem('geminiApiKeyStoryArchive') || ""; 
+
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const apiKeySection = document.getElementById('api-key-section');
+
+        const worldConceptInput = document.getElementById('world-concept-input');
+        const generateEntryBtn = document.getElementById('generate-entry-btn');
+        const saveEntryBtn = document.getElementById('save-entry-btn');
+        const loadEntryListBtn = document.getElementById('load-entry-list-btn');
+        const copyEntryBtn = document.getElementById('copy-entry-btn');
+        const clearEntryBtn = document.getElementById('clear-entry-btn');
+        
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const entryOutputSection = document.getElementById('entry-output-section');
+        const initialMessage = document.getElementById('initial-message');
+        const fullLoadingOverlay = document.getElementById('full-loading-overlay');
+        const overlayMessage = document.getElementById('overlay-message');
+
+        const savedEntriesSection = document.getElementById('saved-entries-section');
+        const savedEntriesList = document.getElementById('saved-entries-list');
+        const closeSavedEntriesBtn = document.getElementById('close-saved-entries-btn');
+
+        const loadingMessages = [
+            "Membangun konsep dunia...",
+            "Menyusun sejarah fiksi...",
+            "Menggali karakteristik unik...",
+            "Merumuskan definisi mendalam...",
+            "Memadukan elemen naratif..."
+        ];
+
+        // --- API Key Handling ---
+        function loadApiKey() {
+            const storedKey = localStorage.getItem('geminiApiKeyStoryArchive');
+            if (storedKey) {
+                API_KEY = storedKey;
+                apiKeyInput.value = storedKey;
+                apiKeySection.classList.add('hidden'); // Hide the input section if key is found
+            }
+        }
+
+        saveApiKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                localStorage.setItem('geminiApiKeyStoryArchive', key);
+                API_KEY = key;
+                alert('API Key berhasil disimpan!');
+                apiKeySection.classList.add('hidden'); // Hide after saving
+            } else {
+                alert('Masukkan API Key terlebih dahulu!');
+            }
+        });
+
+        // Function to show loading state
+        function showLoading() {
+            overlayMessage.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            fullLoadingOverlay.classList.add('active');
+            generateEntryBtn.disabled = true;
+            saveEntryBtn.classList.add('hidden');
+            loadEntryListBtn.disabled = true;
+            copyEntryBtn.classList.add('hidden');
+            clearEntryBtn.classList.add('hidden');
+            buttonText.textContent = "Membuat...";
+            loadingSpinner.classList.remove('hidden');
+            entryOutputSection.innerHTML = ''; // Clear previous content
+            initialMessage.classList.add('hidden'); // Hide initial message
+            savedEntriesSection.classList.add('hidden'); // Hide saved entries section
+        }
+
+        // Function to hide loading state
+        function hideLoading() {
+            fullLoadingOverlay.classList.remove('active');
+            generateEntryBtn.disabled = false;
+            saveEntryBtn.classList.remove('hidden');
+            loadEntryListBtn.disabled = false;
+            copyEntryBtn.classList.remove('hidden');
+            clearEntryBtn.classList.remove('hidden');
+            buttonText.textContent = "Buat Entri!";
+            loadingSpinner.classList.add('hidden');
+        }
+
+        // Function to format Markdown text to HTML
+        function formatEntryText(text) {
+            let formattedText = text;
+
+            // Replace Markdown headings with HTML
+            formattedText = formattedText.replace(/^### (.*)$/gm, '<h3 class="text-2xl font-bold mb-2 mt-4 comic-font">$1</h3>');
+            formattedText = formattedText.replace(/^## (.*)$/gm, '<h2 class="text-xl font-bold mb-2 mt-4 comic-font">$1</h2>');
+            formattedText = formattedText.replace(/^\* (.*)$/gm, '<li class="ml-4 list-disc">$1</li>');
+            
+            // Replace newlines with <br> for paragraph display
+            formattedText = formattedText.replace(/\n/g, '<br>');
+
+            return formattedText;
+        }
+
+        // Function to get the full raw text content for saving/exporting
+        function getRawEntryContent() {
+            // Get content from the rendered HTML, then clean up <br> tags
+            const content = entryOutputSection.innerText;
+            return content.replace(/<br>/g, '\n');
+        }
+
+        // Core Function: Generate Encyclopedia Entry
+        async function generateEncyclopediaEntry() {
+            if (!API_KEY) {
+                alert("Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                return;
+            }
+
+            const worldConcept = worldConceptInput.value.trim();
+            if (!worldConcept) {
+                alert('Silakan jelaskan sebuah konsep dunia fiksi.');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                let prompt = `Sebagai seorang penulis arsip data cerita, buatkan entri arsip mendalam tentang konsep berikut: "${worldConcept}".
+                
+                Sertakan bagian-bagian berikut dalam entri:
+                -   **Definisi:** Penjelasan singkat tentang apa itu konsep tersebut.
+                -   **Karakteristik:** Ciri-ciri atau properti utama.
+                -   **Sejarah Singkat (dalam konteks cerita):** Bagaimana konsep ini muncul atau berkembang dalam narasi.
+                -   **Implikasi dalam Cerita:** Bagaimana konsep ini memengaruhi karakter, plot, atau konflik.
+                -   **Contoh Penerapan (Opsional):** Jika relevan, berikan 1-2 contoh bagaimana konsep ini bisa terlihat dalam cerita.
+
+                Berikan informasi dalam bahasa Indonesia, gunakan format markdown untuk bagian-bagiannya. Judul bagian harus menggunakan '###'.`;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const entryText = result.candidates[0].content.parts[0].text;
+                    entryOutputSection.innerHTML = formatEntryText(entryText);
+
+                    if (entryText.trim().length < 50) {
+                        initialMessage.classList.remove('hidden');
+                        entryOutputSection.innerHTML = '<p class="text-center text-gray-600 comic-font text-lg pt-20">AI tidak dapat membuat entri yang valid dari konsep ini. Coba lagi dengan konsep yang berbeda.</p>';
+                    }
+                } else {
+                    entryOutputSection.innerHTML = `
+                        <p class="text-center text-red-700 comic-font text-lg pt-10">
+                            Maaf, AI gagal membuat entri. Pastikan permintaan Anda jelas dan spesifik.
+                        </p>
+                    `;
+                    console.error("Unexpected API response structure:", result);
+                }
+            } catch (error) {
+                entryOutputSection.innerHTML = `
+                    <p class="text-center text-red-700 comic-font text-lg pt-10">
+                        Terjadi kesalahan saat memuat entri. Periksa koneksi atau API Key Anda.
+                    </p>
+                `;
+                console.error("Error fetching entry:", error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // --- Local Storage Functions ---
+        function saveEntry() {
+            const entries = JSON.parse(localStorage.getItem('hanzercopyStoryArchiveEntries') || '[]'); // Changed key
+            const currentConcept = worldConceptInput.value.trim();
+            const currentEntryText = getRawEntryContent();
+
+            if (!currentConcept || !currentEntryText || currentEntryText.trim().length < 50) {
+                alert('Tidak ada entri yang valid untuk disimpan.');
+                return;
+            }
+
+            const entryName = currentConcept.substring(0, 50) + (currentConcept.length > 50 ? '...' : '');
+
+            const newEntry = {
+                concept: currentConcept,
+                name: entryName,
+                fullText: currentEntryText,
+                timestamp: new Date().toISOString()
+            };
+
+            // Check if entry with same concept already exists to prevent duplicates
+            const exists = entries.some(e => e.concept === newEntry.concept);
+            if (exists) {
+                alert('Entri dengan konsep yang sama sudah tersimpan!');
+                return;
+            }
+
+            entries.push(newEntry);
+            localStorage.setItem('hanzercopyStoryArchiveEntries', JSON.stringify(entries)); // Changed key
+            alert('Entri berhasil disimpan!');
+            renderSavedEntries(); // Refresh the list if it's open
+        }
+
+        function loadEntry(index) {
+            const entries = JSON.parse(localStorage.getItem('hanzercopyStoryArchiveEntries') || '[]'); // Changed key
+            if (index >= 0 && index < entries.length) {
+                const entryToLoad = entries[index];
+                
+                // Set input fields
+                worldConceptInput.value = entryToLoad.concept;
+
+                // Render the entry content directly
+                entryOutputSection.innerHTML = formatEntryText(entryToLoad.fullText);
+                
+                initialMessage.classList.add('hidden');
+                saveEntryBtn.classList.remove('hidden');
+                copyEntryBtn.classList.remove('hidden');
+                clearEntryBtn.classList.remove('hidden');
+
+                savedEntriesSection.classList.add('hidden'); // Close saved list after loading
+            }
+        }
+
+        function deleteEntry(index) {
+            if (confirm('Anda yakin ingin menghapus entri ini dari arsip?')) {
+                const entries = JSON.parse(localStorage.getItem('hanzercopyStoryArchiveEntries') || '[]'); // Changed key
+                entries.splice(index, 1);
+                localStorage.setItem('hanzercopyStoryArchiveEntries', JSON.stringify(entries)); // Changed key
+                renderSavedEntries(); // Refresh the list
+            }
+        }
+
+        function renderSavedEntries() {
+            const entries = JSON.parse(localStorage.getItem('hanzercopyStoryArchiveEntries') || '[]'); // Changed key
+            savedEntriesList.innerHTML = ''; // Clear current list
+
+            if (entries.length === 0) {
+                savedEntriesList.innerHTML = '<li class="text-gray-600 text-center py-4">Belum ada entri tersimpan di arsip.</li>';
+                return;
+            }
+
+            entries.forEach((entry, index) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('flex', 'items-center', 'justify-between', 'p-3', 'border-b', 'border-gray-300', 'last:border-b-0');
+                
+                const infoSpan = document.createElement('span');
+                infoSpan.classList.add('flex-grow', 'cursor-pointer', 'hover:text-blue-700');
+                infoSpan.textContent = `${entry.name} - ${new Date(entry.timestamp).toLocaleDateString()}`;
+                infoSpan.onclick = () => loadEntry(index);
+
+                const buttonGroup = document.createElement('div');
+                buttonGroup.classList.add('flex', 'gap-2', 'ml-4');
+
+                const loadBtn = document.createElement('button');
+                loadBtn.classList.add('comic-button', 'bg-blue-500', 'text-white', 'px-3', 'py-1', 'rounded-full', 'text-sm', 'font-bold');
+                loadBtn.textContent = 'Muat';
+                loadBtn.onclick = () => loadEntry(index);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.classList.add('comic-button', 'bg-red-500', 'text-white', 'px-3', 'py-1', 'rounded-full', 'text-sm', 'font-bold');
+                deleteBtn.textContent = 'Hapus';
+                deleteBtn.onclick = () => deleteEntry(index);
+
+                buttonGroup.appendChild(loadBtn);
+                buttonGroup.appendChild(deleteBtn);
+                listItem.appendChild(infoSpan);
+                listItem.appendChild(buttonGroup);
+                savedEntriesList.appendChild(listItem);
+            });
+        }
+
+        // --- Event Listeners ---
+        generateEntryBtn.addEventListener('click', generateEncyclopediaEntry);
+
+        saveEntryBtn.addEventListener('click', saveEntry);
+
+        loadEntryListBtn.addEventListener('click', () => {
+            savedEntriesSection.classList.toggle('hidden');
+            if (!savedEntriesSection.classList.contains('hidden')) {
+                renderSavedEntries();
+            }
+        });
+
+        closeSavedEntriesBtn.addEventListener('click', () => {
+            savedEntriesSection.classList.add('hidden');
+        });
+
+        copyEntryBtn.addEventListener('click', () => {
+            const textToCopy = getRawEntryContent();
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            textarea.style.position = 'fixed';
+            textarea.style.top = 0;
+            textarea.style.left = 0;
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.opacity = 0;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('Entri berhasil disalin ke clipboard!');
+            } catch (err) {
+                console.error('Gagal menyalin teks: ', err);
+                alert('Gagal menyalin entri. Silakan salin manual.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        });
+
+        clearEntryBtn.addEventListener('click', () => {
+            if (confirm('Anda yakin ingin menghapus entri yang sedang ditampilkan dan input?')) {
+                worldConceptInput.value = '';
+                entryOutputSection.innerHTML = `
+                    <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                        Jelaskan sebuah konsep dunia fiksi, lalu klik "Buat Entri!"
+                    </p>
+                `;
+                initialMessage.classList.remove('hidden');
+                saveEntryBtn.classList.add('hidden');
+                copyEntryBtn.classList.add('hidden');
+                clearEntryBtn.classList.add('hidden');
+            }
+        });
+
+        // Initial setup on page load
+        window.onload = loadApiKey;
+    </script>
+</body>
+</html>
+
