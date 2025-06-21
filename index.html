@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hanzercopy.cloud - Platform Kreatif & Cerita Interaktif</title>
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Hanzercopy.cloud adalah platform inovatif untuk penulis dan penggemar cerita. Jelajahi generator karakter, ide judul & slogan, nama lokasi, arsip data dunia, perancang artefak legendaris, dan cerita visual novel interaktif serta non-interaktif. Mulai petualangan kreatif Anda hari ini!">
-    <meta name="keywords" content="visual novel, komik interaktif, cerita pilihan, game cerita, fantasi, misteri, romansa, game visual novel, hanzercopy, game komik, cerita digital, petualangan naratif, generator karakter, generator judul cerita, generator lokasi, arsip dunia, perancang artefak, item legendaris, dunia fiksi">
+    <meta name="description" content="Hanzercopy.cloud adalah platform inovatif untuk penulis dan penggemar cerita. Jelajahi generator karakter, ide judul & slogan, nama lokasi, arsip data dunia, perancang artefak legendaris, generator peta dunia, generator makhluk/monster, generator plot & garis besar cerita, dan cerita visual novel interaktif serta non-interaktif. Mulai petualangan kreatif Anda hari ini!">
+    <meta name="keywords" content="visual novel, komik interaktif, cerita pilihan, game cerita, fantasi, misteri, romansa, game visual novel, hanzercopy, game komik, cerita digital, petualangan naratif, generator karakter, generator judul cerita, generator lokasi, arsip dunia, perancang artefak, item legendaris, dunia fiksi, generator peta, peta fantasi, world map generator, generator makhluk, monster fiksi, creature generator, generator plot, garis besar cerita, story outline generator">
     <meta name="author" content="Hanzercopy">
     <meta property="og:title" content="Hanzercopy.cloud - Platform Kreatif Komik & Cerita Interaktif">
-    <meta property="og:description" content="Hanzercopy.cloud adalah platform inovatif untuk penulis dan penggemar cerita. Jelajahi generator karakter, ide judul & slogan, nama lokasi, arsip data dunia, perancang artefak legendaris, dan cerita visual novel interaktif serta non-interaktif. Mulai petualangan kreatif Anda hari ini!">
+    <meta property="og:description" content="Hanzercopy.cloud adalah platform inovatif untuk penulis dan penggemar cerita. Jelajahi generator karakter, ide judul & slogan, nama lokasi, arsip data dunia, perancang artefak legendaris, generator peta dunia, generator makhluk/monster, generator plot & garis besar cerita, dan cerita visual novel interaktif serta non-interaktif. Mulai petualangan kreatif Anda hari ini!">
     <meta property="og:url" content="https://hanzercopy.cloud/">
     <meta property="og:type" content="website">
 
@@ -78,14 +78,16 @@
             line-height: 1.1;
             text-transform: uppercase;
             position: relative;
+            /* Optimized animation for performance */
             animation: finalTitlePulse 1.2s ease-in-out infinite alternate 1.5s;
+            will-change: transform, text-shadow; /* Hint to browser for optimization */
         }
 
-        /* Continuous pulse animation for the entire H1 */
+        /* Optimized pulse animation for the H1 - less resource-intensive */
         @keyframes finalTitlePulse {
-            0% { text-shadow: 4px 4px 0px #000000, 0 0 0px #ffffff; }
-            50% { text-shadow: 10px 10px 0px rgba(0, 0, 0, 0.7), 0 0 10px #ffffff; }
-            100% { text-shadow: 4px 4px 0px #000000, 0 0 0px #ffffff; }
+            0% { transform: translateY(0); text-shadow: 4px 4px 0px #000000; }
+            50% { transform: translateY(-3px); text-shadow: 6px 6px 0px rgba(0, 0, 0, 0.8); }
+            100% { transform: translateY(0); text-shadow: 4px 4px 0px #000000; }
         }
 
         h1 span {
@@ -424,7 +426,40 @@
             </a>
         </div>
 
-        <!-- Card 6: Cerita Interaktif -->
+        <!-- NEW Card: Generator Peta Dunia Fiksi -->
+        <div class="card">
+            <h2 class="card-title">Generator Peta Dunia Fiksi</h2>
+            <p class="card-description">
+                **Cara Kerja:** Hasilkan deskripsi geografis mendalam untuk dunia cerita Anda, lengkap dengan fitur alam, iklim, dan lokasi kunci. Dapatkan juga prompt AI untuk membuat visualisasi peta!
+            </p>
+            <a href="/peta/" class="comic-button bg-teal-500 text-white px-8 py-3 rounded-full text-lg font-bold">
+                Buat Peta Dunia
+            </a>
+        </div>
+
+        <!-- NEW Card: Ide Konsep Makhluk Acak (mengarah ke /yeah/) -->
+        <div class="card">
+            <h2 class="card-title">Ide Konsep Makhluk (Acak)</h2>
+            <p class="card-description">
+                **Cara Kerja:** Bingung mencari ide konsep makhluk? Klik di sini untuk mendapatkan ide acak yang bisa Anda gunakan untuk inspirasi di generator makhluk utama!
+            </p>
+            <a href="/yeah/" class="comic-button bg-pink-500 text-white px-8 py-3 rounded-full text-lg font-bold">
+                Dapatkan Ide Makhluk!
+            </a>
+        </div>
+        
+        <!-- Card Generator Plot & Garis Besar Cerita -->
+        <div class="card">
+            <h2 class="card-title">Generator Plot & Garis Besar Cerita</h2>
+            <p class="card-description">
+                **Cara Kerja:** Dapatkan garis besar plot yang solid untuk cerita Anda, mencakup awal, konflik meningkat, klimaks, konflik menurun, dan resolusi.
+            </p>
+            <a href="/plot/" class="comic-button bg-indigo-600 text-white px-8 py-3 rounded-full text-lg font-bold">
+                Buat Garis Besar Plot
+            </a>
+        </div>
+        
+        <!-- Card Cerita Interaktif -->
         <div class="card">
             <h2 class="card-title">Cerita Interaktif</h2>
             <p class="card-description">
@@ -435,7 +470,7 @@
             </a>
         </div>
 
-        <!-- Card 7: Cerita Non-Interaktif -->
+        <!-- Card Cerita Non-Interaktif -->
         <div class="card">
             <h2 class="card-title">Cerita Non-Interaktif</h2>
             <p class="card-description">
@@ -490,4 +525,3 @@
     </script>
 </body>
 </html>
-
