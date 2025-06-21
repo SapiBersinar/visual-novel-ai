@@ -161,7 +161,9 @@
             .rounded-lg.shadow-xl.border-4.border-black,
             #api-key-section, /* Hide API key input section */
             #character-name-input, #random-name-btn, #character-concept-input,
-            #random-concept-btn, #generate-dossier-btn, #copy-dossier-btn, #save-dossier-btn, #clear-dossier-btn, #load-dossier-list-btn, #export-txt-btn, #export-md-btn, #saved-dossiers-section { 
+            #random-concept-btn, #generate-dossier-btn, #copy-dossier-btn, #save-dossier-btn, #clear-dossier-btn, #load-dossier-list-btn, #export-txt-btn, #export-md-btn, #saved-dossiers-section,
+            #copy-image-prompt-btn /* Hide the new copy image prompt button */
+            { 
                 display: none !important;
             }
             /* Ensure main container and dossier output are visible and styled for print */
@@ -274,6 +276,9 @@
                 <div id="image-prompt-section" class="border-t-2 border-dashed border-gray-400 mt-6 pt-4 hidden">
                     <h3 class="text-xl font-bold mb-2 comic-font">Contoh Prompt Gambar AI:</h3>
                     <p id="image-prompt-text" class="text-sm sm:text-base italic"></p>
+                    <button id="copy-image-prompt-btn" class="comic-button bg-green-500 text-white px-4 py-2 rounded-full text-sm font-bold mt-2">
+                        Salin Prompt Gambar
+                    </button>
                 </div>
             </div>
             
@@ -351,7 +356,8 @@
         const exportTxtBtn = document.getElementById('export-txt-btn');
         const exportMdBtn = document.getElementById('export-md-btn');
         const clearDossierBtn = document.getElementById('clear-dossier-btn');
-        
+        const copyImagePromptBtn = document.getElementById('copy-image-prompt-btn'); // New button
+
         const buttonText = document.getElementById('button-text');
         const loadingSpinner = document.getElementById('loading-spinner');
         const dossierOutput = document.getElementById('dossier-output');
@@ -512,6 +518,7 @@
             exportTxtBtn.classList.add('hidden');
             exportMdBtn.classList.add('hidden');
             clearDossierBtn.classList.add('hidden');
+            copyImagePromptBtn.classList.add('hidden'); // Hide new copy button
             loadDossierListBtn.disabled = true;
             buttonText.textContent = "Membuat...";
             loadingSpinner.classList.remove('hidden');
@@ -534,6 +541,10 @@
             exportTxtBtn.classList.remove('hidden');
             exportMdBtn.classList.remove('hidden');
             clearDossierBtn.classList.remove('hidden');
+            // Show copy image prompt button if there's an image prompt
+            if (imagePromptText.textContent) {
+                copyImagePromptBtn.classList.remove('hidden');
+            }
             loadDossierListBtn.disabled = false;
             buttonText.textContent = "Buat Dossier!";
             loadingSpinner.classList.add('hidden');
@@ -681,7 +692,7 @@
                 - **Kutipan Ciri Khas:** Satu atau dua kutipan yang mewakili karakter.
                 - **Detail Tambahan (REDACTED):** Satu fakta rahasia yang relevan dengan karakter yang harus disensor. Gunakan format '[REDACTED:Fakta Rahasia Anda di sini]'.
 
-                Sertakan juga satu prompt gambar AI yang relevan dengan karakter ini. Prompt ini harus fokus pada gaya visual anime dan ditandai dengan '[PROMPT_GAMBAR_AI:Prompt gambar AI Anda di sini anime]'.
+                Sertakan juga satu prompt gambar AI yang relevan dengan karakter ini. Prompt ini harus fokus pada gaya visual yang realistis atau sesuai dengan deskripsi karakter yang telah Anda hasilkan, dan ditandai dengan '[PROMPT_GAMBAR_AI:Prompt gambar AI Anda di sini]'. Hindari gaya anime kecuali secara spesifik diminta.
 
                 Berikan semua informasi dalam bahasa Indonesia, gunakan format markdown untuk bagian-bagian.
                 `;
@@ -729,8 +740,10 @@
                     if (extractedImagePrompt) {
                         imagePromptText.textContent = extractedImagePrompt;
                         imagePromptSection.classList.remove('hidden');
+                        copyImagePromptBtn.classList.remove('hidden'); // Show the copy button
                     } else {
                         imagePromptSection.classList.add('hidden');
+                        copyImagePromptBtn.classList.add('hidden'); // Hide the copy button
                     }
 
                     if (fullDossierText.trim().length < 50) {
@@ -797,8 +810,10 @@
                 if (extractedImagePrompt) {
                     imagePromptText.textContent = extractedImagePrompt;
                     imagePromptSection.classList.remove('hidden');
+                    copyImagePromptBtn.classList.remove('hidden'); // Show the copy button
                 } else {
                     imagePromptSection.classList.add('hidden');
+                    copyImagePromptBtn.classList.add('hidden'); // Hide the copy button
                 }
 
                 initialDossierMessage.classList.add('hidden');
@@ -915,6 +930,34 @@
             }
         });
 
+        copyImagePromptBtn.addEventListener('click', async () => {
+            const promptToCopy = imagePromptText.textContent;
+            if (promptToCopy) {
+                const textarea = document.createElement('textarea');
+                textarea.value = promptToCopy;
+                textarea.style.position = 'fixed';
+                textarea.style.top = 0;
+                textarea.style.left = 0;
+                textarea.style.width = '1px';
+                textarea.style.height = '1px';
+                textarea.style.opacity = 0;
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    await showModal('Berhasil!', 'Prompt gambar AI berhasil disalin ke clipboard!');
+                } catch (err) {
+                    console.error('Gagal menyalin prompt gambar: ', err);
+                    await showModal('Gagal!', 'Gagal menyalin prompt gambar. Silakan salin manual.');
+                } finally {
+                    document.body.removeChild(textarea);
+                }
+            } else {
+                await showModal('Peringatan!', 'Tidak ada prompt gambar untuk disalin.');
+            }
+        });
+
         saveDossierBtn.addEventListener('click', saveDossier);
 
         loadDossierListBtn.addEventListener('click', () => {
@@ -957,6 +1000,7 @@
                 exportTxtBtn.classList.add('hidden');
                 exportMdBtn.classList.add('hidden');
                 clearDossierBtn.classList.add('hidden');
+                copyImagePromptBtn.classList.add('hidden'); // Hide the copy button on clear
             }
         });
 

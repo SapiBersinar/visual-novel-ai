@@ -287,6 +287,15 @@
                 </p>
                 <!-- Generated artifact details will appear here -->
             </div>
+
+            <!-- New section for Image Prompt -->
+            <div id="artifact-image-prompt-section" class="border-t-2 border-dashed border-gray-400 mt-6 pt-4 hidden">
+                <h3 class="text-xl font-bold mb-2 comic-font text-gray-800">Contoh Prompt Gambar AI Artefak:</h3>
+                <p id="artifact-image-prompt-text" class="text-sm sm:text-base italic text-gray-700"></p>
+                <button id="copy-artifact-image-prompt-btn" class="comic-button bg-green-500 text-white px-4 py-2 rounded-full text-sm font-bold mt-2">
+                    Salin Prompt Gambar
+                </button>
+            </div>
             
             <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
                 <button id="copy-artifact-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold default-font hidden">
@@ -336,6 +345,9 @@
         const generateArtifactBtn = document.getElementById('generate-artifact-btn');
         const copyArtifactBtn = document.getElementById('copy-artifact-btn');
         const clearArtifactBtn = document.getElementById('clear-artifact-btn');
+        const artifactImagePromptSection = document.getElementById('artifact-image-prompt-section'); // New section
+        const artifactImagePromptText = document.getElementById('artifact-image-prompt-text'); // New text element
+        const copyArtifactImagePromptBtn = document.getElementById('copy-artifact-image-prompt-btn'); // New button
         
         const buttonText = document.getElementById('button-text');
         const loadingSpinner = document.getElementById('loading-spinner');
@@ -505,6 +517,9 @@
             contextInput.disabled = true; // Disable context input
             copyArtifactBtn.classList.add('hidden');
             clearArtifactBtn.classList.add('hidden');
+            artifactImagePromptSection.classList.add('hidden'); // Hide new image prompt section
+            artifactImagePromptText.textContent = ''; // Clear image prompt text
+            copyArtifactImagePromptBtn.classList.add('hidden'); // Hide copy button
             buttonText.textContent = "Membuat...";
             loadingSpinner.classList.remove('hidden');
             artifactOutputSection.innerHTML = ''; // Clear previous content
@@ -524,6 +539,11 @@
             contextInput.disabled = false; // Re-enable context input
             copyArtifactBtn.classList.remove('hidden');
             clearArtifactBtn.classList.remove('hidden');
+            // Show image prompt section and button if there's a prompt
+            if (artifactImagePromptText.textContent) {
+                artifactImagePromptSection.classList.remove('hidden');
+                copyArtifactImagePromptBtn.classList.remove('hidden');
+            }
             buttonText.textContent = "Rancang Artefak!";
             loadingSpinner.classList.add('hidden');
         }
@@ -576,6 +596,16 @@
             }
             
             artifactOutputSection.innerHTML = htmlContent;
+
+            // Set the image prompt
+            if (artifactData.imagePrompt) {
+                artifactImagePromptText.textContent = artifactData.imagePrompt;
+                artifactImagePromptSection.classList.remove('hidden');
+                copyArtifactImagePromptBtn.classList.remove('hidden'); // Show copy button
+            } else {
+                artifactImagePromptSection.classList.add('hidden');
+                copyArtifactImagePromptBtn.classList.add('hidden'); // Hide copy button
+            }
         }
 
         // Function to get raw text for copying
@@ -588,6 +618,7 @@
             if (artifactData.powersCursesEffects) rawText += `Kekuatan/Kutukan/Efek: ${artifactData.powersCursesEffects}\n\n`;
             if (artifactData.weaknesses) rawText += `Kelemahan/Keterbatasan: ${artifactData.weaknesses}\n\n`;
             if (artifactData.storyImplications) rawText += `Implikasi dalam Cerita: ${artifactData.storyImplications}\n\n`;
+            if (artifactData.imagePrompt) rawText += `Prompt Gambar AI: ${artifactData.imagePrompt}\n\n`; // Add image prompt to raw text
             return rawText.trim();
         }
 
@@ -706,6 +737,7 @@
                 -   Kekuatan/Kutukan/Efek: Jelaskan apa yang artefak ini lakukan atau berikan kepada penggunanya, dengan mempertimbangkan rank-nya dan **harus sangat sesuai dengan Jenis Item**.
                 -   Kelemahan/Keterbatasan: Sebutkan jika ada kelemahan artefak atau hal yang membatasi karakter.
                 -   Implikasi dalam Cerita: Bagaimana artefak ini bisa memengaruhi plot, konflik, atau perkembangan karakter dalam cerita.
+                -   Prompt Gambar AI: Berikan satu prompt gambar AI yang sangat mendeskripsikan artefak ini secara visual, tanpa menyebutkan gaya anime. Prompt harus berdasarkan "Penampilan Fisik" dari artefak ini.
 
                 Format respons Anda sebagai JSON dengan properti berikut, semua dalam Bahasa Indonesia kecuali jika ditandai (English):
                 {
@@ -716,7 +748,8 @@
                   "originStory": "STRING",
                   "powersCursesEffects": "STRING",
                   "weaknesses": "STRING",
-                  "storyImplications": "STRING"
+                  "storyImplications": "STRING",
+                  "imagePrompt": "STRING" // New property for image prompt
                 }
                 `;
                 console.log("DEBUG: generateArtifact prompt:", prompt);
@@ -739,9 +772,10 @@
                                 "originStory": { "type": "STRING" },
                                 "powersCursesEffects": { "type": "STRING" },
                                 "weaknesses": { "type": "STRING" },
-                                "storyImplications": { "type": "STRING" }
+                                "storyImplications": { "type": "STRING" },
+                                "imagePrompt": { "type": "STRING" } // New property
                             },
-                            "required": ["itemNameEnglish", "itemNameIndonesian", "rank", "physicalDescription", "originStory", "powersCursesEffects", "storyImplications"]
+                            "required": ["itemNameEnglish", "itemNameIndonesian", "rank", "physicalDescription", "originStory", "powersCursesEffects", "storyImplications", "imagePrompt"] // Make imagePrompt required
                         }
                     }
                 };
@@ -897,6 +931,15 @@
             }
         });
 
+        copyArtifactImagePromptBtn.addEventListener('click', async () => {
+            const promptToCopy = artifactImagePromptText.textContent;
+            if (promptToCopy) {
+                await copyToClipboard(promptToCopy, 'Prompt gambar AI artefak berhasil disalin ke clipboard!');
+            } else {
+                await showModal('Peringatan!', 'Tidak ada prompt gambar artefak untuk disalin.');
+            }
+        });
+
         clearArtifactBtn.addEventListener('click', async () => {
             const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus deskripsi artefak yang sedang ditampilkan dan input?', 'confirm');
             if (confirmed) {
@@ -917,6 +960,9 @@
                 copyArtifactBtn.classList.add('hidden');
                 clearArtifactBtn.classList.add('hidden');
                 artifactOutputSection.currentArtifactData = null; // Clear stored data
+                artifactImagePromptSection.classList.add('hidden'); // Hide image prompt section
+                artifactImagePromptText.textContent = ''; // Clear image prompt text
+                copyArtifactImagePromptBtn.classList.add('hidden'); // Hide copy button
             }
         });
 
