@@ -180,7 +180,7 @@
         <!-- API Key Input Section - Always visible initially -->
         <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
             <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Perancang Item & Artefak Legendaris:</label>
-            <input type="password" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
                 Simpan API Key
             </button>
@@ -235,10 +235,6 @@
                                 <option value="Peninggalan">Peninggalan</option>
                                 <option value="Kristal">Kristal</option>
                                 <option value="Permata">Permata</option>
-                                <option value="Ramuan">Ramuan</option>
-                                <option value="Tablet/Lempengan">Tablet/Lempengan</option>
-                                <option value="Bunga">Bunga</option>
-                                <option value="Buah">Buah</option>
                                 <option value="Obat">Obat</option>
                                 <option value="Makanan">Makanan</option>
                                 <option value="Minuman">Minuman</option>
@@ -322,7 +318,7 @@
     </div>
 
     <script>
-        // API Key will be loaded from localStorage, default is blank
+        // API Key will be loaded from localStorage, default is blank.
         let API_KEY = localStorage.getItem('geminiApiKeyArtifact') || ""; 
 
         const apiKeyInput = document.getElementById('api-key-input');
@@ -389,27 +385,86 @@
         }
 
         // --- API Key Handling ---
-        function loadApiKey() {
+        async function validateAndLoadApiKey(key) {
+            if (!key) {
+                await showModal('Peringatan!', 'API Key tidak boleh kosong.');
+                return false;
+            }
+
+            console.log("DEBUG: Validating API Key:", key.substring(0, 5) + "...");
+            // Perform a small, quick test call to validate the API key
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: "Hello" }] }]; // Minimal prompt
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json(); // Attempt to parse JSON error
+                    const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                    await showModal('Validasi Gagal!', `API Key tidak valid: ${errorMessage}.`);
+                    console.error("API Key validation failed:", response.status, errorBody);
+                    return false;
+                }
+                const result = await response.json();
+                if (!result.candidates || result.candidates.length === 0) {
+                     await showModal('Validasi Gagal!', 'API Key valid namun respons tidak sesuai. Coba lagi atau periksa key Anda.');
+                     console.error("API Key valid but unexpected response:", result);
+                     return false;
+                }
+                console.log("DEBUG: API Key validated successfully.");
+                return true;
+            } catch (error) {
+                await showModal('Validasi Gagal!', `Terjadi kesalahan koneksi saat validasi API Key: ${error.message}.`);
+                console.error("Error during API Key validation:", error);
+                return false;
+            }
+        }
+
+        async function loadAndDisplayApiKey() {
             const storedKey = localStorage.getItem('geminiApiKeyArtifact');
             if (storedKey) {
                 API_KEY = storedKey;
-                apiKeyInput.value = storedKey;
-                apiKeySection.classList.add('hidden'); // Hide the input section if key is found
-                mainContent.classList.remove('hidden'); // Show main content
+                apiKeyInput.value = storedKey; // Display the full key
+                const isValid = await validateAndLoadApiKey(API_KEY);
+                if (isValid) {
+                    apiKeySection.classList.add('hidden'); 
+                    mainContent.classList.remove('hidden'); 
+                    console.log("DEBUG: API Key loaded from localStorage and is valid.");
+                } else {
+                    // If stored key is invalid, keep API section visible and main content hidden
+                    apiKeySection.classList.remove('hidden'); 
+                    mainContent.classList.add('hidden'); 
+                    console.log("DEBUG: Stored API Key is invalid. Please re-enter.");
+                    // The validateAndLoadApiKey function already shows a modal for invalid keys
+                }
             } else {
+                apiKeyInput.value = ""; // Ensure input is empty if no key
                 apiKeySection.classList.remove('hidden'); // Ensure API key input is visible
                 mainContent.classList.add('hidden'); // Ensure main content is hidden
+                console.log("DEBUG: No API Key found in localStorage. Please enter it.");
             }
         }
 
         saveApiKeyBtn.addEventListener('click', async () => {
             const key = apiKeyInput.value.trim();
             if (key) {
-                localStorage.setItem('geminiApiKeyArtifact', key);
-                API_KEY = key;
-                await showModal('Berhasil!', 'API Key berhasil disimpan!');
-                apiKeySection.classList.add('hidden'); // Hide after saving
-                mainContent.classList.remove('hidden'); // Show main content
+                const isValid = await validateAndLoadApiKey(key);
+                if (isValid) {
+                    localStorage.setItem('geminiApiKeyArtifact', key);
+                    API_KEY = key; // Update the global API_KEY variable
+                    await showModal('Berhasil!', 'API Key berhasil disimpan dan diverifikasi!');
+                    apiKeySection.classList.add('hidden'); // Hide after saving
+                    mainContent.classList.remove('hidden'); // Show main content
+                } else {
+                    // validateAndLoadApiKey already showed a modal for invalid key
+                    // Keep API section visible
+                }
             } else {
                 await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
             }
@@ -539,25 +594,46 @@
         // Helper function to generate a random item type via AI (used when "Random AI" is selected)
         async function generateAiItemType() {
             try {
+                console.log("DEBUG: Generating AI Item Type. Current API_KEY:", API_KEY ? API_KEY.substring(0, 5) + "..." : "EMPTY");
+                if (!API_KEY) {
+                    await showModal('Peringatan!', 'API Key tidak ditemukan. Harap masukkan dan simpan API Key Anda.');
+                    return null;
+                }
                 let prompt = `Hasilkan satu jenis item fiksi fantasi acak. Contoh: 'pedang besar', 'kalung permata', 'buku mantra kuno', 'ramuan ajaib', 'perisai', 'sarung tangan', 'jubah', 'sepatu bot', 'cincin', 'gelang', 'topi', 'helm', 'gloves', 'amulet', 'kunci', 'orb', 'kristal', 'senjata', 'armor', 'perhiasan', 'perlengkapan'. Berikan hanya jenis itemnya saja, tidak perlu penjelasan lain.`;
                 let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
                 const payload = { contents: chatHistory };
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                console.log("DEBUG: generateAiItemType API URL:", apiUrl);
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                if (!response.ok) {
+                    const errorBody = await response.json(); 
+                    const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                    await showModal('Kesalahan AI!', `Gagal mendapatkan jenis item dari AI: ${errorMessage}.`);
+                    console.error("API Response not OK for AI Item Type:", response.status, errorBody);
+                    return null;
+                }
                 const result = await response.json();
+                console.log("DEBUG: AI Item Type Raw Result:", result);
+
                 if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
-                    return result.candidates[0].content.parts[0].text.trim().replace(/"/g, '');
+                    const generatedType = result.candidates[0].content.parts[0].text.trim().replace(/"/g, '');
+                    console.log("DEBUG: Generated AI Item Type:", generatedType);
+                    return generatedType;
                 } else {
-                    console.error('AI failed to generate item type.');
+                    console.error('AI failed to generate item type (missing candidates/content). Result:', result);
+                    await showModal('Gagal!', 'AI tidak dapat menghasilkan jenis item. Coba lagi.');
                     return null;
                 }
             } catch (error) {
-                console.error("Error generating random item type via AI:", error);
+                console.error("ERROR in generateAiItemType:", error);
+                if (!document.getElementById('custom-modal').classList.contains('active')) {
+                    await showModal('Kesalahan!', `Terjadi kesalahan saat mendapatkan jenis item dari AI: ${error.message}.`);
+                }
                 return null;
             }
         }
@@ -584,8 +660,7 @@
                 itemType = await generateAiItemType();
                 if (!itemType) {
                     hideLoading();
-                    await showModal('Gagal!', 'Gagal mendapatkan jenis item dari AI. Silakan coba lagi atau pilih jenis item manual.');
-                    return;
+                    return; // Message already shown by generateAiItemType
                 }
                 // Update the input field with the AI-generated type for user visibility
                 itemTypeSelect.value = 'Lainnya'; // Change select to "Lainnya"
@@ -644,6 +719,9 @@
                   "storyImplications": "STRING"
                 }
                 `;
+                console.log("DEBUG: generateArtifact prompt:", prompt);
+                console.log("DEBUG: generateArtifact API_KEY (first 5 chars):", API_KEY ? API_KEY.substring(0, 5) + "..." : "EMPTY");
+
 
                 let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
 
@@ -668,19 +746,34 @@
                     }
                 };
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                console.log("DEBUG: generateArtifact API URL:", apiUrl);
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Response not OK for Artifact Generation:", response.status, errorBody);
+                    try {
+                        const errorJson = JSON.parse(errorBody);
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorJson.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                    } catch (parseError) {
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${errorBody.substring(0, 100)}...`);
+                    }
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${errorBody}`);
+                }
 
                 const result = await response.json();
+                console.log("DEBUG: Artifact Generation Raw Result:", result);
                 
                 if (result.candidates && result.candidates.length > 0 &&
                     result.candidates[0].content && result.candidates[0].content.parts &&
                     result.candidates[0].content.parts.length > 0) {
                     const artifactData = JSON.parse(result.candidates[0].content.parts[0].text);
+                    console.log("DEBUG: Parsed Artifact Data:", artifactData);
                     renderArtifact(artifactData);
                     artifactOutputSection.currentArtifactData = artifactData;
                 } else {
@@ -689,15 +782,18 @@
                             Maaf, AI gagal merancang artefak. Pastikan permintaan Anda jelas dan spesifik.
                         </p>
                     `;
-                    console.error("Unexpected API response structure:", result);
+                    console.error('AI failed to generate artifact (missing candidates/content). Result:', result);
                 }
             } catch (error) {
                 artifactOutputSection.innerHTML = `
                     <p class="text-center text-red-700 default-font text-lg pt-10">
-                        Terjadi kesalahan saat memuat artefak.
+                        Terjadi kesalahan saat memuat artefak. Silakan periksa koneksi internet Anda atau API Key.
                     </p>
                 `;
-                console.error("Error fetching artifact:", error);
+                console.error("ERROR in generateArtifact:", error);
+                if (!document.getElementById('custom-modal').classList.contains('active')) {
+                    await showModal('Kesalahan!', `Terjadi kesalahan saat merancang artefak: ${error.message}. Pastikan API Key Anda valid.`);
+                }
             } finally {
                 hideLoading();
             }
@@ -722,8 +818,7 @@
                     // If Random AI is selected for item type, generate that first
                     currentItemType = await generateAiItemType();
                     if (!currentItemType) {
-                        await showModal('Gagal!', 'Gagal mendapatkan jenis item dari AI untuk mengacak efek. Coba lagi atau pilih jenis item manual.');
-                        return;
+                        return; // Message already shown by generateAiItemType
                     }
                      // Update the input field with the AI-generated type for user visibility
                     itemTypeSelect.value = 'Lainnya'; 
@@ -735,30 +830,54 @@
                      await showModal('Peringatan!', 'Mohon pilih atau tentukan jenis item terlebih dahulu untuk mengacak efek.');
                      return;
                 }
+                console.log("DEBUG: Generating Random Effect. Current API_KEY:", API_KEY ? API_KEY.substring(0, 5) + "..." : "EMPTY");
+
 
                 let prompt = `Hasilkan satu efek atau karakteristik item fiksi fantasi acak yang **sangat sesuai dengan jenis item: ${currentItemType}**.
                 Contoh efek untuk pedang: 'membuat tebasan api', 'menyerap energi musuh'.
                 Contoh efek untuk pelindung: 'memantulkan serangan sihir', 'meningkatkan daya tahan terhadap racun'.
                 Berikan hanya efeknya saja, tidak perlu penjelasan lain.`;
-                
+                console.log("DEBUG: generateRandomEffect prompt:", prompt);
+
                 let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
                 const payload = { contents: chatHistory };
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                console.log("DEBUG: generateRandomEffect API URL:", apiUrl);
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Response not OK for Random Effect:", response.status, errorBody);
+                     try {
+                        const errorJson = JSON.parse(errorBody);
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorJson.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                    } catch (parseError) {
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${errorBody.substring(0, 100)}...`);
+                    }
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${errorBody}`);
+                }
+
                 const result = await response.json();
+                console.log("DEBUG: Random Effect Raw Result:", result);
+
                 if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
-                    effectInput.value = result.candidates[0].content.parts[0].text.trim().replace(/"/g, '');
+                    const generatedEffect = result.candidates[0].content.parts[0].text.trim().replace(/"/g, '');
+                    console.log("DEBUG: Generated Random Effect:", generatedEffect);
+                    effectInput.value = generatedEffect;
                 } else {
-                    await showModal('Gagal!', 'Gagal mengacak efek. Coba lagi.');
+                    console.error('AI failed to generate effect (missing candidates/content). Result:', result);
+                    await showModal('Gagal!', 'AI tidak dapat menghasilkan efek. Coba lagi.');
                 }
             } catch (error) {
-                await showModal('Kesalahan!', 'Terjadi kesalahan saat mengacak efek. Periksa koneksi.');
-                console.error("Error generating random effect:", error);
+                console.error("ERROR in generateRandomEffect:", error);
+                if (!document.getElementById('custom-modal').classList.contains('active')) {
+                    await showModal('Kesalahan!', `Terjadi kesalahan saat mengacak efek: ${error.message}.`);
+                }
             } finally {
                 generateEffectBtn.disabled = false;
                 generateEffectBtn.textContent = "Acak Efek";
@@ -803,7 +922,7 @@
 
         // Initial setup on page load
         window.onload = () => {
-            loadApiKey();
+            loadAndDisplayApiKey();
             // Set initial state for item type: "Lainnya" selected and manual input visible
             // This is done after loadApiKey to ensure visibility logic is correct.
             itemTypeSelect.value = 'Lainnya';

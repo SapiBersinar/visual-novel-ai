@@ -234,7 +234,7 @@
         <!-- API Key Input Section - Always visible initially -->
         <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
             <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0">API Key Anda:</label>
-            <input type="password" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
                 Simpan API Key
             </button>
@@ -254,7 +254,8 @@
                 <textarea id="character-concept-input" placeholder="Konsep Dasar (misal: 'detektif alien yang menyukai kopi', 'prajurit naga terakhir yang mencari kedamaian di dunia modern')" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[80px]"></textarea>
                 
                 <button id="random-concept-btn" class="comic-button bg-gray-700 text-white px-6 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
-                    Acak Konsep
+                    <span id="random-concept-button-text">Acak Konsep</span>
+                    <div id="random-concept-loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
                 </button>
                 <button id="generate-dossier-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
                     <span id="button-text">Buat Dossier!</span>
@@ -329,8 +330,8 @@
     </div>
 
     <script>
-        // API Key will be loaded from localStorage, default is blank
-        let API_KEY = localStorage.getItem('geminiApiKey') || ""; 
+        // API Key will be loaded from localStorage, default is blank.
+        let API_KEY = localStorage.getItem('geminiApiKeyDossier') || ""; 
 
         const apiKeyInput = document.getElementById('api-key-input');
         const saveApiKeyBtn = document.getElementById('save-api-key-btn');
@@ -342,6 +343,8 @@
         const characterConceptInput = document.getElementById('character-concept-input'); // Now a textarea
         const generateButton = document.getElementById('generate-dossier-btn');
         const randomConceptBtn = document.getElementById('random-concept-btn');
+        const randomConceptButtonText = document.getElementById('random-concept-button-text');
+        const randomConceptLoadingSpinner = document.getElementById('random-concept-loading-spinner');
         const copyDossierBtn = document.getElementById('copy-dossier-btn');
         const saveDossierBtn = document.getElementById('save-dossier-btn');
         const loadDossierListBtn = document.getElementById('load-dossier-list-btn');
@@ -364,27 +367,7 @@
         const savedDossiersList = document.getElementById('saved-dossiers-list');
         const closeSavedDossiersBtn = document.getElementById('close-saved-dossiers-btn');
 
-        // Modal elements
-        const customModal = document.getElementById('custom-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalMessage = document.getElementById('modal-message');
-        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
-        const modalCancelBtn = document.getElementById('modal-cancel-btn');
-
-        const randomConcepts = [
-            "Penyihir muda yang kikuk dan takut ketinggian",
-            "Robot detektif dengan rasa humor yang aneh di kota futuristik",
-            "Prajurit naga terakhir yang mencari kedamaian",
-            "Kucing peliharaan yang secara rahasia adalah agen mata-mata",
-            "Penjelajah waktu yang terus-menerus kehilangan kunci portalnya",
-            "Koki yang dulunya adalah petarung jalanan",
-            "Hantu yang mencoba menjadi stand-up comedian",
-            "Pemburu monster yang alergi terhadap bulu",
-            "Putri dongeng yang lebih suka memperbaiki mesin daripada berdansa",
-            "Alien yang bingung dengan kebiasaan manusia di bumi"
-        ];
-
-        const randomNames = [
+        const randomNames = [ // Keeping this for the random name button
             "Anya", "Bima", "Candra", "Dharma", "Elara", "Faris", "Galih", "Hana", "Indra", "Jelita",
             "Kaito", "Laras", "Mirza", "Nara", "Orion", "Putri", "Qiana", "Rizky", "Sinta", "Tegar",
             "Ulysses", "Vanya", "Wira", "Xena", "Yudha", "Zara", "Aidan", "Briar", "Caleb", "Daphne"
@@ -398,6 +381,13 @@
             "Mengurai benang-benang narasi...",
             "Menggali potensi karakter..."
         ];
+
+        // Modal elements
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
 
         // --- Custom Modal Functions (replaces alert/confirm) ---
         function showModal(title, message, type = 'alert') {
@@ -424,39 +414,98 @@
             });
         }
 
-        // --- API Key Handling ---
-        function loadApiKey() {
-            const storedKey = localStorage.getItem('geminiApiKey');
+        // --- API Key Handling & Validation ---
+        async function validateAndLoadApiKey(key) {
+            if (!key) {
+                await showModal('Peringatan!', 'API Key tidak boleh kosong.');
+                return false;
+            }
+
+            console.log("DEBUG: Validating API Key:", key.substring(0, 5) + "...");
+            // Perform a small, quick test call to validate the API key
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: "Hello" }] }]; // Minimal prompt
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json(); // Attempt to parse JSON error
+                    const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                    await showModal('Validasi Gagal!', `API Key tidak valid: ${errorMessage}.`);
+                    console.error("API Key validation failed:", response.status, errorBody);
+                    return false;
+                }
+                const result = await response.json();
+                if (!result.candidates || result.candidates.length === 0) {
+                     await showModal('Validasi Gagal!', 'API Key valid namun respons tidak sesuai. Coba lagi atau periksa key Anda.');
+                     console.error("API Key valid but unexpected response:", result);
+                     return false;
+                }
+                console.log("DEBUG: API Key validated successfully.");
+                return true;
+            } catch (error) {
+                await showModal('Validasi Gagal!', `Terjadi kesalahan koneksi saat validasi API Key: ${error.message}.`);
+                console.error("Error during API Key validation:", error);
+                return false;
+            }
+        }
+
+        async function loadAndDisplayApiKey() {
+            const storedKey = localStorage.getItem('geminiApiKeyDossier');
             if (storedKey) {
                 API_KEY = storedKey;
-                apiKeyInput.value = storedKey;
-                apiKeySection.classList.add('hidden'); // Hide the input section if key is found
-                mainContent.classList.remove('hidden'); // Show main content
+                apiKeyInput.value = storedKey; // Display the full key
+                const isValid = await validateAndLoadApiKey(API_KEY);
+                if (isValid) {
+                    apiKeySection.classList.add('hidden'); 
+                    mainContent.classList.remove('hidden'); 
+                    console.log("DEBUG: API Key loaded from localStorage and is valid.");
+                } else {
+                    // If stored key is invalid, keep API section visible and main content hidden
+                    apiKeySection.classList.remove('hidden'); 
+                    mainContent.classList.add('hidden'); 
+                    console.log("DEBUG: Stored API Key is invalid. Please re-enter.");
+                    // The validateAndLoadApiKey function already shows a modal for invalid keys
+                }
             } else {
+                apiKeyInput.value = ""; // Ensure input is empty if no key
                 apiKeySection.classList.remove('hidden'); // Ensure API key input is visible
                 mainContent.classList.add('hidden'); // Ensure main content is hidden
+                console.log("DEBUG: No API Key found in localStorage. Please enter it.");
             }
         }
 
         saveApiKeyBtn.addEventListener('click', async () => {
             const key = apiKeyInput.value.trim();
             if (key) {
-                localStorage.setItem('geminiApiKey', key);
-                API_KEY = key;
-                await showModal('Berhasil!', 'API Key berhasil disimpan!');
-                apiKeySection.classList.add('hidden'); // Hide after saving
-                mainContent.classList.remove('hidden'); // Show main content
+                const isValid = await validateAndLoadApiKey(key);
+                if (isValid) {
+                    localStorage.setItem('geminiApiKeyDossier', key);
+                    API_KEY = key;
+                    await showModal('Berhasil!', 'API Key berhasil disimpan dan diverifikasi!');
+                    apiKeySection.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                } else {
+                    // validateAndLoadApiKey already showed a modal for invalid key
+                    // Keep API section visible
+                }
             } else {
                 await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
             }
         });
 
-        // Function to show loading state
+        // Function to show loading state for main generation
         function showLoading() {
             overlayMessage.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
             fullLoadingOverlay.classList.add('active');
             generateButton.disabled = true;
-            randomConceptBtn.disabled = true;
+            randomConceptBtn.disabled = true; // Disable during main gen
             randomNameBtn.disabled = true;
             copyDossierBtn.classList.add('hidden');
             saveDossierBtn.classList.add('hidden');
@@ -474,11 +523,11 @@
             savedDossiersSection.classList.add('hidden'); // Hide saved dossiers section
         }
 
-        // Function to hide loading state
+        // Function to hide loading state for main generation
         function hideLoading() {
             fullLoadingOverlay.classList.remove('active');
             generateButton.disabled = false;
-            randomConceptBtn.disabled = false;
+            randomConceptBtn.disabled = false; // Re-enable
             randomNameBtn.disabled = false;
             copyDossierBtn.classList.remove('hidden');
             saveDossierBtn.classList.remove('hidden');
@@ -488,6 +537,20 @@
             loadDossierListBtn.disabled = false;
             buttonText.textContent = "Buat Dossier!";
             loadingSpinner.classList.add('hidden');
+        }
+
+        // Function to show loading state for random concept generation
+        function showRandomConceptLoading() {
+            randomConceptBtn.disabled = true;
+            randomConceptButtonText.textContent = "Mengacak...";
+            randomConceptLoadingSpinner.classList.remove('hidden');
+        }
+
+        // Function to hide loading state for random concept generation
+        function hideRandomConceptLoading() {
+            randomConceptBtn.disabled = false;
+            randomConceptButtonText.textContent = "Acak Konsep";
+            randomConceptLoadingSpinner.classList.add('hidden');
         }
 
         // Function to format the text from Markdown and apply "redacted" style
@@ -530,6 +593,57 @@
             return fullText;
         }
 
+        // Helper function to generate a random character concept via AI
+        async function generateAiConcept() {
+            showRandomConceptLoading();
+            try {
+                console.log("DEBUG: Generating AI Concept. Current API_KEY:", API_KEY ? API_KEY.substring(0, 5) + "..." : "EMPTY");
+                if (!API_KEY) {
+                    await showModal('Peringatan!', 'API Key tidak ditemukan. Harap masukkan dan simpan API Key Anda.');
+                    return null;
+                }
+                let prompt = `Hasilkan satu konsep karakter fiksi yang unik dan singkat. Contoh: 'penyihir yang ceroboh', 'robot detektif di masa depan', 'prajurit naga terakhir yang mencari kedamaian', 'kucing mata-mata', 'penjelajah waktu yang kikuk', 'koki mantan petarung'. Berikan hanya konsepnya saja, tidak perlu penjelasan lain.`;
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                console.log("DEBUG: generateAiConcept API URL:", apiUrl);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorBody = await response.json(); 
+                    const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                    await showModal('Kesalahan AI!', `Gagal mendapatkan konsep dari AI: ${errorMessage}.`);
+                    console.error("API Response not OK for AI Concept:", response.status, errorBody);
+                    return null;
+                }
+                const result = await response.json();
+                console.log("DEBUG: AI Concept Raw Result:", result);
+
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                    const generatedConcept = result.candidates[0].content.parts[0].text.trim().replace(/"/g, '');
+                    console.log("DEBUG: Generated AI Concept:", generatedConcept);
+                    return generatedConcept;
+                } else {
+                    console.error('AI failed to generate concept (missing candidates/content). Result:', result);
+                    await showModal('Gagal!', 'AI tidak dapat menghasilkan konsep. Coba lagi.');
+                    return null;
+                }
+            } catch (error) {
+                console.error("ERROR in generateAiConcept:", error);
+                if (!document.getElementById('custom-modal').classList.contains('active')) {
+                    await showModal('Kesalahan!', `Terjadi kesalahan saat mendapatkan konsep dari AI: ${error.message}.`);
+                }
+                return null;
+            } finally {
+                hideRandomConceptLoading();
+            }
+        }
+
+
         // Function to generate dossier using Gemini API
         async function generateDossier() {
             if (!API_KEY) {
@@ -571,11 +685,15 @@
 
                 Berikan semua informasi dalam bahasa Indonesia, gunakan format markdown untuk bagian-bagian.
                 `;
+                console.log("DEBUG: generateDossier prompt:", prompt);
+                console.log("DEBUG: generateDossier API_KEY (first 5 chars):", API_KEY ? API_KEY.substring(0, 5) + "..." : "EMPTY");
+
 
                 let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
 
                 const payload = { contents: chatHistory };
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                console.log("DEBUG: generateDossier API URL:", apiUrl);
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -583,7 +701,20 @@
                     body: JSON.stringify(payload)
                 });
 
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Response not OK for Dossier Generation:", response.status, errorBody);
+                    try {
+                        const errorJson = JSON.parse(errorBody);
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorJson.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                    } catch (parseError) {
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${errorBody.substring(0, 100)}...`);
+                    }
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${errorBody}`);
+                }
+
                 const result = await response.json();
+                console.log("DEBUG: Dossier Generation Raw Result:", result);
                 
                 if (result.candidates && result.candidates.length > 0 &&
                     result.candidates[0].content && result.candidates[0].content.parts &&
@@ -609,13 +740,15 @@
                     }
                 } else {
                     await showModal('Gagal!', "Maaf, AI gagal membuat dossier. Coba lagi atau ganti konsep!");
-                    console.error("Unexpected API response structure:", result);
+                    console.error('AI failed to generate dossier (missing candidates/content). Result:', result);
                     initialDossierMessage.classList.remove('hidden');
                 }
             } catch (error) {
-                await showModal('Kesalahan!', "Terjadi kesalahan saat memuat dossier. Periksa koneksi Anda atau API Key Anda mungkin tidak valid.");
-                console.error("Error fetching dossier:", error);
+                console.error("ERROR in generateDossier:", error);
                 initialDossierMessage.classList.remove('hidden');
+                if (!document.getElementById('custom-modal').classList.contains('active')) {
+                    await showModal('Kesalahan!', `Terjadi kesalahan saat memuat dossier: ${error.message}. Periksa koneksi Anda atau API Key Anda mungkin tidak valid.`);
+                }
             } finally {
                 hideLoading();
             }
@@ -745,9 +878,11 @@
         // --- Event Listeners ---
         generateButton.addEventListener('click', generateDossier);
 
-        randomConceptBtn.addEventListener('click', () => {
-            const randomIndex = Math.floor(Math.random() * randomConcepts.length);
-            characterConceptInput.value = randomConcepts[randomIndex];
+        randomConceptBtn.addEventListener('click', async () => {
+            const generatedConcept = await generateAiConcept();
+            if (generatedConcept) {
+                characterConceptInput.value = generatedConcept;
+            }
         });
 
         randomNameBtn.addEventListener('click', () => {
@@ -827,7 +962,7 @@
 
         // Initial load of API Key and check if it's set
         window.onload = () => {
-            loadApiKey();
+            loadAndDisplayApiKey();
         };
     </script>
 </body>

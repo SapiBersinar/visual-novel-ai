@@ -204,7 +204,7 @@
         <!-- API Key Input Section - Always visible initially -->
         <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
             <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Generator Nama Lokasi:</label>
-            <input type="password" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
                 Simpan API Key
             </button>
@@ -360,28 +360,81 @@
             });
         }
 
-        // --- API Key Handling ---
-        function loadApiKey() {
+        // --- API Key Handling & Validation ---
+        async function validateAndLoadApiKey(key) {
+            if (!key) {
+                await showModal('Peringatan!', 'API Key tidak boleh kosong.');
+                return false;
+            }
+
+            console.log("DEBUG: Validating API Key for Loc Gen:", key.substring(0, 5) + "...");
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: "Hello" }] }];
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                    await showModal('Validasi Gagal!', `API Key tidak valid: ${errorMessage}.`);
+                    console.error("API Key validation failed for Loc Gen:", response.status, errorBody);
+                    return false;
+                }
+                const result = await response.json();
+                if (!result.candidates || result.candidates.length === 0) {
+                     await showModal('Validasi Gagal!', 'API Key valid namun respons tidak sesuai. Coba lagi atau periksa key Anda.');
+                     console.error("API Key valid but unexpected response for Loc Gen:", result);
+                     return false;
+                }
+                console.log("DEBUG: API Key for Loc Gen validated successfully.");
+                return true;
+            } catch (error) {
+                await showModal('Validasi Gagal!', `Terjadi kesalahan koneksi saat validasi API Key: ${error.message}.`);
+                console.error("Error during API Key validation for Loc Gen:", error);
+                return false;
+            }
+        }
+
+        async function loadAndDisplayApiKey() {
             const storedKey = localStorage.getItem('geminiApiKeyLocGen');
             if (storedKey) {
                 API_KEY = storedKey;
-                apiKeyInput.value = storedKey;
-                apiKeySection.classList.add('hidden'); // Hide the input section if key is found
-                mainContent.classList.remove('hidden'); // Show main content
+                apiKeyInput.value = storedKey; // Display the full key
+                const isValid = await validateAndLoadApiKey(API_KEY);
+                if (isValid) {
+                    apiKeySection.classList.add('hidden'); 
+                    mainContent.classList.remove('hidden'); 
+                    console.log("DEBUG: API Key for Loc Gen loaded from localStorage and is valid.");
+                } else {
+                    apiKeySection.classList.remove('hidden'); 
+                    mainContent.classList.add('hidden'); 
+                    console.log("DEBUG: Stored API Key for Loc Gen is invalid. Please re-enter.");
+                }
             } else {
-                apiKeySection.classList.remove('hidden'); // Ensure API key input is visible
-                mainContent.classList.add('hidden'); // Ensure main content is hidden
+                apiKeyInput.value = ""; // Ensure input is empty if no key
+                apiKeySection.classList.remove('hidden'); 
+                mainContent.classList.add('hidden'); 
+                console.log("DEBUG: No API Key found in localStorage for Loc Gen. Please enter it.");
             }
         }
 
         saveApiKeyBtn.addEventListener('click', async () => {
             const key = apiKeyInput.value.trim();
             if (key) {
-                localStorage.setItem('geminiApiKeyLocGen', key);
-                API_KEY = key;
-                await showModal('Berhasil!', 'API Key berhasil disimpan!');
-                apiKeySection.classList.add('hidden'); // Hide after saving
-                mainContent.classList.remove('hidden'); // Show main content
+                const isValid = await validateAndLoadApiKey(key);
+                if (isValid) {
+                    localStorage.setItem('geminiApiKeyLocGen', key);
+                    API_KEY = key;
+                    await showModal('Berhasil!', 'API Key berhasil disimpan dan diverifikasi!');
+                    apiKeySection.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                }
             } else {
                 await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
             }
@@ -524,6 +577,9 @@
                 Jika hanya lokasi yang diminta, properti "fiction_date_time" bisa kosong atau tidak ada.
                 Jika hanya tanggal/waktu yang diminta, properti "locations" bisa kosong atau tidak ada (meskipun UI ini selalu meminta jenis lokasi).
                 `;
+                console.log("DEBUG: generateLocationNames prompt:", prompt);
+                console.log("DEBUG: generateLocationNames API_KEY (first 5 chars):", API_KEY ? API_KEY.substring(0, 5) + "..." : "EMPTY");
+
 
                 let chatHistory = [];
                 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
@@ -535,6 +591,7 @@
                     }
                 };
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                console.log("DEBUG: generateLocationNames API URL:", apiUrl);
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -542,12 +599,26 @@
                     body: JSON.stringify(payload)
                 });
 
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Response not OK for Location Name Generation:", response.status, errorBody);
+                    try {
+                        const errorJson = JSON.parse(errorBody);
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorJson.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                    } catch (parseError) {
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${errorBody.substring(0, 100)}...`);
+                    }
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${errorBody}`);
+                }
+
                 const result = await response.json();
+                console.log("DEBUG: Location Name Raw Result:", result);
                 
                 if (result.candidates && result.candidates.length > 0 &&
                     result.candidates[0].content && result.candidates[0].content.parts &&
                     result.candidates[0].content.parts.length > 0) {
                     const jsonResponse = JSON.parse(result.candidates[0].content.parts[0].text);
+                    console.log("DEBUG: Parsed Location Data:", jsonResponse);
                     renderOutput(jsonResponse, namingStyle); 
                 } else {
                     outputSection.innerHTML = `
@@ -555,7 +626,7 @@
                             Maaf, AI gagal membuat nama lokasi atau tanggal/waktu. Pastikan permintaan Anda jelas dan spesifik.
                         </p>
                     `;
-                    console.error("Unexpected API response structure:", result);
+                    console.error("AI failed to generate location names (missing candidates/content). Result:", result);
                 }
             } catch (error) {
                 outputSection.innerHTML = `
@@ -563,7 +634,10 @@
                         Terjadi kesalahan saat memuat. Periksa koneksi atau API Key Anda.
                     </p>
                 `;
-                console.error("Error fetching data:", error);
+                console.error("ERROR fetching data for Location Names:", error);
+                if (!document.getElementById('custom-modal').classList.contains('active')) {
+                    await showModal('Kesalahan!', `Terjadi kesalahan saat membuat nama lokasi: ${error.message}. Pastikan API Key Anda valid.`);
+                }
             } finally {
                 hideLoading();
             }
@@ -691,7 +765,7 @@
         });
 
         // Initial setup on page load
-        window.onload = loadApiKey;
+        window.onload = loadAndDisplayApiKey;
     </script>
 </body>
 </html>
