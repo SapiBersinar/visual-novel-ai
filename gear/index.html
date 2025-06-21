@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Konsep Peralatan - Hanzercopy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fallback font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Mencegah scroll horizontal */
+        }
+        /* Comic-like font */
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Share+Tech+Mono&display=swap');
+        .comic-font {
+            font-family: 'Comic Neue', cursive;
+        }
+        .mono-font {
+            font-family: 'Share Tech Mono', monospace; /* Font ala mesin tik/komputer */
+        }
+        /* Default font for inputs and general readability */
+        .default-font {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Gaya khusus untuk tombol komik */
+        .comic-button {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px black;
+            transition: all 0.2s ease-in-out;
+        }
+        .comic-button:hover {
+            box-shadow: 2px 2px 0px black;
+            transform: translate(4px, 4px);
+        }
+
+        /* Loader spinner */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Full-screen loading overlay */
+        .loading-overlay-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Overlay semi-transparan gelap */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Pastikan di atas semua elemen */
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Izinkan klik untuk melewati saat tidak aktif */
+        }
+        .loading-overlay-full.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 4px solid black;
+            box-shadow: 8px 8px 0px black;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-family: 'Comic Neue', cursive;
+        }
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        /* Styling for the equipment output */
+        #equipment-output-section {
+            background-color: #e0e0e0; /* Light gray background */
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            margin-top: 20px;
+            text-align: left;
+        }
+        #equipment-output-section h3 {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-family: 'Comic Neue', cursive;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+        }
+        #equipment-output-section p {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        #equipment-output-section .detail-section {
+            margin-top: 15px;
+        }
+        #equipment-output-section .detail-section strong {
+            font-family: 'Comic Neue', cursive;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body class="bg-black text-white flex flex-col items-center p-4 min-h-screen">
+    <div class="text-center space-y-6 max-w-4xl w-full p-6 bg-white text-black rounded-lg shadow-xl border-4 border-black mb-6">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold comic-font leading-tight">
+            Generator Konsep Peralatan
+        </h1>
+        <p class="text-lg sm:text-xl default-font">
+            Ciptakan ide untuk senjata, zirah, gadget, dan peralatan unik!
+        </p>
+
+        <!-- API Key Input Section -->
+        <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
+            <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Generator Peralatan:</label>
+            <input type="text" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
+                Simpan API Key
+            </button>
+        </div>
+
+        <!-- Main Content Area - Hidden until API Key is set -->
+        <div id="main-content" class="hidden w-full space-y-6">
+            <div class="w-full flex flex-col sm:flex-row gap-4 items-center">
+                <textarea id="equipment-concept-input" placeholder="Misal: 'Senapan futuristik yang menembakkan plasma', 'Zirah stealth untuk pembunuh bayaran', 'Gantungan kunci yang bisa membuka portal kecil', 'Kendaraan tempur lapis baja untuk medan salju'" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+                
+                <div class="flex flex-col gap-4 w-full sm:w-auto">
+                    <button id="random-concept-btn" class="comic-button bg-gray-700 text-white px-6 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
+                        <span id="random-concept-button-text">Acak Konsep</span>
+                        <div id="random-concept-loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+                    </button>
+                    <button id="generate-equipment-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full sm:w-auto flex items-center justify-center">
+                        <span id="button-text">Buat Peralatan!</span>
+                        <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+                    </button>
+                </div>
+            </div>
+
+            <div id="equipment-output-section" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 mono-font overflow-y-auto mt-6">
+                <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                    Jelaskan konsep peralatan, atau klik "Acak Konsep!" lalu klik "Buat Peralatan!"
+                </p>
+                <!-- Generated equipment details and image prompt will appear here -->
+                <div id="equipment-description" class="mb-4 text-base leading-relaxed"></div>
+                <div id="image-prompt-display" class="border-t-2 border-dashed border-gray-400 pt-4 mt-4 hidden">
+                    <h3 class="text-xl font-bold mb-2 comic-font">Prompt Gambar AI:</h3>
+                    <p class="text-sm italic" id="generated-image-prompt"></p>
+                    <button id="copy-image-prompt-btn" class="comic-button bg-blue-500 text-white text-sm px-3 py-1 rounded-full font-bold mt-2">
+                        Salin Prompt Gambar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+                <button id="copy-equipment-desc-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold default-font hidden">
+                    Salin Deskripsi Peralatan
+                </button>
+                <button id="clear-output-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold default-font hidden">
+                    Bersihkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full-screen loading overlay -->
+    <div id="full-loading-overlay" class="loading-overlay-full">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-white h-20 w-20 mb-4"></div>
+        <span id="overlay-message" class="comic-font">Merancang peralatan...</span>
+    </div>
+
+    <!-- Custom Alert/Confirm Modal -->
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" class="comic-font"></h3>
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button id="modal-confirm-btn" class="comic-button bg-blue-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">OK</button>
+                <button id="modal-cancel-btn" class="comic-button bg-red-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Key will be loaded from localStorage, default is blank.
+        let API_KEY = localStorage.getItem('geminiApiKeyGearGen') || ""; 
+
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const apiKeySection = document.getElementById('api-key-section');
+        const mainContent = document.getElementById('main-content'); // Main content container
+
+        const equipmentConceptInput = document.getElementById('equipment-concept-input');
+        const generateEquipmentBtn = document.getElementById('generate-equipment-btn');
+        const randomConceptBtn = document.getElementById('random-concept-btn'); // New element
+        const randomConceptButtonText = document.getElementById('random-concept-button-text'); // New element
+        const randomConceptLoadingSpinner = document.getElementById('random-concept-loading-spinner'); // New element
+        const copyEquipmentDescBtn = document.getElementById('copy-equipment-desc-btn');
+        const copyImagePromptBtn = document.getElementById('copy-image-prompt-btn');
+        const clearOutputBtn = document.getElementById('clear-output-btn');
+        
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const equipmentOutputSection = document.getElementById('equipment-output-section');
+        const initialMessage = document.getElementById('initial-message');
+        const equipmentDescriptionDiv = document.getElementById('equipment-description');
+        const imagePromptDisplayDiv = document.getElementById('image-prompt-display');
+        const generatedImagePromptSpan = document.getElementById('generated-image-prompt');
+        const fullLoadingOverlay = document.getElementById('full-loading-overlay');
+        const overlayMessage = document.getElementById('overlay-message');
+
+        // Modal elements
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+        const loadingMessages = [
+            "Menganalisis spesifikasi...",
+            "Mempertimbangkan fungsi...",
+            "Merancang estetika...",
+            "Menentukan bahan dan kekuatan...",
+            "Menciptakan prompt visualisasi..."
+        ];
+
+        // --- Custom Modal Functions (replaces alert/confirm) ---
+        function showModal(title, message, type = 'alert') {
+            return new Promise((resolve) => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                customModal.classList.add('active');
+
+                modalConfirmBtn.classList.remove('hidden');
+                modalConfirmBtn.onclick = () => {
+                    customModal.classList.remove('active');
+                    resolve(true);
+                };
+
+                if (type === 'confirm') {
+                    modalCancelBtn.classList.remove('hidden');
+                    modalCancelBtn.onclick = () => {
+                        customModal.classList.remove('active');
+                        resolve(false);
+                    };
+                } else {
+                    modalCancelBtn.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- API Key Handling & Validation ---
+        async function validateAndLoadApiKey(key) {
+            if (!key) {
+                await showModal('Peringatan!', 'API Key tidak boleh kosong.');
+                return false;
+            }
+
+            console.log("DEBUG: Validating API Key for Gear Gen:", key.substring(0, 5) + "...");
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: "Hello" }] }]; // Minimal prompt
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json(); 
+                    const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                    await showModal('Validasi Gagal!', `API Key tidak valid: ${errorMessage}.`);
+                    console.error("API Key validation failed for Gear Gen:", response.status, errorBody);
+                    return false;
+                }
+                const result = await response.json();
+                if (!result.candidates || result.candidates.length === 0) {
+                     await showModal('Validasi Gagal!', 'API Key valid namun respons tidak sesuai. Coba lagi atau periksa key Anda.');
+                     console.error("API Key valid but unexpected response for Gear Gen:", result);
+                     return false;
+                }
+                console.log("DEBUG: API Key for Gear Gen validated successfully.");
+                return true;
+            } catch (error) {
+                await showModal('Validasi Gagal!', `Terjadi kesalahan koneksi saat validasi API Key: ${error.message}.`);
+                console.error("Error during API Key validation for Gear Gen:", error);
+                return false;
+            }
+        }
+
+        async function loadAndDisplayApiKey() {
+            const storedKey = localStorage.getItem('geminiApiKeyGearGen');
+            if (storedKey) {
+                API_KEY = storedKey;
+                apiKeyInput.value = storedKey; // Display the full key
+                const isValid = await validateAndLoadApiKey(API_KEY);
+                if (isValid) {
+                    apiKeySection.classList.add('hidden'); 
+                    mainContent.classList.remove('hidden'); 
+                    console.log("DEBUG: API Key for Gear Gen loaded from localStorage and is valid.");
+                } else {
+                    apiKeySection.classList.remove('hidden'); 
+                    mainContent.classList.add('hidden'); 
+                    console.log("DEBUG: Stored API Key for Gear Gen is invalid. Please re-enter.");
+                }
+            } else {
+                apiKeyInput.value = ""; // Ensure input is empty if no key
+                apiKeySection.classList.remove('hidden'); 
+                mainContent.classList.add('hidden'); 
+                console.log("DEBUG: No API Key found in localStorage for Gear Gen. Please enter it.");
+            }
+        }
+
+        saveApiKeyBtn.addEventListener('click', async () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                const isValid = await validateAndLoadApiKey(key);
+                if (isValid) {
+                    localStorage.setItem('geminiApiKeyGearGen', key);
+                    API_KEY = key;
+                    await showModal('Berhasil!', 'API Key berhasil disimpan dan diverifikasi!');
+                    apiKeySection.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                } else {
+                    // validateAndLoadApiKey already showed a modal for invalid key
+                    // Keep API section visible
+                }
+            } else {
+                await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
+            }
+        });
+
+        // Function to show loading state for main generation
+        function showLoading() {
+            overlayMessage.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            fullLoadingOverlay.classList.add('active');
+            generateEquipmentBtn.disabled = true;
+            randomConceptBtn.disabled = true; // Disable during main gen
+            equipmentConceptInput.disabled = true;
+            copyEquipmentDescBtn.classList.add('hidden');
+            copyImagePromptBtn.classList.add('hidden');
+            clearOutputBtn.classList.add('hidden');
+            buttonText.textContent = "Membuat...";
+            loadingSpinner.classList.remove('hidden');
+            equipmentDescriptionDiv.innerHTML = ''; // Clear previous content
+            generatedImagePromptSpan.textContent = '';
+            imagePromptDisplayDiv.classList.add('hidden');
+            initialMessage.classList.add('hidden'); // Hide initial message
+        }
+
+        // Function to hide loading state for main generation
+        function hideLoading() {
+            fullLoadingOverlay.classList.remove('active');
+            generateEquipmentBtn.disabled = false;
+            randomConceptBtn.disabled = false; // Re-enable
+            equipmentConceptInput.disabled = false;
+            copyEquipmentDescBtn.classList.remove('hidden');
+            clearOutputBtn.classList.remove('hidden');
+            buttonText.textContent = "Buat Peralatan!";
+            loadingSpinner.classList.add('hidden');
+        }
+
+        // Function to show loading state for random concept generation
+        function showRandomConceptLoading() {
+            randomConceptBtn.disabled = true;
+            randomConceptButtonText.textContent = "Mengacak...";
+            randomConceptLoadingSpinner.classList.remove('hidden');
+        }
+
+        // Function to hide loading state for random concept generation
+        function hideRandomConceptLoading() {
+            randomConceptBtn.disabled = false;
+            randomConceptButtonText.textContent = "Acak Konsep";
+            randomConceptLoadingSpinner.classList.add('hidden');
+        }
+
+        // Function to copy text to clipboard
+        async function copyToClipboard(text, alertMessage = 'Teks berhasil disalin ke clipboard!') {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.top = 0;
+            textarea.style.left = 0;
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.opacity = 0;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                await showModal('Berhasil!', alertMessage);
+            } catch (err) {
+                console.error('Gagal menyalin teks: ', err);
+                await showModal('Gagal!', 'Gagal menyalin. Silakan salin manual.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // Helper function to generate a random gear concept via AI
+        async function generateAiConcept() {
+            showRandomConceptLoading();
+            try {
+                console.log("DEBUG: Generating AI Gear Concept. Current API_KEY:", API_KEY ? API_KEY.substring(0, 5) + "..." : "EMPTY");
+                if (!API_KEY) {
+                    await showModal('Peringatan!', 'API Key tidak ditemukan. Harap masukkan dan simpan API Key Anda.');
+                    return null;
+                }
+                let prompt = `Hasilkan satu konsep peralatan fiksi (non-magis atau teknologi) yang unik dan singkat dalam bahasa Indonesia. Contoh: 'Senapan pulsa futuristik', 'Perisai energi lipat', 'Sepatu bot gravitasi', 'Drone pengintai mini', 'Sarung tangan pemanjat dinding', 'Borgol anti-gravitasi'. Berikan hanya konsepnya saja, tidak perlu penjelasan lain.`;
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                console.log("DEBUG: generateAiConcept API URL:", apiUrl);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorBody = await response.json(); 
+                    const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                    await showModal('Kesalahan AI!', `Gagal mendapatkan konsep dari AI: ${errorMessage}.`);
+                    console.error("API Response not OK for AI Gear Concept:", response.status, errorBody);
+                    return null;
+                }
+                const result = await response.json();
+                console.log("DEBUG: AI Gear Concept Raw Result:", result);
+
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                    const generatedConcept = result.candidates[0].content.parts[0].text.trim().replace(/"/g, '');
+                    console.log("DEBUG: Generated AI Gear Concept:", generatedConcept);
+                    return generatedConcept;
+                } else {
+                    console.error('AI failed to generate concept (missing candidates/content). Result:', result);
+                    await showModal('Gagal!', 'AI tidak dapat menghasilkan konsep. Coba lagi.');
+                    return null;
+                }
+            } catch (error) {
+                console.error("ERROR in generateAiConcept:", error);
+                if (!document.getElementById('custom-modal').classList.contains('active')) {
+                    await showModal('Kesalahan!', `Terjadi kesalahan saat mendapatkan konsep dari AI: ${error.message}.`);
+                }
+                return null;
+            } finally {
+                hideRandomConceptLoading();
+            }
+        }
+
+        // Core Function: Generate Equipment Description and Image Prompt
+        async function generateEquipment() {
+            if (!API_KEY) {
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                mainContent.classList.add('hidden'); // Hide main content
+                return;
+            }
+
+            const equipmentConcept = equipmentConceptInput.value.trim();
+            if (!equipmentConcept) {
+                await showModal('Peringatan!', 'Silakan masukkan konsep peralatan Anda.');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                let prompt = `Sebagai seorang desainer peralatan fiksi, buatkan deskripsi mendalam untuk item peralatan non-magis atau teknologi berdasarkan konsep berikut: "${equipmentConcept}".
+                
+                Deskripsi harus mencakup:
+                -   Nama Peralatan (English & Indonesian, jika relevan).
+                -   Tipe Peralatan: (contoh: Senjata Jarak Jauh, Zirah Ringan, Gadget, Kendaraan).
+                -   Fungsi Utama: Apa yang bisa dilakukan peralatan ini.
+                -   Fitur Khusus: Kemampuan unik atau teknologi inovatif.
+                -   Penampilan Fisik: Deskripsi visual.
+                -   Penggunaan dalam Cerita: Bagaimana peralatan ini bisa memengaruhi plot atau karakter.
+
+                Di akhir deskripsi, berikan juga sebuah prompt yang sangat detail dan spesifik untuk AI Image Generator (seperti Imagen) untuk membuat gambar peralatan ini. Prompt gambar ini harus fokus pada gaya visual concept art, sci-fi, atau fantasy equipment.
+
+                Format respons Anda sebagai JSON object tunggal dengan properti berikut:
+                {
+                  "equipmentNameEnglish": "STRING", // Optional: English name if applicable
+                  "equipmentNameIndonesian": "STRING", // Optional: Indonesian name if applicable
+                  "equipmentType": "STRING",
+                  "mainFunction": "STRING",
+                  "specialFeatures": "STRING",
+                  "physicalAppearance": "STRING",
+                  "storyUsage": "STRING",
+                  "imagePrompt": "STRING" // Prompt gambar AI dalam Bahasa Inggris
+                }
+                `;
+                console.log("DEBUG: generateEquipment prompt:", prompt);
+                console.log("DEBUG: generateEquipment API_KEY (first 5 chars):", API_KEY ? API_KEY.substring(0, 5) + "..." : "EMPTY");
+
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { 
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "equipmentNameEnglish": { "type": "STRING" },
+                                "equipmentNameIndonesian": { "type": "STRING" },
+                                "equipmentType": { "type": "STRING" },
+                                "mainFunction": { "type": "STRING" },
+                                "specialFeatures": { "type": "STRING" },
+                                "physicalAppearance": { "type": "STRING" },
+                                "storyUsage": { "type": "STRING" },
+                                "imagePrompt": { "type": "STRING" }
+                            },
+                            "required": ["equipmentType", "mainFunction", "specialFeatures", "physicalAppearance", "storyUsage", "imagePrompt"] 
+                        }
+                    }
+                };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                console.log("DEBUG: generateEquipment API URL:", apiUrl);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Response not OK for Equipment Generation:", response.status, errorBody);
+                    try {
+                        const errorJson = JSON.parse(errorBody);
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorJson.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                    } catch (parseError) {
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${errorBody.substring(0, 100)}...`);
+                    }
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${errorBody}`);
+                }
+
+                const result = await response.json();
+                console.log("DEBUG: Equipment Generation Raw Result:", result);
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const equipmentData = JSON.parse(result.candidates[0].content.parts[0].text);
+                    console.log("DEBUG: Parsed Equipment Data:", equipmentData);
+
+                    let nameDisplay = "";
+                    if (equipmentData.equipmentNameEnglish && equipmentData.equipmentNameIndonesian) {
+                        nameDisplay = `<h2 class="text-3xl font-bold mb-4 text-center comic-font">${equipmentData.equipmentNameEnglish} (${equipmentData.equipmentNameIndonesian})</h2>`;
+                    } else if (equipmentData.equipmentNameIndonesian) {
+                        nameDisplay = `<h2 class="text-3xl font-bold mb-4 text-center comic-font">${equipmentData.equipmentNameIndonesian}</h2>`;
+                    } else if (equipmentData.equipmentNameEnglish) {
+                        nameDisplay = `<h2 class="text-3xl font-bold mb-4 text-center comic-font">${equipmentData.equipmentNameEnglish}</h2>`;
+                    } else {
+                        nameDisplay = `<h2 class="text-3xl font-bold mb-4 text-center comic-font">Peralatan Fiksi</h2>`; // Fallback name
+                    }
+                    
+                    let htmlContent = nameDisplay;
+                    htmlContent += `<p class="default-font"><strong>Tipe:</strong> ${equipmentData.equipmentType}</p>`;
+                    htmlContent += `<p class="default-font"><strong>Fungsi Utama:</strong> ${equipmentData.mainFunction}</p>`;
+                    htmlContent += `<p class="default-font"><strong>Fitur Khusus:</strong> ${equipmentData.specialFeatures}</p>`;
+                    htmlContent += `<p class="default-font"><strong>Penampilan Fisik:</strong> ${equipmentData.physicalAppearance}</p>`;
+                    htmlContent += `<p class="default-font"><strong>Penggunaan dalam Cerita:</strong> ${equipmentData.storyUsage}</p>`;
+                    
+                    equipmentDescriptionDiv.innerHTML = htmlContent;
+
+                    generatedImagePromptSpan.textContent = equipmentData.imagePrompt;
+                    imagePromptDisplayDiv.classList.remove('hidden');
+                    copyImagePromptBtn.classList.remove('hidden'); // Show copy button for image prompt
+
+                } else {
+                    equipmentOutputSection.innerHTML = `
+                        <p class="text-center text-red-700 comic-font text-lg pt-10">
+                            Maaf, AI gagal membuat deskripsi peralatan. Pastikan konsep Anda jelas dan spesifik.
+                        </p>
+                    `;
+                    console.error("AI failed to generate equipment description (missing candidates/content). Result:", result);
+                }
+            } catch (error) {
+                equipmentOutputSection.innerHTML = `
+                    <p class="text-center text-red-700 comic-font text-lg pt-10">
+                        Terjadi kesalahan saat memuat deskripsi peralatan. Periksa koneksi Anda atau API Key Anda.
+                    </p>
+                `;
+                console.error("ERROR fetching equipment data:", error);
+                if (!document.getElementById('custom-modal').classList.contains('active')) {
+                    await showModal('Kesalahan!', `Terjadi kesalahan saat membuat peralatan: ${error.message}. Pastikan API Key Anda valid.`);
+                }
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // --- Event Listeners ---
+        generateEquipmentBtn.addEventListener('click', generateEquipment);
+        randomConceptBtn.addEventListener('click', async () => { // New event listener for random concept
+            const generatedConcept = await generateAiConcept();
+            if (generatedConcept) {
+                equipmentConceptInput.value = generatedConcept;
+            }
+        });
+
+        copyEquipmentDescBtn.addEventListener('click', async () => {
+            const textToCopy = equipmentDescriptionDiv.innerText;
+            if (textToCopy) {
+                await copyToClipboard(textToCopy, 'Deskripsi peralatan berhasil disalin!');
+            } else {
+                await showModal('Peringatan!', 'Tidak ada deskripsi peralatan untuk disalin.');
+            }
+        });
+
+        copyImagePromptBtn.addEventListener('click', async () => {
+            const textToCopy = generatedImagePromptSpan.textContent;
+            if (textToCopy) {
+                await copyToClipboard(textToCopy, 'Prompt gambar berhasil disalin!');
+            } else {
+                await showModal('Peringatan!', 'Tidak ada prompt gambar untuk disalin.');
+            }
+        });
+
+        clearOutputBtn.addEventListener('click', async () => {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus deskripsi peralatan dan prompt yang ditampilkan?', 'confirm');
+            if (confirmed) {
+                equipmentConceptInput.value = '';
+                equipmentDescriptionDiv.innerHTML = '';
+                generatedImagePromptSpan.textContent = '';
+                imagePromptDisplayDiv.classList.add('hidden');
+                initialMessage.classList.remove('hidden');
+                copyEquipmentDescBtn.classList.add('hidden');
+                clearOutputBtn.classList.add('hidden');
+            }
+        });
+
+        // Initial setup on page load
+        window.onload = loadAndDisplayApiKey;
+    </script>
+</body>
+</html>
+
