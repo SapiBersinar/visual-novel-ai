@@ -1,12 +1,13 @@
 // --- API Key Handling ---
-let API_KEY = ""; // This will be loaded from localStorage or set by user
+let API_KEY = ""; // This will be set by user manually on each session
 
 // --- DOM Elements ---
 const apiKeyScreen = document.getElementById('api-key-screen');
 const apiKeyInput = document.getElementById('api-key-input');
 const saveApiKeyBtn = document.getElementById('save-api-key-btn');
-const apiKeyLoadingIndicator = document.getElementById('api-key-loading-indicator'); // New loading indicator
+const apiKeyLoadingIndicator = document.getElementById('api-key-loading-indicator');
 const apiKeyLoadingText = apiKeyLoadingIndicator.querySelector('span');
+// Removed clearApiKeyBtn as key is not persisted
 
 
 const mainScreen = document.getElementById('main-screen');
@@ -71,10 +72,9 @@ const startGameBtn = document.getElementById('start-game-btn');
 const backFromSummaryBtn = document.getElementById('back-from-summary-btn');
 
 const gameScreen = document.getElementById('game-screen');
-const gameContentWrapper = document.getElementById('game-content-wrapper'); // Added for controlling main game content visibility
 const gameLoadingOverlay = document.getElementById('game-loading-overlay');
 const gameLoadingAdditionalText = document.getElementById('game-loading-additional-text');
-const gamePlayScreen = document.getElementById('game-play-screen');
+const gamePlayScreen = document.getElementById('game-play-screen'); // This contains all visible game content
 const prologContentDisplay = document.getElementById('prolog-content-display');
 const chapterContentDisplay = document.getElementById('chapter-content-display');
 const dynamicSystemsDisplay = document.getElementById('dynamic-systems-display');
@@ -149,11 +149,11 @@ function setMainButtonsEnabled(enabled) {
 
 // --- API Key Management (Modified: No localStorage, always manual input) ---
 function getApiKey() {
-    return API_KEY; // Always return the global variable, which will be empty on refresh
+    return API_KEY; // Always return the global variable, which will be empty on refresh until manually entered
 }
 
 function saveApiKey(key) {
-    API_KEY = key; // Just update the global API_KEY variable
+    API_KEY = key; // Just update the global API_KEY variable for the current session
 }
 
 // --- Theme Toggling ---
@@ -229,7 +229,7 @@ saveApiKeyBtn.addEventListener('click', async () => {
         const response = await fetch(validationUrl);
         if (response.ok) {
             // API key is valid
-            API_KEY = key; // Set global API_KEY
+            API_KEY = key; // Set global API_KEY for the current session
             showScreen('main-screen');
             setMainButtonsEnabled(true); // Enable main buttons now
         } else {
@@ -453,12 +453,12 @@ function updateLanguageText() {
                 case 'german': option.textContent = "German Style Name"; break;
             }
         });
-        generateCharactersBtn.textContent = "Generate Characters";
-        backToStorySelectBtn.textContent = "Back to Story Selection";
-        loadingCharsText.textContent = "Creating your characters...";
-        loadingAdditionalTextChars.textContent = "Please wait, AI is processing.";
-        mcSelectionHeading.textContent = "Select Main Character (MC):";
-        continueToGameBtn.textContent = "Continue Story";
+        generateCharactersBtn.textContent = "Generate Karakter";
+        backToStorySelectBtn.textContent = "Kembali ke Pemilihan Cerita";
+        loadingCharsText.textContent = "Menciptakan karakter Anda...";
+        loadingAdditionalTextChars.textContent = "Mohon tunggu sebentar, AI sedang memproses.";
+        mcSelectionHeading.textContent = "Pilih Karakter Utama (MC):";
+        continueToGameBtn.textContent = "Lanjutkan Cerita";
         regenerateCharactersBtn.textContent = "Find Other Characters";
 
         summaryScreen.querySelector('h1').textContent = "Your Story Summary";
@@ -476,13 +476,6 @@ function updateLanguageText() {
         gameOverScreen.querySelector('h1').textContent = "💀 GAME OVER 💀";
         retryGameBtn.textContent = "Retry";
         backToMainMenuBtn.textContent = "Back to Main Menu";
-
-        apiKeyScreen.querySelector('h1').textContent = "Enter Your Gemini API Key";
-        apiKeyScreen.querySelector('p').innerHTML = `To use AI features, you need a Gemini API key. You can get one here: <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">aistudio.google.com/app/apikey</a>`;
-        apiKeyInput.placeholder = "Enter Your Gemini API Key";
-        saveApiKeyBtn.textContent = "Save & Validate API Key";
-        apiKeyScreen.querySelector('.text-xs').textContent = "Note: The API key will not be stored in your browser for this session.";
-        apiKeyLoadingText.textContent = "Validating API key...";
     }
     updateThemeToggleButtonText();
 }
@@ -682,6 +675,7 @@ themeToggleButton.addEventListener('click', toggleTheme);
 
 async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtElement, loadingAdditionalElement = null, buttonToDisable) {
     if (!API_KEY) {
+        // This check should ideally not be hit if the API key validation works correctly on entry
         showMessageBox(selectedLanguage === 'id' ? 'Kunci API Hilang' : 'API Key Missing', selectedLanguage === 'id' ? 'Mohon masukkan kunci API Gemini Anda terlebih dahulu.' : 'Please enter your Gemini API key first.');
         return null;
     }
@@ -807,7 +801,7 @@ async function generateStoryContent() {
                     "type": "ARRAY",
                     "items": { "type": "STRING" }
                 },
-                "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] }, // Removed "18+"
+                "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] },
                 "initialCharacterMentions": {
                     "type": "ARRAY",
                     "items": { "type": "STRING" },
@@ -828,7 +822,7 @@ async function generateStoryContent() {
     - A concise and intriguing story description (focus on premise, conflict, or theme). Character names and place names CAN be included in the description if relevant.
     - A list of relevant genres, including "${selectedGenre}".
     - A list of relevant subgenres.
-    - An appropriate content rating from these options: "SU", "PG-13", "16+", "21+".
+    - An appropriate content rating from these options: "SU", "PG-13", "16+", "18+", "21+".
     - A list of any specific character names mentioned in the description (e.g., ["Lintang", "Budi"]). If no specific names, return an empty array.
     - A list of any specific geographical place names (cities, regions, countries) explicitly mentioned in the story description (e.g., ["Jawa Timur", "Desa Sukorame"]). If no specific place names, return an empty array.
 
@@ -836,13 +830,14 @@ async function generateStoryContent() {
     - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
     - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
     - 16+: Contains mature themes, moderate violence, strong language, and/or suggestive themes.
+    - 18+: Contains mature themes, stronger violence, harsh language, and/or **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
     - 21+: Contains explicit violence, strong language, and mature themes (excluding explicit sexual content).
 
     Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse) is STRICTLY FORBIDDEN for ALL ratings.
     Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
-    Violence and harsh language are permitted only for ratings 16+ and 21+.
+    Violence and harsh language are permitted only for ratings 16+, 18+ and 21+.
 
-    Ensure the output is in JSON format according to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. Strictly avoid using the names "Arya" and "Anya". (Random seed: ${Math.random()})`;
+    Ensure the output is in JSON format accordings to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. Strictly avoid using the names "Arya" and "Anya". (Random seed: ${Math.random()})`;
 
 
     if (selectedSubgenre && selectedSubgenre !== (selectedLanguage === 'id' ? 'Pilih Subgenre' : 'Select Subgenre')) {
@@ -1076,7 +1071,7 @@ async function generateCharacters() {
             prompt += ` Character names MUST sound like authentic Celtic names (e.g., Aoife, Cormac, Deirdre, Eilidh, Ronan, Siobhan, Ciaran, Niamh, Finn, Brigid). Strictly use Celtic-sounding names.`;
             break;
         case 'norse':
-            prompt += ` Character names MUST sound like authentic Norse names (e.g., Bjorn, Freya, Ragnar, Astrid, Erik, Ingrid, Leif, Sigrid, Gunnar, Thora, Freyr). Strictly use Norse-sounding names.`;
+            prompt += ` Character names MUST sound like authentic Norse names (e.g., Bjorn, Freya, Ragnar, Astrid, Erik, Ingrid, Leif, Sigrid, Gunnar, Thora). Strictly use Norse-sounding names.`;
             break;
         case 'ancient_egyptian':
             prompt += ` Character names MUST sound like authentic Ancient Egyptian names (e.g., Nefertari, Ramses, Imhotep, Cleopatra, Akhenaten, Hatshepsut, Thutmose, Isis, Osiris, Anubis). Strictly use Ancient Egyptian-sounding names.`;
@@ -1160,9 +1155,9 @@ function addCharacterCardEventListener(charCard, charData) {
 // --- Game Play Functions ---
 async function startGame() {
     showScreen('game-screen');
-    // Sembunyikan konten game wrapper dan tampilkan overlay loading
-    gameContentWrapper.style.display = 'none'; 
-    gameLoadingOverlay.style.display = 'flex'; 
+    // Sembunyikan konten game utama dan tampilkan loading overlay
+    gamePlayScreen.style.display = 'none';
+    gameLoadingOverlay.style.display = 'flex';
 
     await generatePrologue();
 }
@@ -1187,7 +1182,7 @@ async function generatePrologue() {
                 "required": ["trustSystem", "deathTrigger", "flagAwal", "pathTracker", "lockedPaths", "notes"]
             },
             "genreDetails": { "type": "STRING", "description": "Example: 😇 Genre, Romantis, Bodyguard Romance" },
-            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] }
+            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] }
         },
         "required": ["prologueTitle", "prologueText", "prologueQuote", "initialSystems", "genreDetails", "rating"]
     };
@@ -1231,8 +1226,8 @@ async function generatePrologue() {
     Rating Considerations:
     - Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse): STRICTLY FORBIDDEN.
     - Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
-    - Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+ and 21+. For SU and PG-13, these themes must be absent or very mild/implied.
-    - For 21+ rating: Allows stronger violence and harsh language than 16+, and any non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail).
+    - Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+ and 21+. For SU and PG-13, these themes must be absent or very mild/implied.
+    - For 18+ rating: Allows stronger violence and harsh language than 16+, and **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
     `;
 
     const prologData = await callGeminiAPI(
@@ -1246,9 +1241,9 @@ async function generatePrologue() {
 
     if (prologData) {
         displayPrologue(prologData);
-        // Setelah prolog dimuat, sembunyikan loading overlay dan tampilkan konten
-        gameLoadingOverlay.style.display = 'none'; 
-        gameContentWrapper.style.display = 'flex'; 
+        // Sembunyikan loading overlay dan tampilkan konten gamePlayScreen
+        gameLoadingOverlay.style.display = 'none';
+        gamePlayScreen.style.display = 'flex';
         gamePlayScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
         showMessageBox(selectedLanguage === 'id' ? 'Kesalahan Prolog' : 'Prologue Error', selectedLanguage === 'id' ? 'Tidak dapat menghasilkan prolog. Coba lagi.' : 'Could not generate prologue. Please try again.');
@@ -1281,22 +1276,22 @@ function displayPrologue(prologData) {
     renderDynamicSystems(prologData.initialSystems, true);
 
     choiceContainer.innerHTML = '';
-    startRealStoryBtn.style.display = 'block';
+    startRealStoryBtn.style.display = 'block'; // Tampilkan tombol ini hanya setelah prolog dimuat
 }
 
 async function startChapter1() {
     gameProgress.currentChapter = 1;
     gameProgress.currentScene = 1;
 
-    // Sembunyikan prologue dan tampilkan loading overlay
-    prologContentDisplay.style.display = 'none'; // Sembunyikan prologue
-    gameContentWrapper.style.display = 'none'; // Sembunyikan konten game wrapper
-    gameLoadingOverlay.style.display = 'flex'; // Tampilkan loading overlay
-    
-    await generateChapter(gameProgress.currentChapter);
-
-    // Sembunyikan tombol "Mulai ke cerita sebenarnya" setelah digunakan
+    // Sembunyikan prologue dan tombol "Mulai ke cerita sebenarnya"
+    prologContentDisplay.style.display = 'none';
     startRealStoryBtn.style.display = 'none';
+    
+    // Sembunyikan gamePlayScreen dan tampilkan loading overlay
+    gamePlayScreen.style.display = 'none';
+    gameLoadingOverlay.style.display = 'flex';
+
+    await generateChapter(gameProgress.currentChapter);
 }
 
 async function generateChapter(chapterNum, previousChoiceText = null) {
@@ -1379,7 +1374,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
                     "lockedPathsInfo": { "type": "STRING" }
                 }
             },
-            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] }
+            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] }
         },
         "required": ["chapterTitle", "chapterMeta", "chapterContent", "choices", "consequenceNote", "rating"]
     };
@@ -1444,7 +1439,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
             - Possible values for moral, honesty, empathy: "Tinggi", "Netral", "Rendah".
             - Possible values for style: "Observasi", "Agresif", "Diplomatik", "Manipulatif", "Kritis", "Impulsif".
             - If a choice leans towards kindness, 'empathy' might become "Tinggi". If a choice is deceptive, 'honesty' might become "Rendah" and 'style' "Manipulatif". A decisive, action-oriented choice might make 'style' "Agresif". If a choice has no significant moral/stylistic implication, keep them "Netral" or "Observasi" or based on their current state. Only include the properties that *change*.
-    - "rating": The determined rating for the chapter content based on the story's overall rating. This must be one of "SU", "PG-13", "16+", "21+".
+    - "rating": The determined rating for the chapter content based on the story's overall rating. This must be one of "SU", "PG-13", "16+", "18+", "21+".
 
     Crucially, given the character naming style is "${selectedNameStyle}", ensure that any place names (cities, regions, provinces, villages, landmarks) mentioned in the chapter narrative or dialogue are *culturally appropriate* for that style. If the original story description or previous chapters contained specific place names that do not match this style, *replace them with culturally appropriate equivalents* (e.g., "Jawa Timur" becomes "Provinsi Shingyei" for "chinese" style). If no clear equivalent, use a generic but culturally fitting term (e.g., "desa di Tiongkok", "kota di Jepang").
 
@@ -1484,10 +1479,11 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
     - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
     - 16+: Contains mature themes, moderate violence, strong language, and/or suggestive themes.
+    - 18+: Contains mature themes, stronger violence, harsh language, and/or **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
     - 21+: Contains explicit violence, strong language, and mature themes (excluding explicit sexual content).
     Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse): STRICTLY FORBIDDEN.
     Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
-    Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+ and 21+.
+    Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+, and 21+.
     `;
 
     const chapterData = await callGeminiAPI(
@@ -1501,10 +1497,10 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
 
     if (chapterData) {
         renderGameContent(chapterData);
-        gameLoadingOverlay.style.display = 'none'; // Hide loading overlay
-        gameContentWrapper.style.display = 'flex'; // Show game content
-        prologContentDisplay.style.display = 'none'; // Ensure prologue is hidden
-        chapterContentDisplay.style.display = 'block'; // Ensure chapter content is shown
+        gameLoadingOverlay.style.display = 'none'; // Sembunyikan loading overlay
+        prologContentDisplay.style.display = 'none'; // Pastikan prolog disembunyikan
+        chapterContentDisplay.style.display = 'block'; // Tampilkan konten bab
+        gamePlayScreen.style.display = 'flex'; // Tampilkan gamePlayScreen
         gamePlayScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
         showMessageBox(selectedLanguage === 'id' ? 'Kesalahan Bab' : 'Chapter Error', selectedLanguage === 'id' ? 'Tidak dapat menghasilkan bab. Coba lagi.' : 'Could not generate chapter. Please try again.');
@@ -1759,7 +1755,7 @@ async function handleChoice(choice) {
     gameProgress.currentScene++;
 
     // Sembunyikan semua konten game dan tampilkan overlay loading
-    gameContentWrapper.style.display = 'none';
+    gamePlayScreen.style.display = 'none';
     gameLoadingOverlay.style.display = 'flex';
 
     await generateChapter(gameProgress.currentChapter, choice.text);
@@ -1767,9 +1763,9 @@ async function handleChoice(choice) {
 
 // --- Initialization ---
 window.onload = () => {
-    // No localStorage check here, always show API key screen first
+    // Selalu tampilkan layar input API Key saat dimuat
     showScreen('api-key-screen');
-    setMainButtonsEnabled(false); // Initially disable main buttons
+    setMainButtonsEnabled(false); // Nonaktifkan tombol utama sampai API Key divalidasi
     updateLanguageText();
     applyStoredTheme();
 };

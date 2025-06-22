@@ -512,31 +512,6 @@ textarea::placeholder {
     }
 }
 
-/* Untuk mengaburkan konten di bawah overlay loading */
-.blurred-content {
-    filter: blur(5px);
-    transition: filter 0.3s ease-in-out;
-}
-
-/* Pastikan overlay loading game menutupi semuanya */
-#game-loading-overlay {
-    background-color: var(--bg-color); /* Gunakan warna latar belakang tema untuk penutup yang bersih */
-    position: fixed;
-    inset: 0;
-    display: flex; /* Selalu flex untuk pemusatan */
-    align-items: center;
-    justify-content: center;
-    z-index: 50; /* Pastikan di atas konten game lainnya */
-}
-
-/* Sesuaikan game-play-screen untuk memastikan tidak diposisikan secara absolut dengan cara yang mengganggu */
-#game-play-screen {
-    background-color: var(--container-bg);
-    border: 1px solid var(--card-border);
-    box-shadow: 0 4px 6px -1px var(--card-shadow), 0 2px 4px -2px var(--card-shadow); /* Mirip shadow-md Tailwind */
-    width: 100%; /* Pastikan mengisi penuh parent */
-}
-
 /* Responsive adjustments for small screens (Tailwind's 'sm' breakpoint is 640px) */
 @media (max-width: 639px) {
     body {
@@ -589,5 +564,4 @@ textarea::placeholder {
         max-width: 90%; /* Adjust max-width for smaller screens */
     }
 }
-
 
