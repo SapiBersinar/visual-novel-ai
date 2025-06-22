@@ -1,14 +1,11 @@
 // --- API Key Handling ---
-let API_KEY = ""; // This will be set by user manually on each session
+let API_KEY = ""; // This will be loaded from localStorage or set by user
 
 // --- DOM Elements ---
 const apiKeyScreen = document.getElementById('api-key-screen');
 const apiKeyInput = document.getElementById('api-key-input');
 const saveApiKeyBtn = document.getElementById('save-api-key-btn');
-const apiKeyLoadingIndicator = document.getElementById('api-key-loading-indicator');
-const apiKeyLoadingText = apiKeyLoadingIndicator.querySelector('span');
-// Removed clearApiKeyBtn as key is not persisted
-
+const clearApiKeyBtn = document.getElementById('clear-api-key-btn');
 
 const mainScreen = document.getElementById('main-screen');
 const manualInputBtn = document.getElementById('manual-input-btn');
@@ -72,9 +69,9 @@ const startGameBtn = document.getElementById('start-game-btn');
 const backFromSummaryBtn = document.getElementById('back-from-summary-btn');
 
 const gameScreen = document.getElementById('game-screen');
-const gameLoadingOverlay = document.getElementById('game-loading-overlay');
+const gameLoadingOverlay = document.getElementById('game-loading-overlay'); // This will be improved
 const gameLoadingAdditionalText = document.getElementById('game-loading-additional-text');
-const gamePlayScreen = document.getElementById('game-play-screen'); // This contains all visible game content
+const gamePlayScreen = document.getElementById('game-play-screen');
 const prologContentDisplay = document.getElementById('prolog-content-display');
 const chapterContentDisplay = document.getElementById('chapter-content-display');
 const dynamicSystemsDisplay = document.getElementById('dynamic-systems-display');
@@ -147,13 +144,22 @@ function setMainButtonsEnabled(enabled) {
     aiGenerateBtn.disabled = !enabled;
 }
 
-// --- API Key Management (Modified: No localStorage, always manual input) ---
+// --- API Key Management ---
+// Tidak menyimpan API key di localStorage
 function getApiKey() {
-    return API_KEY; // Always return the global variable, which will be empty on refresh until manually entered
+    return API_KEY; // Cukup kembalikan nilai global
 }
 
 function saveApiKey(key) {
-    API_KEY = key; // Just update the global API_KEY variable for the current session
+    API_KEY = key; // Update the global API_KEY variable
+}
+
+// Tidak perlu menghapus dari localStorage karena tidak disimpan di sana
+function clearApiKey() {
+    API_KEY = ""; // Clear global API_KEY
+    showMessageBox(selectedLanguage === 'id' ? 'Kunci API Dihapus' : 'API Key Cleared', selectedLanguage === 'id' ? 'Kunci API telah dihapus dari browser Anda. Silakan masukkan kunci baru.' : 'API Key has been cleared from your browser. Please enter a new key.');
+    // Memuat ulang halaman untuk memastikan API Key kembali kosong
+    location.reload();
 }
 
 // --- Theme Toggling ---
@@ -211,54 +217,24 @@ function updateThemeToggleButtonText() {
 
 // --- Event Listeners ---
 // API Key Screen Events
-saveApiKeyBtn.addEventListener('click', async () => {
+saveApiKeyBtn.addEventListener('click', () => {
     const key = apiKeyInput.value.trim();
-    if (!key) {
-        showMessageBox(selectedLanguage === 'id' ? 'Kunci API Kosong' : 'Empty API Key', selectedLanguage === 'id' ? 'Mohon masukkan kunci API Anda.' : 'Please enter your API key.');
-        return;
-    }
-
-    // Show loading
-    apiKeyLoadingIndicator.style.display = 'flex';
-    saveApiKeyBtn.disabled = true;
-    apiKeyInput.disabled = true;
-
-    // Validation API call
-    const validationUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
-    try {
-        const response = await fetch(validationUrl);
-        if (response.ok) {
-            // API key is valid
-            API_KEY = key; // Set global API_KEY for the current session
-            showScreen('main-screen');
-            setMainButtonsEnabled(true); // Enable main buttons now
-        } else {
-            // API key is invalid
-            const errorData = await response.json();
-            console.error("API Key Validation Error:", errorData); // Debugger output
-            let errorMessage = selectedLanguage === 'id' ? 'Kunci API tidak valid. Mohon periksa kembali.' : 'Invalid API key. Please check again.';
-            if (errorData && errorData.error && errorData.error.message) {
-                // Try to get more specific error from Gemini API response
-                if (errorData.error.message.includes('API key not valid')) {
-                    errorMessage = selectedLanguage === 'id' ? 'Kunci API yang Anda masukkan tidak valid. Pastikan tidak ada kesalahan ketik.' : 'The API key you entered is not valid. Please ensure there are no typos.';
-                } else if (errorData.error.message.includes('API key not found')) {
-                    errorMessage = selectedLanguage === 'id' ? 'Kunci API tidak ditemukan. Pastikan Anda telah membuatnya di Google AI Studio.' : 'API key not found. Please ensure you have created one in Google AI Studio.';
-                } else if (errorData.error.message.includes('Quota exceeded')) {
-                    errorMessage = selectedLanguage === 'id' ? 'Kuota API terlampaui. Mohon coba lagi nanti atau periksa penggunaan kuota Anda.' : 'API quota exceeded. Please try again later or check your quota usage.';
-                }
-            }
-            showMessageBox(selectedLanguage === 'id' ? 'Validasi Kunci API Gagal' : 'API Key Validation Failed', errorMessage);
-        }
-    } catch (error) {
-        console.error("Error during API key validation fetch:", error); // Debugger output
-        showMessageBox(selectedLanguage === 'id' ? 'Koneksi Gagal' : 'Connection Failed', selectedLanguage === 'id' ? 'Tidak dapat terhubung ke server validasi API. Periksa koneksi internet Anda atau coba lagi.' : 'Could not connect to API validation server. Check your internet connection or try again.');
-    } finally {
-        // Hide loading and re-enable inputs/buttons
-        apiKeyLoadingIndicator.style.display = 'none';
-        saveApiKeyBtn.disabled = false;
-        apiKeyInput.disabled = false;
+    if (key) {
+        // Validasi sederhana: API Key tidak boleh kosong
+        saveApiKey(key);
+        showScreen('main-screen');
+        setMainButtonsEnabled(true);
+    } else {
+        // Debugger: Jeda eksekusi untuk inspeksi
+        debugger;
+        showMessageBox(selectedLanguage === 'id' ? 'Kunci API Tidak Valid' : 'Invalid API Key', selectedLanguage === 'id' ? 'Mohon masukkan kunci API yang valid. Kunci API tidak boleh kosong.' : 'Please enter a valid API key. API key cannot be empty.');
+        // Tetap di layar API Key jika tidak valid
+        showScreen('api-key-screen');
+        setMainButtonsEnabled(false);
     }
 });
+
+clearApiKeyBtn.addEventListener('click', clearApiKey);
 
 
 manualInputBtn.addEventListener('click', () => {
@@ -394,13 +370,6 @@ function updateLanguageText() {
         retryGameBtn.textContent = "Coba Lagi";
         backToMainMenuBtn.textContent = "Kembali ke Menu Utama";
 
-        apiKeyScreen.querySelector('h1').textContent = "Masukkan Kunci API Gemini Anda";
-        apiKeyScreen.querySelector('p').innerHTML = `Untuk menggunakan fitur AI, Anda memerlukan kunci API Gemini. Anda bisa mendapatkannya di: <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">aistudio.google.com/app/apikey</a>`;
-        apiKeyInput.placeholder = "Masukkan Kunci API Gemini Anda";
-        saveApiKeyBtn.textContent = "Simpan & Validasi Kunci API";
-        apiKeyScreen.querySelector('.text-xs').textContent = "Catatan: Kunci API tidak akan disimpan di browser Anda untuk sesi ini.";
-        apiKeyLoadingText.textContent = "Memvalidasi kunci API...";
-
     } else { // English
         document.title = "Interactive Comic Story";
         mainScreen.querySelector('h1').textContent = "Visual Novel AI";
@@ -453,12 +422,12 @@ function updateLanguageText() {
                 case 'german': option.textContent = "German Style Name"; break;
             }
         });
-        generateCharactersBtn.textContent = "Generate Karakter";
-        backToStorySelectBtn.textContent = "Kembali ke Pemilihan Cerita";
-        loadingCharsText.textContent = "Menciptakan karakter Anda...";
-        loadingAdditionalTextChars.textContent = "Mohon tunggu sebentar, AI sedang memproses.";
-        mcSelectionHeading.textContent = "Pilih Karakter Utama (MC):";
-        continueToGameBtn.textContent = "Lanjutkan Cerita";
+        generateCharactersBtn.textContent = "Generate Characters";
+        backToStorySelectBtn.textContent = "Back to Story Selection";
+        loadingCharsText.textContent = "Creating your characters...";
+        loadingAdditionalTextChars.textContent = "Please wait, AI is processing.";
+        mcSelectionHeading.textContent = "Select Main Character (MC):";
+        continueToGameBtn.textContent = "Continue Story";
         regenerateCharactersBtn.textContent = "Find Other Characters";
 
         summaryScreen.querySelector('h1').textContent = "Your Story Summary";
@@ -675,7 +644,6 @@ themeToggleButton.addEventListener('click', toggleTheme);
 
 async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtElement, loadingAdditionalElement = null, buttonToDisable) {
     if (!API_KEY) {
-        // This check should ideally not be hit if the API key validation works correctly on entry
         showMessageBox(selectedLanguage === 'id' ? 'Kunci API Hilang' : 'API Key Missing', selectedLanguage === 'id' ? 'Mohon masukkan kunci API Gemini Anda terlebih dahulu.' : 'Please enter your Gemini API key first.');
         return null;
     }
@@ -837,7 +805,7 @@ async function generateStoryContent() {
     Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
     Violence and harsh language are permitted only for ratings 16+, 18+ and 21+.
 
-    Ensure the output is in JSON format accordings to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. Strictly avoid using the names "Arya" and "Anya". (Random seed: ${Math.random()})`;
+    Ensure the output is in JSON format according to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. Strictly avoid using the names "Arya" and "Anya". (Random seed: ${Math.random()})`;
 
 
     if (selectedSubgenre && selectedSubgenre !== (selectedLanguage === 'id' ? 'Pilih Subgenre' : 'Select Subgenre')) {
@@ -1155,9 +1123,10 @@ function addCharacterCardEventListener(charCard, charData) {
 // --- Game Play Functions ---
 async function startGame() {
     showScreen('game-screen');
-    // Sembunyikan konten game utama dan tampilkan loading overlay
-    gamePlayScreen.style.display = 'none';
+    // Ensure gameLoadingOverlay uses the shared loading style
+    gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
     gameLoadingOverlay.style.display = 'flex';
+    gamePlayScreen.style.display = 'none';
 
     await generatePrologue();
 }
@@ -1241,7 +1210,6 @@ async function generatePrologue() {
 
     if (prologData) {
         displayPrologue(prologData);
-        // Sembunyikan loading overlay dan tampilkan konten gamePlayScreen
         gameLoadingOverlay.style.display = 'none';
         gamePlayScreen.style.display = 'flex';
         gamePlayScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1267,7 +1235,7 @@ function displayPrologue(prologData) {
         </div>
     `;
     prologContentDisplay.style.display = 'block';
-    chapterContentDisplay.style.display = 'none'; // Pastikan chapter content tersembunyi
+    chapterContentDisplay.style.display = 'none';
 
     gameProgress.pathTracker = prologData.initialSystems.pathTracker;
     gameProgress.lockedPaths = prologData.initialSystems.lockedPaths;
@@ -1276,19 +1244,16 @@ function displayPrologue(prologData) {
     renderDynamicSystems(prologData.initialSystems, true);
 
     choiceContainer.innerHTML = '';
-    startRealStoryBtn.style.display = 'block'; // Tampilkan tombol ini hanya setelah prolog dimuat
+    startRealStoryBtn.style.display = 'block';
 }
 
 async function startChapter1() {
     gameProgress.currentChapter = 1;
     gameProgress.currentScene = 1;
 
-    // Sembunyikan prologue dan tombol "Mulai ke cerita sebenarnya"
     prologContentDisplay.style.display = 'none';
     startRealStoryBtn.style.display = 'none';
-    
-    // Sembunyikan gamePlayScreen dan tampilkan loading overlay
-    gamePlayScreen.style.display = 'none';
+    gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
     gameLoadingOverlay.style.display = 'flex';
 
     await generateChapter(gameProgress.currentChapter);
@@ -1497,10 +1462,8 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
 
     if (chapterData) {
         renderGameContent(chapterData);
-        gameLoadingOverlay.style.display = 'none'; // Sembunyikan loading overlay
-        prologContentDisplay.style.display = 'none'; // Pastikan prolog disembunyikan
-        chapterContentDisplay.style.display = 'block'; // Tampilkan konten bab
-        gamePlayScreen.style.display = 'flex'; // Tampilkan gamePlayScreen
+        gameLoadingOverlay.style.display = 'none';
+        chapterContentDisplay.style.display = 'block';
         gamePlayScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
         showMessageBox(selectedLanguage === 'id' ? 'Kesalahan Bab' : 'Chapter Error', selectedLanguage === 'id' ? 'Tidak dapat menghasilkan bab. Coba lagi.' : 'Could not generate chapter. Please try again.');
@@ -1754,8 +1717,8 @@ async function handleChoice(choice) {
 
     gameProgress.currentScene++;
 
-    // Sembunyikan semua konten game dan tampilkan overlay loading
-    gamePlayScreen.style.display = 'none';
+    choiceContainer.innerHTML = '';
+    gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
     gameLoadingOverlay.style.display = 'flex';
 
     await generateChapter(gameProgress.currentChapter, choice.text);
@@ -1763,9 +1726,9 @@ async function handleChoice(choice) {
 
 // --- Initialization ---
 window.onload = () => {
-    // Selalu tampilkan layar input API Key saat dimuat
+    // Selalu tampilkan layar API Key saat refresh
     showScreen('api-key-screen');
-    setMainButtonsEnabled(false); // Nonaktifkan tombol utama sampai API Key divalidasi
+    setMainButtonsEnabled(false); // Pastikan tombol utama dinonaktifkan sampai API Key diisi
     updateLanguageText();
     applyStoredTheme();
 };
