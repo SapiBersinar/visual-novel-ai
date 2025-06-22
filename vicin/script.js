@@ -69,7 +69,8 @@ const startGameBtn = document.getElementById('start-game-btn');
 const backFromSummaryBtn = document.getElementById('back-from-summary-btn');
 
 const gameScreen = document.getElementById('game-screen');
-const gameLoadingOverlay = document.getElementById('game-loading-overlay'); // This will be improved
+const gameContentWrapper = document.getElementById('game-content-wrapper'); // Added for controlling main game content visibility
+const gameLoadingOverlay = document.getElementById('game-loading-overlay');
 const gameLoadingAdditionalText = document.getElementById('game-loading-additional-text');
 const gamePlayScreen = document.getElementById('game-play-screen');
 const prologContentDisplay = document.getElementById('prolog-content-display');
@@ -762,7 +763,7 @@ async function generateStoryContent() {
                     "type": "ARRAY",
                     "items": { "type": "STRING" }
                 },
-                "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] },
+                "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] }, // Removed "18+"
                 "initialCharacterMentions": {
                     "type": "ARRAY",
                     "items": { "type": "STRING" },
@@ -783,7 +784,7 @@ async function generateStoryContent() {
     - A concise and intriguing story description (focus on premise, conflict, or theme). Character names and place names CAN be included in the description if relevant.
     - A list of relevant genres, including "${selectedGenre}".
     - A list of relevant subgenres.
-    - An appropriate content rating from these options: "SU", "PG-13", "16+", "18+", "21+".
+    - An appropriate content rating from these options: "SU", "PG-13", "16+", "21+".
     - A list of any specific character names mentioned in the description (e.g., ["Lintang", "Budi"]). If no specific names, return an empty array.
     - A list of any specific geographical place names (cities, regions, countries) explicitly mentioned in the story description (e.g., ["Jawa Timur", "Desa Sukorame"]). If no specific place names, return an empty array.
 
@@ -791,12 +792,11 @@ async function generateStoryContent() {
     - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
     - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
     - 16+: Contains mature themes, moderate violence, strong language, and/or suggestive themes.
-    - 18+: Contains mature themes, stronger violence, harsh language, and/or **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
     - 21+: Contains explicit violence, strong language, and mature themes (excluding explicit sexual content).
 
     Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse) is STRICTLY FORBIDDEN for ALL ratings.
     Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
-    Violence and harsh language are permitted only for ratings 16+, 18+ and 21+.
+    Violence and harsh language are permitted only for ratings 16+ and 21+.
 
     Ensure the output is in JSON format according to the schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} language. Strictly avoid using the names "Arya" and "Anya". (Random seed: ${Math.random()})`;
 
@@ -1116,10 +1116,9 @@ function addCharacterCardEventListener(charCard, charData) {
 // --- Game Play Functions ---
 async function startGame() {
     showScreen('game-screen');
-    // Ensure gameLoadingOverlay uses the shared loading style
-    gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
-    gameLoadingOverlay.style.display = 'flex';
-    gamePlayScreen.style.display = 'none';
+    gameContentWrapper.style.display = 'none'; // Hide content immediately
+    gameContentWrapper.classList.add('blurred-content'); // Add blur
+    gameLoadingOverlay.style.display = 'flex'; // Show loading overlay
 
     await generatePrologue();
 }
@@ -1144,7 +1143,7 @@ async function generatePrologue() {
                 "required": ["trustSystem", "deathTrigger", "flagAwal", "pathTracker", "lockedPaths", "notes"]
             },
             "genreDetails": { "type": "STRING", "description": "Example: 😇 Genre, Romantis, Bodyguard Romance" },
-            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] }
+            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] } // Removed "18+"
         },
         "required": ["prologueTitle", "prologueText", "prologueQuote", "initialSystems", "genreDetails", "rating"]
     };
@@ -1188,8 +1187,8 @@ async function generatePrologue() {
     Rating Considerations:
     - Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse): STRICTLY FORBIDDEN.
     - Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
-    - Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+ and 21+. For SU and PG-13, these themes must be absent or very mild/implied.
-    - For 18+ rating: Allows stronger violence and harsh language than 16+, and **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
+    - Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+ and 21+. For SU and PG-13, these themes must be absent or very mild/implied.
+    - For 21+ rating: Allows stronger violence and harsh language than 16+, and any non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail).
     `;
 
     const prologData = await callGeminiAPI(
@@ -1203,8 +1202,9 @@ async function generatePrologue() {
 
     if (prologData) {
         displayPrologue(prologData);
-        gameLoadingOverlay.style.display = 'none';
-        gamePlayScreen.style.display = 'flex';
+        gameLoadingOverlay.style.display = 'none'; // Hide loading overlay
+        gameContentWrapper.style.display = 'flex'; // Show game content
+        gameContentWrapper.classList.remove('blurred-content'); // Remove blur
         gamePlayScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
         showMessageBox(selectedLanguage === 'id' ? 'Kesalahan Prolog' : 'Prologue Error', selectedLanguage === 'id' ? 'Tidak dapat menghasilkan prolog. Coba lagi.' : 'Could not generate prologue. Please try again.');
@@ -1244,10 +1244,9 @@ async function startChapter1() {
     gameProgress.currentChapter = 1;
     gameProgress.currentScene = 1;
 
-    prologContentDisplay.style.display = 'none';
-    startRealStoryBtn.style.display = 'none';
-    gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
-    gameLoadingOverlay.style.display = 'flex';
+    gameContentWrapper.style.display = 'none'; // Hide content before loading
+    gameContentWrapper.classList.add('blurred-content'); // Add blur
+    gameLoadingOverlay.style.display = 'flex'; // Show loading overlay
 
     await generateChapter(gameProgress.currentChapter);
 }
@@ -1332,7 +1331,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
                     "lockedPathsInfo": { "type": "STRING" }
                 }
             },
-            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] }
+            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "21+"] } // Removed "18+"
         },
         "required": ["chapterTitle", "chapterMeta", "chapterContent", "choices", "consequenceNote", "rating"]
     };
@@ -1397,7 +1396,7 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
             - Possible values for moral, honesty, empathy: "Tinggi", "Netral", "Rendah".
             - Possible values for style: "Observasi", "Agresif", "Diplomatik", "Manipulatif", "Kritis", "Impulsif".
             - If a choice leans towards kindness, 'empathy' might become "Tinggi". If a choice is deceptive, 'honesty' might become "Rendah" and 'style' "Manipulatif". A decisive, action-oriented choice might make 'style' "Agresif". If a choice has no significant moral/stylistic implication, keep them "Netral" or "Observasi" or based on their current state. Only include the properties that *change*.
-    - "rating": The determined rating for the chapter content based on the story's overall rating. This must be one of "SU", "PG-13", "16+", "18+", "21+".
+    - "rating": The determined rating for the chapter content based on the story's overall rating. This must be one of "SU", "PG-13", "16+", "21+".
 
     Crucially, given the character naming style is "${selectedNameStyle}", ensure that any place names (cities, regions, provinces, villages, landmarks) mentioned in the chapter narrative or dialogue are *culturally appropriate* for that style. If the original story description or previous chapters contained specific place names that do not match this style, *replace them with culturally appropriate equivalents* (e.g., "Jawa Timur" becomes "Provinsi Shingyei" for "chinese" style). If no clear equivalent, use a generic but culturally fitting term (e.g., "desa di Tiongkok", "kota di Jepang").
 
@@ -1437,11 +1436,10 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
     - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
     - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
     - 16+: Contains mature themes, moderate violence, strong language, and/or suggestive themes.
-    - 18+: Contains mature themes, stronger violence, harsh language, and/or **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
     - 21+: Contains explicit violence, strong language, and mature themes (excluding explicit sexual content).
     Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse): STRICTLY FORBIDDEN.
     Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
-    Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+, and 21+.
+    Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+ and 21+.
     `;
 
     const chapterData = await callGeminiAPI(
@@ -1455,8 +1453,9 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
 
     if (chapterData) {
         renderGameContent(chapterData);
-        gameLoadingOverlay.style.display = 'none';
-        chapterContentDisplay.style.display = 'block';
+        gameLoadingOverlay.style.display = 'none'; // Hide loading overlay
+        gameContentWrapper.style.display = 'flex'; // Show game content
+        gameContentWrapper.classList.remove('blurred-content'); // Remove blur
         gamePlayScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
         showMessageBox(selectedLanguage === 'id' ? 'Kesalahan Bab' : 'Chapter Error', selectedLanguage === 'id' ? 'Tidak dapat menghasilkan bab. Coba lagi.' : 'Could not generate chapter. Please try again.');
@@ -1710,8 +1709,9 @@ async function handleChoice(choice) {
 
     gameProgress.currentScene++;
 
-    choiceContainer.innerHTML = '';
-    gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
+    // Hide all game content and show loading overlay
+    gameContentWrapper.style.display = 'none';
+    gameContentWrapper.classList.add('blurred-content'); // Add blur
     gameLoadingOverlay.style.display = 'flex';
 
     await generateChapter(gameProgress.currentChapter, choice.text);
