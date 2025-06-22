@@ -1,4 +1,4 @@
-/* Gaya Dasar & Variabel Tema */
+/* Base Styles & Theme Variables */
 body {
     font-family: 'Inter', sans-serif;
     display: flex;
@@ -6,106 +6,219 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    padding: 1.5rem; /* Setara dengan 'p-6' Tailwind */
+    padding: 1.5rem; /* Tailwind 'p-6' equivalent */
     box-sizing: border-box;
     overflow-x: hidden;
-    /* Transisi dihapus karena tidak ada lagi pergantian tema */
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Variabel Tema Hitam dan Putih */
-body.bw-theme {
-    --bg-color: #f8f8f8; /* Latar belakang putih gading */
-    --container-bg: #ffffff; /* Kontainer putih murni */
-    --text-color: #1a1a1a; /* Abu-abu sangat gelap untuk teks utama */
-    --sub-text-color: #4a4a4a; /* Abu-abu gelap untuk teks sekunder */
-    --light-text-color: #777777; /* Abu-abu sedang untuk teks terang */
-    --border-color: #cccccc; /* Batas abu-abu muda */
-    --shadow-color: rgba(0, 0, 0, 0.2); /* Bayangan lebih gelap */
-    --title-color: #000000; /* Hitam murni untuk judul */
-    --title-shadow-color: rgba(0, 0, 0, 0.05);
+/* Theme specific variables - now mapped to Tailwind-like values */
+body.light-theme {
+    --bg-color: #f3f4f6; /* Tailwind gray-100 */
+    --container-bg: #ffffff; /* Tailwind white */
+    --text-color: #1f2937; /* Tailwind gray-900 */
+    --sub-text-color: #4b5563; /* Tailwind gray-700 */
+    --light-text-color: #6b7280; /* Tailwind gray-500 */
+    --border-color: #d1d5db; /* Tailwind gray-300 */
+    --shadow-color: rgba(0, 0, 0, 0.1); /* Tailwind shadow-md default */
+    --title-color: #1f2937; /* Tailwind gray-900 */
+    --title-shadow-color: rgba(0, 0, 0, 0.05); /* Lighter shadow for modern feel */
+    --input-bg: #f9fafb; /* Tailwind gray-50 */
+    --input-border: #d1d5db; /* Tailwind gray-300 */
+    --input-text: #1f2937; /* Tailwind gray-900 */
+    --input-placeholder: #6b7280; /* Tailwind gray-500 */
 
-    --input-bg: #eeeeee; /* Latar belakang input abu-abu muda */
-    --input-border: #999999; /* Batas input abu-abu sedang */
-    --input-text: #1a1a1a; /* Teks gelap di input */
-    --input-placeholder: #777777; /* Placeholder abu-abu */
-
-    --btn-primary-bg: #333333; /* Tombol utama abu-abu gelap */
+    --btn-primary-bg: #1f2937; /* Tailwind gray-900 */
     --btn-primary-text: #ffffff;
-    --btn-primary-hover-bg: #000000; /* Hover hitam untuk tombol utama */
+    --btn-primary-hover-bg: #374151; /* Tailwind gray-700 */
+    --btn-primary-shadow: rgba(0, 0, 0, 0.15);
+
+    --btn-success-bg: #10b981; /* Tailwind green-500 */
+    --btn-success-text: #ffffff;
+    --btn-success-hover-bg: #059669; /* Tailwind green-600 */
+    --btn-success-shadow: rgba(16, 185, 129, 0.2);
+
+    --btn-secondary-bg: #e5e7eb; /* Tailwind gray-200 */
+    --btn-secondary-text: #1f2937; /* Tailwind gray-900 */
+    --btn-secondary-hover-bg: #d1d5db; /* Tailwind gray-300 */
+    --btn-secondary-shadow: rgba(0, 0, 0, 0.08);
+
+    --loading-spinner-color: #3b82f6; /* Tailwind blue-500 */
+    --card-bg: #ffffff; /* Tailwind white */
+    --card-border: #e5e7eb; /* Tailwind gray-200 */
+    --card-shadow: rgba(0, 0, 0, 0.05); /* Tailwind shadow-sm */
+
+    --dialogue-mc-bg: #eff6ff; /* Tailwind blue-50 */
+    --dialogue-mc-border: #93c5fd; /* Tailwind blue-300 */
+    --dialogue-mc-speaker: #1d4ed8; /* Tailwind blue-700 */
+
+    --dialogue-other-bg: #f3f4f6; /* Tailwind gray-100 */
+    --dialogue-other-border: #d1d5db; /* Tailwind gray-300 */
+    --dialogue-other-speaker: #374151; /* Tailwind gray-700 */
+
+    --choice-card-bg: #e0f2fe; /* Tailwind light blue */
+    --choice-card-border: #38bdf8; /* Tailwind sky-400 */
+    --choice-card-shadow: rgba(56, 189, 248, 0.2);
+
+    --system-display-bg: #f9fafb; /* Tailwind gray-50 */
+    --system-display-border: #e5e7eb; /* Tailwind gray-200 */
+    --system-title-color: #1f2937; /* Tailwind gray-900 */
+
+    --positive-color: #10b981; /* Tailwind green-500 */
+    --negative-color: #ef4444; /* Tailwind red-500 */
+    --neutral-color: #f59e0b; /* Tailwind amber-500 */
+}
+
+body.dark-theme {
+    --bg-color: #111827; /* Tailwind gray-900 */
+    --container-bg: #1f2937; /* Tailwind gray-800 */
+    --text-color: #e5e7eb; /* Tailwind gray-200 */
+    --sub-text-color: #9ca3af; /* Tailwind gray-400 */
+    --light-text-color: #6b7280; /* Tailwind gray-500 */
+    --border-color: #4b5563; /* Tailwind gray-600 */
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    --title-color: #f9fafb; /* Tailwind gray-50 */
+    --title-shadow-color: rgba(255, 255, 255, 0.05);
+
+    --input-bg: #374151; /* Tailwind gray-700 */
+    --input-border: #4b5563; /* Tailwind gray-600 */
+    --input-text: #e5e7eb; /* Tailwind gray-200 */
+    --input-placeholder: #9ca3af; /* Tailwind gray-400 */
+
+    --btn-primary-bg: #6b7280; /* Tailwind gray-500 */
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover-bg: #4b5563; /* Tailwind gray-700 */
     --btn-primary-shadow: rgba(0, 0, 0, 0.3);
 
-    --btn-success-bg: #555555; /* Tombol sukses abu-abu sedang */
+    --btn-success-bg: #059669; /* Tailwind green-600 */
     --btn-success-text: #ffffff;
-    --btn-success-hover-bg: #333333; /* Hover abu-abu gelap untuk sukses */
-    --btn-success-shadow: rgba(0, 0, 0, 0.25);
+    --btn-success-hover-bg: #047857; /* Tailwind green-700 */
+    --btn-success-shadow: rgba(5, 150, 105, 0.3);
 
-    --btn-secondary-bg: #cccccc; /* Tombol sekunder abu-abu muda */
-    --btn-secondary-text: #1a1a1a;
-    --btn-secondary-hover-bg: #999999; /* Hover abu-abu sedang untuk sekunder */
-    --btn-secondary-shadow: rgba(0, 0, 0, 0.15);
+    --btn-secondary-bg: #374151; /* Tailwind gray-700 */
+    --btn-secondary-text: #e5e7eb; /* Tailwind gray-200 */
+    --btn-secondary-hover-bg: #4b5563; /* Tailwind gray-600 */
+    --btn-secondary-shadow: rgba(0, 0, 0, 0.2);
 
-    --loading-spinner-color: #666666; /* Spinner abu-abu */
-    --card-bg: #ffffff; /* Latar belakang kartu putih */
-    --card-border: #bbbbbb; /* Batas kartu abu-abu muda */
-    --card-shadow: rgba(0, 0, 0, 0.1);
+    --loading-spinner-color: #60a5fa; /* Tailwind blue-400 */
+    --card-bg: #1f2937; /* Tailwind gray-800 */
+    --card-border: #374151; /* Tailwind gray-700 */
+    --card-shadow: rgba(0, 0, 0, 0.2);
 
-    --dialogue-mc-bg: #e0e0e0; /* Abu-abu muda untuk dialog MC */
-    --dialogue-mc-border: #999999; /* Batas abu-abu sedang */
-    --dialogue-mc-speaker: #333333; /* Nama pembicara abu-abu lebih gelap */
+    --dialogue-mc-bg: #1e3a8a; /* Tailwind blue-900 */
+    --dialogue-mc-border: #3b82f6; /* Tailwind blue-500 */
+    --dialogue-mc-speaker: #93c5fd; /* Tailwind blue-300 */
 
-    --dialogue-other-bg: #f0f0f0; /* Abu-abu sedikit lebih terang untuk dialog lain */
-    --dialogue-other-border: #cccccc; /* Batas abu-abu muda */
-    --dialogue-other-speaker: #555555; /* Nama pembicara abu-abu sedang */
+    --dialogue-other-bg: #2d3748; /* Darker gray for others */
+    --dialogue-other-border: #4a5568; /* Even darker gray */
+    --dialogue-other-speaker: #cbd5e0; /* Lighter gray */
 
-    --choice-card-bg: #eeeeee; /* Kartu pilihan abu-abu muda */
-    --choice-card-border: #888888; /* Batas pilihan abu-abu lebih gelap */
-    --choice-card-shadow: rgba(0, 0, 0, 0.15);
+    --choice-card-bg: #1e40af; /* Tailwind blue-800 */
+    --choice-card-border: #3b82f6; /* Tailwind blue-500 */
+    --choice-card-shadow: rgba(59, 130, 246, 0.3);
 
-    --system-display-bg: #f5f5f5; /* Tampilan sistem abu-abu sangat muda */
-    --system-display-border: #dddddd; /* Batas sistem abu-abu muda */
-    --system-title-color: #333333; /* Judul sistem abu-abu gelap */
+    --system-display-bg: #1f2937; /* Tailwind gray-800 */
+    --system-display-border: #4b5563; /* Tailwind gray-600 */
+    --system-title-color: #e5e7eb; /* Tailwind gray-200 */
 
-    --positive-color: #338833; /* Hijau gelap untuk positif */
-    --negative-color: #aa3333; /* Merah gelap untuk negatif */
-    --neutral-color: #cc9900; /* Kuning/oranye gelap untuk netral */
+    --positive-color: #34d399; /* Tailwind green-400 */
+    --negative-color: #f87171; /* Tailwind red-400 */
+    --neutral-color: #fbbf24; /* Tailwind amber-400 */
 }
 
-/* Terapkan variabel tema ke elemen inti */
+body.eye-protection-theme {
+    --bg-color: #fdf5e6; /* Creamy background */
+    --container-bg: #fff8e1; /* Lighter cream container */
+    --text-color: #5c4033; /* Dark brown text */
+    --sub-text-color: #8b7967; /* Muted brown */
+    --light-text-color: #a08060; /* Lighter brown */
+    --border-color: #7a5f4c;
+    --shadow-color: rgba(122, 95, 76, 0.2);
+    --title-color: #4a342a;
+    --title-shadow-color: rgba(74, 52, 42, 0.05);
+
+    --input-bg: #fffbf5;
+    --input-border: #9a7f6c;
+    --input-text: #5c4033;
+    --input-placeholder: #b0a090;
+
+    --btn-primary-bg: #7a5f4c;
+    --btn-primary-text: #fff8e1;
+    --btn-primary-hover-bg: #9a7f6c;
+    --btn-primary-shadow: rgba(122, 95, 76, 0.25);
+
+    --btn-success-bg: #5c8b5c; /* Muted green */
+    --btn-success-text: #ffffff;
+    --btn-success-hover-bg: #4a754a;
+    --btn-success-shadow: rgba(92, 139, 92, 0.25);
+
+    --btn-secondary-bg: #e0d0b0;
+    --btn-secondary-text: #5c4033;
+    --btn-secondary-hover-bg: #c0b090;
+    --btn-secondary-shadow: rgba(0, 0, 0, 0.1);
+
+    --loading-spinner-color: #8b7967;
+    --card-bg: #fff8e1;
+    --card-border: #e0d0b0;
+    --card-shadow: rgba(122, 95, 76, 0.1);
+
+    --dialogue-mc-bg: #e6d7bb;
+    --dialogue-mc-border: #c0b090;
+    --dialogue-mc-speaker: #7a5f4c;
+
+    --dialogue-other-bg: #f0ebd4;
+    --dialogue-other-border: #d0c0a0;
+    --dialogue-other-speaker: #8b7967;
+
+    --choice-card-bg: #e1f0e1;
+    --choice-card-border: #a1bca1;
+    --choice-card-shadow: rgba(161, 188, 161, 0.2);
+
+    --system-display-bg: #fdf5e6;
+    --system-display-border: #e0d0b0;
+    --system-title-color: #5c4033;
+
+    --positive-color: #4a7e32;
+    --negative-color: #b35f5f;
+    --neutral-color: #cc9900;
+}
+
+/* Apply theme variables to core elements */
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
 }
 
-/* Kontainer Utama */
+/* Main Container - Adjusted to Tailwind classes */
 .main-container {
     background-color: var(--container-bg);
     border-color: var(--border-color);
-    box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color); /* Mirip shadow-xl Tailwind */
-    /* Transisi dihapus */
+    box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color); /* Shadow-xl like */
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Kelas Dasar Layar */
+/* Screen Base Class */
 .screen {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%; /* Memastikan mengambil lebar penuh dalam kontainer */
+    width: 100%; /* Ensures it takes full width within container */
 }
 
-/* Judul */
+/* Titles */
 h1 {
     color: var(--title-color);
-    text-shadow: 2px 2px 0px var(--title-shadow-color); /* Bayangan teks samar */
-    /* Transisi dihapus */
+    text-shadow: 2px 2px 0px var(--title-shadow-color); /* Subtle text shadow */
+    transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 h2 {
     color: var(--text-color);
-    text-shadow: 1px 1px 0px var(--title-shadow-color); /* Bayangan teks samar */
-    /* Transisi dihapus */
+    text-shadow: 1px 1px 0px var(--title-shadow-color); /* Subtle text shadow */
+    transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
-/* Elemen Formulir (Input, Textarea, Select) */
+/* Form Elements (Inputs, Textareas, Selects) */
 .form-input, .form-select {
     border: 1px solid var(--input-border);
     background-color: var(--input-bg);
@@ -120,25 +233,25 @@ textarea::placeholder {
 
 .form-input:focus,
 .form-select:focus {
-    border-color: var(--btn-primary-bg); /* Gunakan warna tombol utama untuk fokus */
-    outline: none; /* Hapus outline default */
-    box-shadow: 0 0 0 3px rgba(102, 102, 102, 0.3); /* Gaya fokus cincin abu-abu */
+    border-color: var(--btn-primary-bg); /* Use primary button color for focus */
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); /* Ring focus style */
 }
 
-/* Panah kustom untuk select */
+/* Custom arrow for select */
 .form-select {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-image: url('data:image/svg+xml;utf8,<svg fill="%23777777" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); /* Abu-abu untuk panah */
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%236b7280" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); /* Tailwind gray-500 for arrow */
     background-repeat: no-repeat;
-    background-position: right 1rem center; /* Disesuaikan untuk padding lebih besar */
-    padding-right: 2.5rem; /* Ruang untuk panah kustom */
+    background-position: right 1rem center; /* Adjusted for larger padding */
+    padding-right: 2.5rem; /* Space for custom arrow */
 }
 
-/* Tombol */
+/* Buttons */
 .btn {
-    border: 1px solid var(--btn-primary-bg); /* Batas default dari primer */
+    border: 1px solid var(--btn-primary-bg); /* Default border from primary */
     transition: all 0.2s ease-in-out;
     position: relative;
     overflow: hidden;
@@ -147,12 +260,12 @@ textarea::placeholder {
 .btn-primary {
     background-color: var(--btn-primary-bg);
     color: var(--btn-primary-text);
-    box-shadow: 0 4px 6px -1px var(--btn-primary-shadow), 0 2px 4px -2px var(--btn-primary-shadow); /* Mirip shadow-md Tailwind */
+    box-shadow: 0 4px 6px -1px var(--btn-primary-shadow), 0 2px 4px -2px var(--btn-primary-shadow); /* Tailwind shadow-md like */
     border-color: var(--btn-primary-bg);
 }
 .btn-primary:hover {
     background-color: var(--btn-primary-hover-bg);
-    box-shadow: 0 10px 15px -3px var(--btn-primary-shadow), 0 4px 6px -4px var(--btn-primary-shadow); /* Mirip shadow-lg Tailwind */
+    box-shadow: 0 10px 15px -3px var(--btn-primary-shadow), 0 4px 6px -4px var(--btn-primary-shadow); /* Tailwind shadow-lg like */
     transform: translateY(-2px);
 }
 
@@ -180,7 +293,7 @@ textarea::placeholder {
     transform: translateY(-2px);
 }
 
-/* Grup Radio */
+/* Radio Group */
 .radio-group label {
     color: var(--sub-text-color);
 }
@@ -189,26 +302,30 @@ textarea::placeholder {
     background-color: var(--input-bg);
 }
 .radio-group input[type="radio"]::before {
-    box-shadow: inset 1em 1em var(--btn-primary-bg); /* Gunakan warna tombol utama untuk status tercentang */
+    box-shadow: inset 1em 1em var(--btn-primary-bg); /* Use primary button color for checked state */
 }
 
-/* Indikator Memuat & Spinner */
+/* Loading Indicator & Spinner */
 .loading-indicator {
     color: var(--sub-text-color);
+    /* For loading-ai and loading-characters, these properties are set */
+    /* display: flex; flex-direction: column; align-items: center; justify-content: center; */
 }
 .loading-indicator .spinner {
-    border: 4px solid var(--input-border); /* Gunakan batas input sebagai dasar */
-    border-top: 4px solid var(--loading-spinner-color); /* Warna spinner */
+    border: 4px solid var(--input-border); /* Use input border for base */
+    border-top: 4px solid var(--loading-spinner-color); /* Spinner color */
 }
-.loading-indicator span { /* Berlaku untuk loading-text dan loading-additional-text */
+.loading-indicator span { /* Applies to loading-text and loading-additional-text */
     color: var(--sub-text-color);
 }
 .loading-indicator #loading-additional-text {
     color: var(--light-text-color);
 }
 
-/* Gaya Kartu Memuat Baru (untuk game-loading-overlay) */
+
+/* New Loading Card Style (for game-loading-overlay) */
 .loading-card {
+    /* Uses Tailwind classes in HTML: w-full max-w-sm mx-auto p-8 rounded-2xl shadow-xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col items-center justify-center text-center z-50 */
     background-color: var(--container-bg);
     border-color: var(--border-color);
     box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color);
@@ -217,31 +334,32 @@ textarea::placeholder {
     border: 4px solid var(--input-border);
     border-top: 4px solid var(--loading-spinner-color);
 }
-.loading-card span { /* Untuk teks di dalam loading-card */
+.loading-card span { /* For text inside loading-card */
     color: var(--sub-text-color);
 }
 
-/* Gaya Kartu (Bagian Cerita, Karakter, Ringkasan) */
+
+/* Card Styles (Story, Character, Summary sections) */
 .story-card, .character-card, .summary-card {
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
-    box-shadow: 0 1px 3px 0 var(--card-shadow), 0 1px 2px 0 var(--card-shadow); /* Mirip shadow-sm Tailwind */
+    box-shadow: 0 1px 3px 0 var(--card-shadow), 0 1px 2px 0 var(--card-shadow); /* Tailwind shadow-sm */
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out, background-color 0.3s ease;
 }
 .story-card:hover, .character-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 6px -1px var(--card-shadow), 0 2px 4px -2px var(--card-shadow); /* Mirip shadow-md Tailwind */
+    box-shadow: 0 4px 6px -1px var(--card-shadow), 0 2px 4px -2px var(--card-shadow); /* Tailwind shadow-md */
 }
 .story-card.selected {
     border-color: var(--btn-primary-bg);
-    box-shadow: 0 10px 15px -3px rgba(51, 51, 51, 0.3), 0 4px 6px -4px rgba(51, 51, 51, 0.3); /* Bayangan abu-abu gelap untuk pilihan */
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3), 0 4px 6px -4px rgba(59, 130, 246, 0.3); /* Blue shadow for selection */
 }
 
-/* Kartu Karakter Terpilih */
+/* Selected Character Card */
 .character-card.selected-mc {
-    border-color: var(--btn-success-bg); /* Batas abu-abu sedang untuk MC terpilih */
-    background-color: var(--dialogue-mc-bg); /* Latar belakang abu-abu muda untuk dialog MC */
-    box-shadow: 0 10px 15px -3px rgba(85, 85, 85, 0.3), 0 4px 6px -4px rgba(85, 85, 85, 0.3); /* Bayangan abu-abu sedang */
+    border-color: var(--btn-success-bg); /* Green border for selected MC */
+    background-color: var(--dialogue-mc-bg); /* Light background for selected MC */
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3), 0 4px 6px -4px rgba(16, 185, 129, 0.3); /* Green shadow */
 }
 .character-card h2 {
     color: var(--text-color);
@@ -250,17 +368,17 @@ textarea::placeholder {
     color: var(--sub-text-color);
 }
 .char-detail {
-    color: var(--text-color); /* Pastikan label detail menonjol */
+    color: var(--text-color); /* Ensure detail labels are prominent */
 }
 
-/* Kotak Pesan Kustom */
-.message-box { /* Latar belakang overlay */
-    background-color: rgba(0, 0, 0, 0.5); /* Hitam semi-transparan */
+/* Custom Message Box */
+.message-box { /* The overlay background */
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
 }
 .message-box-content {
     background-color: var(--container-bg);
     border-color: var(--border-color);
-    box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px var(--shadow-color); /* Mirip shadow-2xl Tailwind */
+    box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px var(--shadow-color); /* Tailwind shadow-2xl like */
 }
 .message-box-content h3 {
     color: var(--title-color);
@@ -269,30 +387,30 @@ textarea::placeholder {
     color: var(--sub-text-color);
 }
 
-/* Gaya Khusus Permainan */
+/* Game Play Specific Styles */
 #game-play-screen {
     background-color: var(--container-bg);
     border: 1px solid var(--card-border);
-    box-shadow: 0 4px 6px -1px var(--card-shadow), 0 2px 4px -2px var(--card-shadow); /* Mirip shadow-md Tailwind */
+    box-shadow: 0 4px 6px -1px var(--card-shadow), 0 2px 4px -2px var(--card-shadow); /* Tailwind shadow-md like */
 }
 
-/* Kartu Header Bab */
+/* Chapter Header Card */
 .chapter-header-card {
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
     box-shadow: 0 1px 3px 0 var(--card-shadow), 0 1px 2px 0 var(--card-shadow);
     color: var(--text-color);
-    /* Transisi dihapus */
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .chapter-header-card h2 {
     color: var(--title-color);
-    text-shadow: none; /* Hapus text-shadow untuk tampilan yang lebih bersih di kartu */
+    text-shadow: none; /* Remove text-shadow for cleaner look in card */
 }
 .chapter-header-card .chapter-meta {
     color: var(--sub-text-color);
 }
 
-/* Konten Narasi dan Dialog */
+/* Narrative and Dialogue Content */
 .narrative-content p {
     color: var(--text-color);
 }
@@ -301,7 +419,7 @@ textarea::placeholder {
     border-left: 4px solid var(--card-border);
 }
 
-/* Kartu Dialog */
+/* Dialogue Cards */
 .character-dialogue-card {
     border: 1px solid var(--card-border);
     box-shadow: 0 1px 2px 0 var(--card-shadow);
@@ -322,7 +440,7 @@ textarea::placeholder {
     color: var(--dialogue-other-speaker);
 }
 
-/* Tampilan Sistem Dinamis */
+/* Dynamic Systems Display */
 #dynamic-systems-display {
     background-color: var(--system-display-bg);
     border: 1px dashed var(--system-display-border);
@@ -336,15 +454,15 @@ textarea::placeholder {
 #dynamic-systems-display .system-title {
     color: var(--system-title-color);
 }
-/* Pastikan ini juga menyesuaikan ke skala abu-abu */
+.trust-update-item, .dna-item, .achievement-item, .flag-item, .time-event-item {
+    border-bottom: 1px dotted var(--system-display-border);
+    color: var(--sub-text-color);
+}
 .trust-update-item .positive { color: var(--positive-color); }
 .trust-update-item .negative { color: var(--negative-color); }
 .trust-update-item .neutral { color: var(--neutral-color); }
-.text-green-500 { color: var(--positive-color) !important; }
-.text-red-500 { color: var(--negative-color) !important; }
-.text-amber-500 { color: var(--neutral-color) !important; }
 
-/* Kartu Pilihan */
+/* Choice Cards */
 .choice-card {
     background-color: var(--choice-card-bg);
     border: 1px solid var(--choice-card-border);
@@ -354,13 +472,25 @@ textarea::placeholder {
 .choice-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px var(--choice-card-shadow);
-    background-color: var(--choice-card-bg); /* Pertahankan warna dasar, biarkan bayangan berubah */
+    background-color: var(--choice-card-bg); /* Keep base color, let shadow change */
 }
 .choice-card .choice-emote {
-    color: var(--text-color); /* Pastikan warna emote konsisten */
+    color: var(--text-color); /* Ensure emote color is consistent */
 }
 
-/* Judul Animasi */
+/* Theme Toggle Button */
+.theme-toggle-button {
+    background-color: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+    border: 1px solid var(--btn-secondary-bg); /* Match button bg for border */
+    box-shadow: 0 4px 6px -1px var(--btn-secondary-shadow);
+}
+.theme-toggle-button:hover {
+    background-color: var(--btn-secondary-hover-bg);
+    box-shadow: 0 10px 15px -3px var(--btn-secondary-shadow);
+}
+
+/* Animated Title */
 .animated-title {
     animation: bounceIn 1s ease-out;
 }
@@ -382,7 +512,7 @@ textarea::placeholder {
     }
 }
 
-/* Penyesuaian responsif untuk layar kecil (breakpoint 'sm' Tailwind adalah 640px) */
+/* Responsive adjustments for small screens (Tailwind's 'sm' breakpoint is 640px) */
 @media (max-width: 639px) {
     body {
         padding: 1rem; /* p-4 */
@@ -419,11 +549,19 @@ textarea::placeholder {
     .message-box-content {
         padding: 1.5rem; /* p-6 */
     }
+    .theme-toggle-button {
+        top: 1rem;
+        left: 1rem;
+        padding: 0.5rem 0.75rem; /* p-2 px-3 */
+        font-size: 0.875rem; /* text-sm */
+    }
+    #theme-toggle-text {
+        display: none; /* Hide text on small screens */
+    }
 
-    /* Penyesuaian untuk loading-card di layar kecil jika diperlukan */
+    /* Adjustments for loading-card on small screens if needed */
     .loading-card {
-        max-width: 90%; /* Sesuaikan max-width untuk layar lebih kecil */
+        max-width: 90%; /* Adjust max-width for smaller screens */
     }
 }
-
 

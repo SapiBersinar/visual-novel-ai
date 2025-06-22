@@ -90,20 +90,23 @@ const messageBoxTitle = document.getElementById('message-box-title');
 const messageBoxContent = document.getElementById('message-box-content');
 const messageBoxOkBtn = document.getElementById('message-box-ok-btn');
 
-// Elemen tombol pengubah tema telah dihapus dari HTML dan tidak diperlukan di sini
+const themeToggleButton = document.getElementById('theme-toggle');
+const themeToggleIcon = themeToggleButton.querySelector('i');
+const themeToggleText = document.getElementById('theme-toggle-text');
 
-// --- Variabel Status Game ---
+
+// --- Game State Variables ---
 let selectedLanguage = 'id';
 let selectedStoryDetails = null;
-let generatedCharacters = []; // Ini akan menampung SEMUA karakter yang dihasilkan
+let generatedCharacters = []; // This will hold ALL generated characters
 let selectedMainCharacter = null;
-let selectedNameStyle = 'random'; // Baru: Untuk menyimpan gaya nama yang dipilih
+let selectedNameStyle = 'random'; // New: To store the chosen name style
 
-// Status kemajuan game untuk menyimpan data sistem dinamis
+// Game progress state to store dynamic system data
 let gameProgress = {
     currentChapter: 0,
     currentScene: 0,
-    trustPoints: {}, // {characterId: nilai}
+    trustPoints: {}, // {characterId: value}
     flagAwal: {}, // {flagName: boolean}
     pathTracker: null,
     lockedPaths: [],
@@ -112,16 +115,16 @@ let gameProgress = {
     relationshipLabels: {}, // {characterId: label}
     timeSystem: {day: 1, partOfDay: "pagi", countdown: null, activeEvents: []},
     dnaProfile: {moral: "Netral", honesty: "Netral", empathy: "Netral", style: "Observasi"},
-    playerChoices: [] // Menyimpan objek seperti {chapter: 1, choiceIndex: 0, choiceText: "..."}
+    playerChoices: [] // Stores objects like {chapter: 1, choiceIndex: 0, choiceText: "..."}
 };
 
-// --- Fungsi Pembantu ---
+// --- Helper Functions ---
 function showScreen(screenId) {
     const screens = [apiKeyScreen, mainScreen, manualInputScreen, aiGenerateFormScreen, aiResultsScreen, characterCreationScreen, summaryScreen, gameScreen, gameOverScreen];
     screens.forEach(screen => {
         if (screen) {
             if (screen.id === screenId) {
-                screen.style.display = 'flex'; // Gunakan flex untuk semua layar untuk pemusatan
+                screen.style.display = 'flex'; // Use flex for all screens for centering
             } else {
                 screen.style.display = 'none';
             }
@@ -132,33 +135,156 @@ function showScreen(screenId) {
 function showMessageBox(title, message) {
     messageBoxTitle.textContent = title;
     messageBoxContent.textContent = message;
-    customMessageBox.style.display = 'flex'; // Gunakan flex untuk overlay
+    customMessageBox.style.display = 'flex'; // Use flex for the overlay
 }
 
-// Mengaktifkan/menonaktifkan tombol utama
+// Enable/disable main buttons
 function setMainButtonsEnabled(enabled) {
     manualInputBtn.disabled = !enabled;
     aiGenerateBtn.disabled = !enabled;
 }
 
-// --- Manajemen Kunci API ---
+// --- API Key Management ---
 function getApiKey() {
     return localStorage.getItem('geminiApiKey');
 }
 
 function saveApiKey(key) {
     localStorage.setItem('geminiApiKey', key);
-    API_KEY = key; // Perbarui variabel global API_KEY
+    API_KEY = key; // Update the global API_KEY variable
 }
 
 function clearApiKey() {
     localStorage.removeItem('geminiApiKey');
-    API_KEY = ""; // Hapus API_KEY global
+    API_KEY = ""; // Clear global API_KEY
     showMessageBox(selectedLanguage === 'id' ? 'Kunci API Dihapus' : 'API Key Cleared', selectedLanguage === 'id' ? 'Kunci API telah dihapus dari browser Anda. Silakan masukkan kunci baru.' : 'API Key has been cleared from your browser. Please enter a new key.');
     location.reload();
 }
 
-// --- Pembaruan Teks Bahasa (fungsi terkait tema dihapus) ---
+// --- Theme Toggling ---
+function toggleTheme() {
+    const body = document.body;
+    let currentTheme = body.className;
+
+    if (currentTheme.includes('light-theme')) {
+        body.className = body.className.replace('light-theme', 'dark-theme');
+        localStorage.setItem('theme', 'dark-theme');
+    } else if (currentTheme.includes('dark-theme')) {
+        body.className = body.className.replace('dark-theme', 'eye-protection-theme');
+        localStorage.setItem('theme', 'eye-protection-theme');
+    } else {
+        body.className = body.className.replace('eye-protection-theme', 'light-theme');
+        localStorage.setItem('theme', 'light-theme');
+    }
+    updateThemeToggleButtonText();
+}
+
+function applyStoredTheme() {
+    const storedTheme = localStorage.getItem('theme') || 'light-theme';
+    // Ensure existing Tailwind classes like 'flex', 'flex-col' are preserved
+    document.body.className = document.body.className.split(' ').filter(c => !c.includes('-theme')).join(' ') + ' ' + storedTheme;
+    updateThemeToggleButtonText();
+}
+
+function updateThemeToggleButtonText() {
+    const currentTheme = document.body.className;
+    if (selectedLanguage === 'id') {
+        if (currentTheme.includes('light-theme')) {
+            themeToggleIcon.className = 'fas fa-moon';
+            themeToggleText.textContent = 'Mode Gelap';
+        } else if (currentTheme.includes('dark-theme')) {
+            themeToggleIcon.className = 'fas fa-sun';
+            themeToggleText.textContent = 'Mode Terang';
+        } else if (currentTheme.includes('eye-protection-theme')) {
+            themeToggleIcon.className = 'fas fa-eye';
+            themeToggleText.textContent = 'Mode Perlindungan Mata';
+        }
+    } else { // English
+        if (currentTheme.includes('light-theme')) {
+            themeToggleIcon.className = 'fas fa-moon';
+            themeToggleText.textContent = 'Dark Mode';
+        } else if (currentTheme.includes('dark-theme')) {
+            themeToggleIcon.className = 'fas fa-sun';
+            themeToggleText.textContent = 'Light Mode';
+        } else if (currentTheme.includes('eye-protection-theme')) {
+            themeToggleIcon.className = 'fas fa-eye';
+            themeToggleText.textContent = 'Eye Protection Mode';
+        }
+    }
+}
+
+
+// --- Event Listeners ---
+// API Key Screen Events
+saveApiKeyBtn.addEventListener('click', () => {
+    const key = apiKeyInput.value.trim();
+    if (key) {
+        saveApiKey(key);
+        showScreen('main-screen');
+        setMainButtonsEnabled(true);
+    } else {
+        showMessageBox(selectedLanguage === 'id' ? 'Kunci API Kosong' : 'Empty API Key', selectedLanguage === 'id' ? 'Mohon masukkan kunci API Anda.' : 'Please enter your API key.');
+    }
+});
+
+clearApiKeyBtn.addEventListener('click', clearApiKey);
+
+
+manualInputBtn.addEventListener('click', () => {
+    showScreen('manual-input-screen');
+    setMainButtonsEnabled(false);
+});
+aiGenerateBtn.addEventListener('click', () => {
+    showScreen('ai-generate-form-screen');
+    setMainButtonsEnabled(false);
+});
+
+backFromManualBtn.addEventListener('click', () => {
+    showScreen('main-screen');
+    setMainButtonsEnabled(true);
+});
+backFromAiFormBtn.addEventListener('click', () => {
+    showScreen('main-screen');
+    setMainButtonsEnabled(true);
+});
+
+backFromAiResultsBtn.addEventListener('click', () => {
+    selectedStoryDetails = null;
+    continueToCharacterSelectionBtn.style.display = 'none';
+    selectedStoryDisplay.style.display = 'none';
+    storyListContainer.innerHTML = '';
+    storyListContainer.style.display = 'grid'; // Changed back to grid
+    showScreen('ai-generate-form-screen');
+});
+
+backToStorySelectBtn.addEventListener('click', () => {
+    showScreen('ai-results-screen');
+    if (selectedStoryDetails) {
+        selectedStoryDisplay.style.display = 'block';
+        storyListContainer.style.display = 'none';
+        continueToCharacterSelectionBtn.style.display = 'block';
+    } else {
+        showScreen('ai-generate-form-screen');
+    }
+    characterClassInput.value = '';
+    characterClassInput.style.display = 'none';
+    characterResultsDiv.innerHTML = '';
+    mcSelectionHeading.style.display = 'none';
+    characterActionButtons.style.display = 'none';
+    generatedCharacters = [];
+    selectedMainCharacter = null;
+});
+
+messageBoxOkBtn.addEventListener('click', () => customMessageBox.style.display = 'none');
+
+languageRadios.forEach(radio => {
+    radio.addEventListener('change', (event) => {
+        selectedLanguage = event.target.value;
+        updateLanguageText();
+    });
+});
+
+// Function to update language-dependent texts
 function updateLanguageText() {
     if (selectedLanguage === 'id') {
         document.title = "Cerita Komik Interaktif";
@@ -166,15 +292,6 @@ function updateLanguageText() {
         mainScreen.querySelector('p').textContent = "Dapatkan ide cerita baru atau masukkan cerita Anda sendiri.";
         manualInputBtn.textContent = "Masukkan Judul & Deskripsi Manual";
         aiGenerateBtn.textContent = "Hasilkan Cerita dengan AI";
-
-        apiKeyScreen.querySelector('h1').textContent = "Masukkan Kunci API Gemini Anda";
-        apiKeyScreen.querySelector('p').innerHTML = `Untuk menggunakan fitur AI, Anda memerlukan kunci API Gemini.
-        Anda bisa mendapatkannya di: <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">aistudio.google.com/app/apikey</a>`;
-        apiKeyInput.placeholder = "Masukkan Kunci API Gemini Anda";
-        saveApiKeyBtn.textContent = "Simpan Kunci API";
-        clearApiKeyBtn.textContent = "Hapus Kunci API";
-        apiKeyScreen.querySelector('p:last-of-type').textContent = "Peringatan: Menyimpan kunci API di browser tidak disarankan untuk aplikasi produksi.";
-
 
         manualInputScreen.querySelector('h1').textContent = "Masukkan Cerita Anda";
         manualTitleInput.placeholder = "Judul Cerita";
@@ -253,14 +370,6 @@ function updateLanguageText() {
         manualInputBtn.textContent = "Enter Title & Description Manually";
         aiGenerateBtn.textContent = "Generate Story with AI";
 
-        apiKeyScreen.querySelector('h1').textContent = "Enter Your Gemini API Key";
-        apiKeyScreen.querySelector('p').innerHTML = `To use AI features, you need a Gemini API key.
-        You can get one at: <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">aistudio.google.com/app/apikey</a>`;
-        apiKeyInput.placeholder = "Enter Your Gemini API Key";
-        saveApiKeyBtn.textContent = "Save API Key";
-        clearApiKeyBtn.textContent = "Clear API Key";
-        apiKeyScreen.querySelector('p:last-of-type').textContent = "Warning: Storing API keys in the browser is not recommended for production applications.";
-
         manualInputScreen.querySelector('h1').textContent = "Enter Your Story";
         manualTitleInput.placeholder = "Story Title";
         manualDescriptionInput.placeholder = "Story Description (focus on premise & conflict)";
@@ -330,78 +439,9 @@ function updateLanguageText() {
         retryGameBtn.textContent = "Retry";
         backToMainMenuBtn.textContent = "Back to Main Menu";
     }
+    updateThemeToggleButtonText();
 }
 
-
-// --- Pendengar Acara ---
-// Acara Layar Kunci API
-saveApiKeyBtn.addEventListener('click', () => {
-    const key = apiKeyInput.value.trim();
-    if (key) {
-        saveApiKey(key);
-        showScreen('main-screen');
-        setMainButtonsEnabled(true);
-    } else {
-        showMessageBox(selectedLanguage === 'id' ? 'Kunci API Kosong' : 'Empty API Key', selectedLanguage === 'id' ? 'Mohon masukkan kunci API Anda.' : 'Please enter your API key.');
-    }
-});
-
-clearApiKeyBtn.addEventListener('click', clearApiKey);
-
-
-manualInputBtn.addEventListener('click', () => {
-    showScreen('manual-input-screen');
-    setMainButtonsEnabled(false);
-});
-aiGenerateBtn.addEventListener('click', () => {
-    showScreen('ai-generate-form-screen');
-    setMainButtonsEnabled(false);
-});
-
-backFromManualBtn.addEventListener('click', () => {
-    showScreen('main-screen');
-    setMainButtonsEnabled(true);
-});
-backFromAiFormBtn.addEventListener('click', () => {
-    showScreen('main-screen');
-    setMainButtonsEnabled(true);
-});
-
-backFromAiResultsBtn.addEventListener('click', () => {
-    selectedStoryDetails = null;
-    continueToCharacterSelectionBtn.style.display = 'none';
-    selectedStoryDisplay.style.display = 'none';
-    storyListContainer.innerHTML = '';
-    storyListContainer.style.display = 'grid'; // Diubah kembali ke grid
-    showScreen('ai-generate-form-screen');
-});
-
-backToStorySelectBtn.addEventListener('click', () => {
-    showScreen('ai-results-screen');
-    if (selectedStoryDetails) {
-        selectedStoryDisplay.style.display = 'block';
-        storyListContainer.style.display = 'none';
-        continueToCharacterSelectionBtn.style.display = 'block';
-    } else {
-        showScreen('ai-generate-form-screen');
-    }
-    characterClassInput.value = '';
-    characterClassInput.style.display = 'none';
-    characterResultsDiv.innerHTML = '';
-    mcSelectionHeading.style.display = 'none';
-    characterActionButtons.style.display = 'none';
-    generatedCharacters = [];
-    selectedMainCharacter = null;
-});
-
-messageBoxOkBtn.addEventListener('click', () => customMessageBox.style.display = 'none');
-
-languageRadios.forEach(radio => {
-    radio.addEventListener('change', (event) => {
-        selectedLanguage = event.target.value;
-        updateLanguageText();
-    });
-});
 
 genreSelect.addEventListener('change', () => {
     if (genreSelect.value === 'other') {
@@ -446,7 +486,7 @@ continueManualBtn.addEventListener('click', () => {
     const title = manualTitleInput.value.trim();
     const description = manualDescriptionInput.value.trim();
     if (title && description) {
-        selectedStoryDetails = { title, description, genres: [], subgenres: [], rating: "SU", initialCharacterMentions: [], initialPlaceMentions: [] }; // Menambahkan initialPlaceMentions
+        selectedStoryDetails = { title, description, genres: [], subgenres: [], rating: "SU", initialCharacterMentions: [], initialPlaceMentions: [] }; // Added initialPlaceMentions
         showScreen('character-creation-screen');
         characterResultsDiv.innerHTML = '';
         mcSelectionHeading.style.display = 'none';
@@ -465,17 +505,17 @@ generateCharactersBtn.addEventListener('click', generateCharacters);
 regenerateCharactersBtn.addEventListener('click', generateCharacters);
 
 nameStyleSelect.addEventListener('change', (event) => {
-    selectedNameStyle = event.target.value; // Perbarui selectedNameStyle
+    selectedNameStyle = event.target.value; // Update selectedNameStyle
 });
 
 
 continueToGameBtn.addEventListener('click', async () => {
     if (selectedMainCharacter) {
-        // Panggilan AI untuk menulis ulang deskripsi cerita dengan nama MC yang dipilih dan nama tempat budaya
+        // AI Call to rewrite story description with selected MC's name and cultural place names
         const originalDescription = selectedStoryDetails.description;
         const mcName = selectedMainCharacter.name;
         const initialCharacterMentions = selectedStoryDetails.initialCharacterMentions || [];
-        const initialPlaceMentions = selectedStoryDetails.initialPlaceMentions || []; // Dapatkan penyebutan tempat awal
+        const initialPlaceMentions = selectedStoryDetails.initialPlaceMentions || []; // Get initial place mentions
 
         const rewriteSchema = {
             type: "OBJECT",
@@ -509,7 +549,7 @@ continueToGameBtn.addEventListener('click', async () => {
         4. The core plot, tone, and conflict of the original description must remain unchanged.
         5. Provide the rewritten description in ${selectedLanguage === 'id' ? 'Indonesian' : 'English'}.
         6. Do NOT include any introductory or concluding remarks, just the rewritten description string.
-        7. Strictly avoid using the names "Arya" and "Anya".`; // Menambahkan instruksi untuk menghindari nama
+        7. Strictly avoid using the names "Arya" and "Anya".`; // Added instruction to avoid names
 
         const rewrittenDescriptionObj = await callGeminiAPI(
             rewritePrompt,
@@ -591,8 +631,9 @@ backToMainMenuBtn.addEventListener('click', () => {
     setMainButtonsEnabled(true);
 });
 
+themeToggleButton.addEventListener('click', toggleTheme);
 
-// --- Integrasi Gemini API ---
+// --- Gemini API Integration ---
 
 async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtElement, loadingAdditionalElement = null, buttonToDisable) {
     if (!API_KEY) {
@@ -600,10 +641,10 @@ async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtEl
         return null;
     }
 
-    // Terapkan kelas loading untuk tampilan yang konsisten di semua status loading
+    // Apply loading classes for consistent look across all loading states
     loadingElement.classList.add('flex', 'flex-col', 'items-center', 'justify-center', 'mt-8', 'text-gray-700', 'dark:text-gray-300');
-    loadingElement.style.display = 'flex'; // Pastikan display flex diatur
-    // Hapus kelas spinner/teks tertentu jika ada yang sebaris atau bertentangan
+    loadingElement.style.display = 'flex'; // Ensure display flex is set
+    // Remove specific spinner/text classes if they were inline or conflicting
     const spinner = loadingElement.querySelector('.spinner');
     if (spinner) {
         spinner.classList.add('border-t-4', 'border-blue-500', 'w-10', 'h-10', 'mb-4', 'rounded-full', 'animate-spin');
@@ -639,7 +680,7 @@ async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtEl
     }
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
-    console.log("Mengirim prompt ke Gemini API:", prompt);
+    console.log("Sending prompt to Gemini API:", prompt);
     console.log("Payload:", payload);
 
     try {
@@ -651,24 +692,24 @@ async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtEl
 
         if (!response.ok) {
             const errorData = await response.json();
-            console.error("Respons Error API:", errorData);
-            throw new Error(`Kesalahan API: ${response.status} - ${errorData.error.message}`);
+            console.error("API Error Response:", errorData);
+            throw new Error(`API Error: ${response.status} - ${errorData.error.message}`);
         }
 
         const result = await response.json();
-        console.log("Hasil Mentah API:", result);
+        console.log("Raw API Result:", result);
 
         if (result.candidates && result.candidates.length > 0 &&
             result.candidates[0].content && result.candidates[0].content.parts &&
             result.candidates[0].content.parts.length > 0) {
             const text = result.candidates[0].content.parts[0].text;
-            console.log("Teks Respons API:", text);
+            console.log("API Response Text:", text);
             try {
                 const parsed = schema ? JSON.parse(text) : text;
-                console.log("Hasil API yang diurai:", parsed);
+                console.log("Parsed API Result:", parsed);
                 return parsed;
             } catch (parseError) {
-                console.error("Error mengurai respons API:", parseError, "Teks:", text);
+                console.error("Error parsing API response:", parseError, "Text:", text);
                 showMessageBox(selectedLanguage === 'id' ? 'Kesalahan Parsing Data' : 'Error Parsing Data', `${selectedLanguage === 'id' ? 'Terjadi kesalahan saat memproses data AI.' : 'Error processing AI data.'} ${selectedLanguage === 'id' ? 'Coba lagi.' : 'Please try again.'}`);
                 return null;
             }
@@ -676,7 +717,7 @@ async function callGeminiAPI(prompt, schema = null, loadingElement, loadingTxtEl
             throw new Error(selectedLanguage === 'id' ? "Tidak ada konten yang diterima dari API atau struktur respons tidak terduga." : "No content received from API or unexpected response structure.");
         }
     } catch (error) {
-        console.error("Error memanggil Gemini API:", error);
+        console.error("Error calling Gemini API:", error);
         showMessageBox(selectedLanguage === 'id' ? 'Kesalahan API' : 'API Error', `${selectedLanguage === 'id' ? 'Terjadi kesalahan saat memanggil API Gemini:' : 'Error calling Gemini API:'} ${error.message}`);
         return null;
     } finally {
@@ -727,7 +768,7 @@ async function generateStoryContent() {
                     "items": { "type": "STRING" },
                     "description": "Any character names explicitly mentioned in the story description. Return as an empty array if none."
                 },
-                "initialPlaceMentions": { // Bidang baru untuk menangkap penyebutan tempat awal
+                "initialPlaceMentions": { // New field to capture initial place mentions
                     "type": "ARRAY",
                     "items": { "type": "STRING" },
                     "description": "Any specific geographical place names (cities, regions, countries) explicitly mentioned in the story description. Return as an empty array if none."
@@ -903,8 +944,8 @@ async function generateCharacters() {
     console.log("AI-determined totalNumChars:", totalNumChars);
 
     const charClassHint = characterClassInput.value.trim();
-    const nameStyle = nameStyleSelect.value; // Dapatkan gaya nama yang dipilih
-    selectedNameStyle = nameStyle; // Simpan secara global untuk penggunaan nanti
+    const nameStyle = nameStyleSelect.value; // Get the chosen name style
+    selectedNameStyle = nameStyle; // Store it globally for later use
 
     if (!selectedStoryDetails) {
          showMessageBox(selectedLanguage === 'id' ? 'Peringatan' : 'Warning', selectedLanguage === 'id' ? 'Silakan pilih cerita terlebih dahulu sebelum membuat karakter.' : 'Please select a story first before generating characters.');
@@ -1072,11 +1113,11 @@ function addCharacterCardEventListener(charCard, charData) {
     });
 }
 
-// --- Fungsi Bermain Game ---
+// --- Game Play Functions ---
 async function startGame() {
     showScreen('game-screen');
-    // Pastikan gameLoadingOverlay menggunakan gaya loading yang sama
-    gameLoadingOverlay.classList.add('loading-indicator'); // Terapkan gaya loading dasar
+    // Ensure gameLoadingOverlay uses the shared loading style
+    gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
     gameLoadingOverlay.style.display = 'flex';
     gamePlayScreen.style.display = 'none';
 
@@ -1089,20 +1130,20 @@ async function generatePrologue() {
         properties: {
             "prologueTitle": { "type": "STRING" },
             "prologueText": { "type": "STRING" },
-            "prologueQuote": { "type": "STRING", "description": "Kutipan opsional yang menggugah untuk mengakhiri prolog" },
+            "prologueQuote": { "type": "STRING", "description": "An optional, evocative quote to end the prolog" },
             "initialSystems": {
                 "type": "OBJECT",
                 "properties": {
-                    "trustSystem": { "type": "STRING", "description": "Contoh: Sistem Kepercayaan (aktif)" },
-                    "deathTrigger": { "type": "STRING", "description": "Contoh: Pemicu Kematian (aktif)" },
-                    "flagAwal": { "type": "STRING", "description": "Contoh: Kamu menganggap permaisuri hanya beban yang harus diamati" },
-                    "pathTracker": { "type": "STRING", "description": "Contoh: Bayangan di Atas Takhta" },
-                    "lockedPaths": { "type": "ARRAY", "items": { "type": "STRING" }, "description": "Contoh: [\"🗡️ Ciuman Pengkhianat\", \"👑 Ikrar di Ujung Senja\"]" },
-                    "notes": { "type": "STRING", "description": "Contoh: MC bisa membunuh atau menyelamatkan sang permaisuri tergantung pilihan dan kepercayaan" }
+                    "trustSystem": { "type": "STRING", "description": "Example: Trust System (active)" },
+                    "deathTrigger": { "type": "STRING", "description": "Example: Death Trigger (active)" },
+                    "flagAwal": { "type": "STRING", "description": "Example: Kamu menganggap permaisuri hanya beban yang harus diamati" },
+                    "pathTracker": { "type": "STRING", "description": "Example: Bayangan di Atas Takhta" },
+                    "lockedPaths": { "type": "ARRAY", "items": { "type": "STRING" }, "description": "Example: [\"🗡️ Ciuman Pengkhianat\", \"👑 Ikrar di Ujung Senja\"]" },
+                    "notes": { "type": "STRING", "description": "Example: MC bisa membunuh atau menyelamatkan sang permaisuri tergantung pilihan dan trust" }
                 },
                 "required": ["trustSystem", "deathTrigger", "flagAwal", "pathTracker", "lockedPaths", "notes"]
             },
-            "genreDetails": { "type": "STRING", "description": "Contoh: 😇 Genre, Romantis, Bodyguard Romance" },
+            "genreDetails": { "type": "STRING", "description": "Example: 😇 Genre, Romantis, Bodyguard Romance" },
             "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] }
         },
         "required": ["prologueTitle", "prologueText", "prologueQuote", "initialSystems", "genreDetails", "rating"]
@@ -1116,11 +1157,11 @@ async function generatePrologue() {
     const genres = selectedStoryDetails.genres.join(', ');
     const subgenres = selectedStoryDetails.subgenres.join(', ');
     const rating = selectedStoryDetails.rating;
-    const initialPlaceMentions = selectedStoryDetails.initialPlaceMentions || []; // Dapatkan penyebutan tempat dari detail cerita
+    const initialPlaceMentions = selectedStoryDetails.initialPlaceMentions || []; // Get place mentions from story details
 
-    let prompt = `Buat prolog novel visual yang menarik untuk cerita "${storyTitle}" (Deskripsi: "${storyDescription}") yang berfokus pada karakter utama ${mcName} (${mcClass}, Kepribadian: ${mcPersonality}). Prolog harus mengatur latar, memperkenalkan perspektif awal MC, dan mengisyaratkan konflik utama. Cerita memiliki rating ${rating}. Pastikan konten sepenuhnya sesuai dengan rating ini. **SANGAT HINDARI PENGGUNAAN NAMA "Arya" DAN "Anya".**
+    let prompt = `Generate a compelling visual novel prologue for the story "${storyTitle}" (Description: "${storyDescription}") focusing on the main character ${mcName} (${mcClass}, Personality: ${mcPersonality}). The prologue should set the scene, introduce the MC's initial perspective, and hint at the main conflict. The story has a rating of ${rating}. Ensure the content is strictly compliant with this rating. **STRICTLY AVOID USING THE NAMES "Arya" AND "Anya".**
 
-    Yang terpenting, mengingat gaya penamaan karakter adalah "${selectedNameStyle}", pastikan bahwa setiap nama tempat (kota, wilayah, provinsi, desa, landmark) yang disebutkan dalam narasi prolog atau dialog adalah *sesuai budaya* untuk gaya tersebut. Misalnya, jika "${selectedNameStyle}" adalah "chinese", gunakan nama tempat yang terdengar seperti bahasa Tiongkok (misalnya, "Provinsi Shingyei", "Kota Longjing", "Desa Wuyue"). Jika "${selectedNameStyle}" adalah "indonesian", gunakan nama tempat yang terdengar seperti bahasa Indonesia. Jika deskripsi asli berisi nama tempat tertentu seperti "Jawa Timur" atau "Desa Sukorame" (${JSON.stringify(initialPlaceMentions)}), *ganti dengan padanan yang sesuai secara budaya* berdasarkan gaya "${selectedNameStyle}". Jika tidak ada padanan yang jelas, gunakan istilah umum yang sesuai secara budaya (misalnya, "desa di Tiongkok", "kota di Jepang").
+    Crucially, given the character naming style is "${selectedNameStyle}", ensure that any place names (cities, regions, provinces, villages, landmarks) mentioned in the prologue narrative or dialogue are *culturally appropriate* for that style. For example, if "${selectedNameStyle}" is "chinese", use Chinese-sounding place names (e.g., "Provinsi Shingyei", "Kota Longjing", "Desa Wuyue"). If "${selectedNameStyle}" is "indonesian", use Indonesian-sounding place names. If the original description contained specific place names like "Jawa Timur" or "Desa Sukorame" (${JSON.stringify(initialPlaceMentions)}), *replace them with culturally appropriate equivalents* based on the "${selectedNameStyle}" style. If no clear equivalent, use a generic but culturally fitting term (e.g., "desa di Tiongkok", "kota di Jepang").
 
     Perkaya narasi dan deskripsi adegan:
     - Tambahkan lebih banyak detail sensorik (apa yang terlihat, terdengar, tercium, terasa) untuk membuat adegan lebih hidup.
@@ -1128,27 +1169,27 @@ async function generatePrologue() {
     - Variasikan kecepatan narasi (pacing dinamis); beberapa paragraf bisa cepat dan berurutan untuk adegan aksi, sementara yang lain lebih lambat dan deskriptif untuk adegan reflektif atau emosional.
     - "Show, Don't Tell": Tunjukkan emosi atau situasi melalui tindakan dan deskripsi, bukan hanya menyatakan.
 
-    Setelah narasi, sertakan status awal sistem dinamis berikut seperti yang dijelaskan oleh pengguna:
+    After the narrative, include the following dynamic systems' initial states as described by the user:
     ---
     🎮 SISTEM DINAMIS VISUAL NOVEL
     ---
-    🧠 1. Sistem Kepercayaan: Setiap karakter memiliki poin kepercayaan terhadap MC. Kepercayaan bisa naik atau turun tergantung pilihan, dialog, atau tindakan. Kepercayaan tinggi membuka rahasia, jalur unik, atau akhir positif. Kepercayaan rendah dapat memicu pengkhianatan, kematian karakter, atau akhir buruk.
-    🩸 2. Pemicu Kematian: MC atau karakter penting bisa mati jika pemain mengambil pilihan tertentu. Kematian bisa bersifat langsung atau karena efek berantai. Jika MC mati, cerita dianggap gagal.
+    🧠 1. Trust System: Setiap karakter memiliki poin kepercayaan terhadap MC. Trust bisa naik atau turun tergantung pilihan, dialog, atau tindakan. Trust tinggi membuka rahasia, jalur unik, atau ending positif. Trust rendah bisa memicu pengkhianatan, kematian karakter, atau ending buruk.
+    🩸 2. Death Trigger: MC atau karakter penting bisa mati jika pemain mengambil pilihan tertentu. Kematian bisa bersifat langsung atau karena efek berantai. Jika MC mati, cerita dianggap gagal.
     🎭 3. Flag Awal: Karakter membawa kondisi tersembunyi sejak awal (contoh: pernah dikhianati, menyimpan rahasia, trauma). Flag ini bisa terpicu oleh kata, tindakan, atau waktu tertentu. Pengaruh besar terhadap sikap awal karakter terhadap MC.
-    🔒 4. Pelacak Jalur: Menampilkan jalur besar cerita yang sedang ditempuh MC (contoh: “Bayangan Di Antara Dua Mahkota”). Jalur ini bisa berganti tergantung keputusan kunci. Jalur bisa berisi sub-jalur tersembunyi.
-    🕊️ 5. Jalur Cerita Terkunci Potensial: Beberapa jalur hanya terbuka jika pemain memenuhi syarat tertentu: Kepercayaan tinggi/rendah, Flag terbuka, Tindakan rahasia, DNA Keputusan khusus.
+    🔒 4. Path Tracker: Menampilkan jalur besar cerita yang sedang ditempuh MC (contoh: “Bayangan Di Antara Dua Mahkota”). Jalur ini bisa berganti tergantung keputusan kunci. Path bisa berisi sub-jalur tersembunyi.
+    🕊️ 5. Jalur Cerita Terkunci Potensial: Beberapa jalur hanya terbuka jika pemain memenuhi syarat tertentu: Trust tinggi/rendah, Flag terbuka, Tindakan rahasia, DNA Keputusan khusus.
     🎯 Catatan: [Peringatan atau info penting]
 
-    Format output secara ketat sebagai JSON sesuai dengan skema yang diberikan. Prolog harus dalam bahasa ${selectedLanguage === 'id' ? 'Indonesian' : 'English'}.
+    Format the output strictly as JSON according to the provided schema. The prologue should be in ${selectedLanguage === 'id' ? 'Indonesian' : 'English'}.
 
-    Saat merujuk MC, gunakan "${mcName}" alih-alih "MC".
-    Pastikan Flag Awal relevan dengan kepribadian MC dan premis cerita.
+    When referencing MC, use "${mcName}" instead of "MC".
+    Make sure the initial Flag Awal is relevant to the MC's personality and the story premise.
 
-    Pertimbangan Rating:
-    - Konten seksual eksplisit (misalnya, deskripsi grafis tindakan seksual, ketelanjangan yang bertujuan untuk membangkitkan gairah): SANGAT DILARANG.
-    - Tema terkait LGBTQ+, Yuri, Yaoi, Harem, dan Reverse Harem SANGAT DILARANG.
-    - Kekerasan, bahasa kasar, pembunuhan, kejahatan, tuduhan: Diizinkan hanya untuk rating 16+, 18+, dan 21+. Untuk SU dan PG-13, tema ini harus tidak ada atau sangat ringan/tersirat.
-    - Untuk rating 18+: Memungkinkan kekerasan dan bahasa kasar yang lebih kuat dari 16+, dan **tema sugestif non-eksplisit (ketegangan seksual tersirat, romansa, atau situasi tanpa detail eksplisit)**.
+    Rating Considerations:
+    - Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse): STRICTLY FORBIDDEN.
+    - Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
+    - Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+ and 21+. For SU and PG-13, these themes must be absent or very mild/implied.
+    - For 18+ rating: Allows stronger violence and harsh language than 16+, and **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
     `;
 
     const prologData = await callGeminiAPI(
@@ -1157,7 +1198,7 @@ async function generatePrologue() {
         gameLoadingOverlay,
         gameLoadingOverlay.querySelector('span'),
         gameLoadingAdditionalText,
-        null // Tidak ada tombol untuk dinonaktifkan untuk loading ini
+        null // No button to disable for this loading
     );
 
     if (prologData) {
@@ -1205,7 +1246,7 @@ async function startChapter1() {
 
     prologContentDisplay.style.display = 'none';
     startRealStoryBtn.style.display = 'none';
-    gameLoadingOverlay.classList.add('loading-indicator'); // Terapkan gaya loading dasar
+    gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
     gameLoadingOverlay.style.display = 'flex';
 
     await generateChapter(gameProgress.currentChapter);
@@ -1219,8 +1260,8 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
             "chapterMeta": {
                 "type": "OBJECT",
                 "properties": {
-                    "mcDisplay": { "type": "STRING", "description": "Contoh: MC: Renessa – Penjaga Bayangan" },
-                    "activePath": { "type": "STRING", "description": "Contoh: Jalur Aktif: Bayangan di Atas Takhta" }
+                    "mcDisplay": { "type": "STRING", "description": "Example: MC: Renessa – Penjaga Bayangan" },
+                    "activePath": { "type": "STRING", "description": "Example: Jalur Aktif: Bayangan di Atas Takhta" }
                 },
                 "required": ["mcDisplay", "activePath"]
             },
@@ -1230,8 +1271,8 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
                     "type": "OBJECT",
                     "properties": {
                         "type": { "type": "STRING", "enum": ["narrative", "dialogue"] },
-                        "speaker": { "type": "STRING", "description": "Nama karakter yang berbicara. Wajib jika type adalah 'dialogue'. HARUS berupa nama karakter tertentu (misalnya, 'Permaisuri', 'Kapten Drevan', atau nama asli MC seperti 'Aldi Saputra'), BUKAN 'seseorang misterius' atau placeholder generik lainnya." },
-                        "text": { "type": "STRING", "description": "Konten dialog. Teks ini HANYA boleh berisi dialog itu sendiri, tanpa 'Nama MC [Aku]:' atau 'Nama Karakter:'. Prefix ini akan ditambahkan oleh kode sisi klien. Kutipan yang dimulai dengan '> ' bisa menjadi bagian dari blok teks apa pun." }
+                        "speaker": { "type": "STRING", "description": "The name of the character speaking. Required if type is 'dialogue'. MUST be a specific character name (e.g., 'Permaisuri', 'Kapten Drevan', or the MC's actual name like 'Aldi Saputra'), NOT 'seseorang misterius' or any generic placeholder." },
+                        "text": { "type": "STRING", "description": "The dialogue content. This text should ONLY contain the dialogue itself, without 'Nama MC [Aku]:' or 'Nama Karakter:'. This prefix will be added by the client-side code. Quotes starting with '> ' can be part of any text block." }
                     },
                     "required": ["type", "text"]
                 }
@@ -1243,50 +1284,13 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
                     "properties": {
                         "id": { "type": "STRING" },
                         "text": { "type": "STRING" },
-                        "emote": { "type": "STRING", "description": "Karakter Emoji untuk pilihan, cth: 💖, 🛡️, 💡, 🤫" },
-                        "effect": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "trustChanges": {
-                                    "type": "ARRAY",
-                                    "items": {
-                                        "type": "OBJECT",
-                                        "properties": {
-                                            "characterId": { "type": "STRING" },
-                                            "change": { "type": "NUMBER", "description": "Perubahan poin kepercayaan (-10 hingga +10)" }
-                                        },
-                                        "required": ["characterId", "change"]
-                                    }
-                                },
-                                "newFlags": {
-                                    "type": "ARRAY",
-                                    "items": { "type": "STRING" },
-                                    "description": "Nama flag baru yang diaktifkan"
-                                },
-                                "unlockPaths": {
-                                    "type": "ARRAY",
-                                    "items": { "type": "STRING" },
-                                    "description": "Nama jalur cerita yang tidak terkunci"
-                                },
-                                "dnaDecision": {
-                                    "type": "OBJECT",
-                                    "properties": {
-                                        "moral": { "type": "STRING", "enum": ["Tinggi", "Rendah", "Netral"] },
-                                        "honesty": { "type": "STRING", "enum": ["Tinggi", "Rendah", "Netral"] },
-                                        "empathy": { "type": "STRING", "enum": ["Tinggi", "Rendah", "Netral"] },
-                                        "style": { "type": "STRING", "enum": ["Agresif", "Diplomatik", "Kritis", "Impulsif", "Observasi", "Manipulatif"] }
-                                    }
-                                },
-                                "gameOver": { "type": "BOOLEAN", "description": "Apakah pilihan ini mengarah ke game over?" },
-                                "gameOverMessage": { "type": "STRING", "description": "Pesan jika game over." },
-                                "gameOverAnalysis": { "type": "STRING", "description": "Analisis jika game over." }
-                            }
-                        }
+                        "emote": { "type": "STRING", "description": "The actual emote character (e.g., '💬', '🦶', '🧊'), NOT descriptive words like 'confused' or 'question'." }
                     },
-                    "required": ["id", "text", "emote", "effect"]
+                    "required": ["id", "text", "emote"]
                 }
             },
-            "dynamicSystemUpdates": {
+            "consequenceNote": { "type": "STRING", "description": "Note about what choices will affect" },
+            "dynamicUpdates": {
                 "type": "OBJECT",
                 "properties": {
                     "trustUpdates": {
@@ -1294,172 +1298,150 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
                         "items": {
                             "type": "OBJECT",
                             "properties": {
-                                "characterId": { "type": "STRING" },
+                                "character": { "type": "STRING" },
                                 "change": { "type": "NUMBER" },
                                 "reason": { "type": "STRING" }
                             },
-                            "required": ["characterId", "change", "reason"]
+                            "required": ["character", "change"]
                         }
                     },
-                    "flagChanges": {
+                    "flagsTriggered": { "type": "ARRAY", "items": { "type": "STRING" } },
+                    "newAchievements": {
                         "type": "ARRAY",
                         "items": {
                             "type": "OBJECT",
                             "properties": {
-                                "flagName": { "type": "STRING" },
-                                "status": { "type": "BOOLEAN" },
-                                "reason": { "type": "STRING" }
-                            },
-                            "required": ["flagName", "status", "reason"]
-                        }
-                    },
-                    "pathUpdates": { "type": "STRING", "description": "Pembaharuan pada pelacak jalur" },
-                    "notes": { "type": "STRING", "description": "Catatan baru atau yang diperbarui untuk sistem dinamis" },
-                    "achievements": {
-                        "type": "ARRAY",
-                        "items": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "name": { "type": "STRING" },
+                                "title": { "type": "STRING" },
                                 "description": { "type": "STRING" }
                             },
-                            "required": ["name", "description"]
+                            "required": ["title", "description"]
                         }
-                    },
-                    "traumaUpdates": {
-                        "type": "ARRAY",
-                        "items": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "characterId": { "type": "STRING" },
-                                "triggered": { "type": "BOOLEAN" },
-                                "details": { "type": "STRING" }
-                            },
-                            "required": ["characterId", "triggered", "details"]
-                        }
-                    },
-                    "relationshipLabelUpdates": {
-                        "type": "ARRAY",
-                        "items": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "characterId": { "type": "STRING" },
-                                "label": { "type": "STRING", "description": "Contoh: Rival, Sekutu, Kekasih" }
-                            },
-                            "required": ["characterId", "label"]
-                        }
-                    },
-                    "timeUpdates": {
-                        "type": "OBJECT",
-                        "properties": {
-                            "day": { "type": "NUMBER" },
-                            "partOfDay": { "type": "STRING", "enum": ["pagi", "siang", "sore", "malam"] },
-                            "countdown": { "type": ["NUMBER", "NULL"] }
-                        }
-                    },
-                    "eventUpdates": {
-                        "type": "ARRAY",
-                        "items": { "type": "STRING" }
                     },
                     "dnaProfileChanges": {
                         "type": "OBJECT",
                         "properties": {
-                            "moral": { "type": "STRING", "enum": ["Tinggi", "Rendah", "Netral"] },
-                            "honesty": { "type": "STRING", "enum": ["Tinggi", "Rendah", "Netral"] },
-                            "empathy": { "type": "STRING", "enum": ["Tinggi", "Rendah", "Netral"] },
-                            "style": { "type": "STRING", "enum": ["Agresif", "Diplomatik", "Kritis", "Impulsif", "Observasi", "Manipulatif"] }
+                            "moral": { "type": "STRING", "enum": ["Tinggi", "Netral", "Rendah"] },
+                            "honesty": { "type": "STRING", "enum": ["Tinggi", "Netral", "Rendah"] },
+                            "empathy": { "type": "STRING", "enum": ["Tinggi", "Netral", "Rendah"] },
+                            "style": { "type": "STRING", "enum": ["Observasi", "Agresif", "Diplomatik", "Manipulatif", "Kritis", "Impulsif"] }
                         }
-                    }
+                    },
+                    "timeUpdate": { "type": "STRING" },
+                    "activeEvents": { "type": "ARRAY", "items": { "type": "STRING" } },
+                    "pathTrackerChange": { "type": "STRING" },
+                    "lockedPathsInfo": { "type": "STRING" }
                 }
-            }
+            },
+            "rating": { "type": "STRING", "enum": ["SU", "PG-13", "16+", "18+", "21+"] }
         },
-        "required": ["chapterTitle", "chapterMeta", "chapterContent", "choices", "dynamicSystemUpdates"]
+        "required": ["chapterTitle", "chapterMeta", "chapterContent", "choices", "consequenceNote", "rating"]
     };
 
     const mcName = selectedMainCharacter.name;
-    const mcId = selectedMainCharacter.id;
+    const mcClass = selectedMainCharacter.class;
     const storyTitle = selectedStoryDetails.title;
-    const storyDescription = selectedStoryDetails.description;
-    const currentChapter = gameProgress.currentChapter;
-    const currentScene = gameProgress.currentScene;
-    const previousChoices = JSON.stringify(gameProgress.playerChoices);
-    const trustPoints = JSON.stringify(gameProgress.trustPoints);
-    const flagAwal = JSON.stringify(gameProgress.flagAwal);
-    const pathTracker = gameProgress.pathTracker;
-    const lockedPaths = JSON.stringify(gameProgress.lockedPaths);
-    const dnaProfile = JSON.stringify(gameProgress.dnaProfile);
-    const timeSystem = JSON.stringify(gameProgress.timeSystem);
-    const traumaSystem = JSON.stringify(gameProgress.traumaSystem);
-    const relationshipLabels = JSON.stringify(gameProgress.relationshipLabels);
-    const generatedCharNames = generatedCharacters.map(c => c.name);
+    const rating = selectedStoryDetails.rating;
 
-    // Kumpulan karakter yang bisa berbicara
-    const speakableCharacters = generatedCharacters.map(c => ({ id: c.id, name: c.name, role: c.role }));
-    const speakableCharacterNames = generatedCharNames.join(', ');
+    const allCharacterNames = generatedCharacters.map(c => ({
+        name: c.name,
+        personality: c.personality,
+        role: c.role,
+        isMC: c.id === selectedMainCharacter.id
+    }));
 
-    let prompt = `Continue the visual novel story "${storyTitle}" (Description: "${storyDescription}").
-    Current MC: ${mcName} (ID: ${mcId}).
-    Current Chapter: ${currentChapter}, Current Scene: ${currentScene}.
-    Previous Choices made by player: ${previousChoices}.
-    Current Trust Points: ${trustPoints}.
-    Current Initial Flags: ${flagAwal}.
-    Current Path Tracker: ${pathTracker}.
-    Locked Paths: ${lockedPaths}.
-    Current DNA Profile: ${dnaProfile}.
-    Current Time System: ${timeSystem}.
-    Current Trauma System: ${traumaSystem}.
-    Current Relationship Labels: ${relationshipLabels}.
-    All speakable character names for this story: ${speakableCharacterNames}.
-    The naming style for characters in this story is "${selectedNameStyle}".
+    const currentGameStateForAI = {
+        mc: {
+            name: mcName,
+            class: mcClass,
+            personality: selectedMainCharacter.personality,
+            description: selectedMainCharacter.description
+        },
+        story: {
+            title: storyTitle,
+            description: selectedStoryDetails.description,
+            genres: selectedStoryDetails.genres,
+            subgenres: selectedStoryDetails.subgenres,
+            rating: rating
+        },
+        allCharactersInStory: allCharacterNames,
+        gameProgress: {
+            currentChapter: gameProgress.currentChapter,
+            currentScene: gameProgress.currentScene,
+            trustPoints: JSON.stringify(gameProgress.trustPoints),
+            flagAwal: gameProgress.flagAwal,
+            pathTracker: gameProgress.pathTracker,
+            lockedPaths: gameProgress.lockedPaths,
+            achievements: gameProgress.achievements,
+            traumaSystem: JSON.stringify(gameProgress.traumaSystem),
+            relationshipLabels: JSON.stringify(gameProgress.relationshipLabels),
+            timeSystem: JSON.stringify(gameProgress.timeSystem),
+            dnaProfile: gameProgress.dnaProfile,
+            playerChoices: gameProgress.playerChoices.map(c => c.choiceText).join("; ")
+        },
+        previousChoice: previousChoiceText
+    };
 
-    ${previousChoiceText ? `The player's last choice was: "${previousChoiceText}". This choice should directly influence the beginning of this new chapter/scene.` : ''}
+    let prompt = `Continue the visual novel story. The current game state is: ${JSON.stringify(currentGameStateForAI)}.
 
-    Generate the next part of the story (Chapter ${currentChapter}, Scene ${currentScene}) as a series of narrative and dialogue blocks, followed by exactly 2-4 choices for the player.
-    Crucially, ensure that any place names (cities, regions, provinces, villages, landmarks) mentioned in the narrative or dialogue are *culturally appropriate* for the "${selectedNameStyle}" naming style. For instance, if the style is "chinese", use Chinese-sounding place names. If the original story description had specific place names, try to re-contextualize them to match this style.
+    Generate the content for Chapter ${chapterNum}, including:
+    - A concise chapter title.
+    - "chapterMeta": An object containing "mcDisplay" (e.g., "MC: Renessa – Penjaga Bayangan") and "activePath" (e.g., "Jalur Aktif: Bayangan di Atas Takhta").
+    - "chapterContent": An ordered array of narrative and dialogue blocks.
+        - For narrative blocks, use type "narrative" and include the text. **Ensure narrative flows logically from the previous scene/prologue and does not jump.**
+        - For dialogue blocks, use type "dialogue", explicitly include the "speaker" name (e.g., 'Permaisuri', 'Kapten Drevan', or "${mcName}" for the MC). The speaker's name MUST be a concrete character name from 'allCharactersInStory' and NEVER a generic placeholder like "seseorang misterius". **STRICTLY AVOID USING THE NAMES "Arya" AND "Anya".**
+        - The "text" of their dialogue. This text should ONLY contain the dialogue itself, without "Nama MC [Aku]:" or "Nama Karakter:". This prefix will be added by the client-side code. Quotes starting with '> ' can be part of any text block. **IMPORTANT: Ensure the dialogue sounds natural and is consistent with the speaker's personality and role as defined in 'allCharactersInStory'. Avoid stiff or unnatural phrasing.**
+    - A set of 3 choices (dialogue or action) for the player.
+    - A "consequenceNote" explaining what the choices will affect.
+    - "dynamicUpdates": An object containing updates for various dynamic systems based on the narrative progression and previous choice.
+        - **Specifically for 'dnaProfileChanges'**: Based on the 'previousChoice' made by the player, determine the new state of 'moral', 'honesty', 'empathy', and 'style' for the MC.
+            - Possible values for moral, honesty, empathy: "Tinggi", "Netral", "Rendah".
+            - Possible values for style: "Observasi", "Agresif", "Diplomatik", "Manipulatif", "Kritis", "Impulsif".
+            - If a choice leans towards kindness, 'empathy' might become "Tinggi". If a choice is deceptive, 'honesty' might become "Rendah" and 'style' "Manipulatif". A decisive, action-oriented choice might make 'style' "Agresif". If a choice has no significant moral/stylistic implication, keep them "Netral" or "Observasi" or based on their current state. Only include the properties that *change*.
+    - "rating": The determined rating for the chapter content based on the story's overall rating. This must be one of "SU", "PG-13", "16+", "18+", "21+".
 
-    **Narrative and Dialogue Guidelines:**
-    - Each narrative block should be compelling, detailing events, character actions, and environmental descriptions.
-    - Dialogue blocks must accurately reflect character personalities and advance the plot.
-    - Vary the pacing: include moments of high tension, calm reflection, or emotional depth.
-    - Incorporate sensory details (sights, sounds, smells, feelings) to immerse the player.
-    - Reveal character thoughts and emotions through their actions and internal monologues.
-    - Ensure logical flow from the previous scene/choice.
-    - **Speaker names in dialogue must be specific character names from the list of 'All speakable character names', NOT generic terms like 'seseorang misterius' or 'prajurit'.**
-    - **STRICTLY AVOID USING THE NAMES "Arya" AND "Anya".**
+    Crucially, given the character naming style is "${selectedNameStyle}", ensure that any place names (cities, regions, provinces, villages, landmarks) mentioned in the chapter narrative or dialogue are *culturally appropriate* for that style. If the original story description or previous chapters contained specific place names that do not match this style, *replace them with culturally appropriate equivalents* (e.g., "Jawa Timur" becomes "Provinsi Shingyei" for "chinese" style). If no clear equivalent, use a generic but culturally fitting term (e.g., "desa di Tiongkok", "kota di Jepang").
 
-    **Choices Guidelines:**
-    - Provide exactly 2-4 choices per scene.
-    - Each choice must have a clear text, a relevant emoji (e.g., 💖, 🛡️, 💡, 🤫), and potential effects.
-    - Effects can include:
-        - `trustChanges`: Array of objects {characterId, change (e.g., -10 to +10)}
-        - `newFlags`: Array of strings for flags that are now 'true' (e.g., ["FlagPahlawanTersembunyi"])
-        - `unlockPaths`: Array of strings for newly unlocked story paths (e.g., ["JalurRahasiaHutanKuno"])
-        - `dnaDecision`: Update to MC's DNA profile {moral, honesty, empathy, style}
-        - `gameOver`: boolean (true if this choice leads to immediate game over)
-        - `gameOverMessage`: string (required if gameOver is true)
-        - `gameOverAnalysis`: string (required if gameOver is true, explaining why)
+    Perkaya narasi dan deskripsi adegan:
+    - Tambahkan lebih banyak detail sensorik (apa yang terlihat, terdengar, tercium, terasa) untuk membuat adegan lebih hidup.
+    - Sertakan lebih banyak pikiran dan perasaan internal Karakter Utama (MC) untuk membantu pemain terhubung lebih dalam dengan MC.
+    - Variasikan kecepatan narasi (pacing dinamis); beberapa paragraf bisa cepat dan berurutan untuk adegan aksi, sementara yang lain lebih lambat dan deskriptif untuk adegan reflektif atau emosional.
+    - "Show, Don't Tell": Tunjukkan emosi atau situasi melalui tindakan dan deskripsi, bukan hanya menyatakan.
 
-    **Dynamic System Updates:**
-    - Provide realistic and relevant updates to the dynamic systems based on the narrative and choices.
-    - `trustUpdates`: Array of objects {characterId, change, reason}. Update existing trust points or introduce new ones.
-    - `flagChanges`: Array of objects {flagName, status (boolean), reason}. Change existing flags or introduce new ones.
-    - `pathUpdates`: String. Describe any changes to the main path tracker.
-    - `notes`: String. Any important notes for the player about system status or future implications.
-    - `achievements`: Array of objects {name, description}. Unlock new achievements.
-    - `traumaUpdates`: Array of objects {characterId, triggered (boolean), details}. Update character trauma status.
-    - `relationshipLabelUpdates`: Array of objects {characterId, label}. Update character relationship labels.
-    - `timeUpdates`: Object {day, partOfDay, countdown}. Advance time, manage countdowns.
-    - `eventUpdates`: Array of strings. Describe new active events.
-    - `dnaProfileChanges`: Object. Describe any direct changes to MC's DNA profile.
+    The dynamic systems are:
+    1. Trust System: Each character has trust points towards MC. Trust can increase or decrease. High trust unlocks secrets, unique paths, or positive endings. Low trust can trigger betrayal, character death, or bad endings.
+    2. Death Trigger: MC or important characters can die based on choices. Death can be immediate or chain reaction. If MC dies, game over.
+    3. Flag Awal: Characters have hidden conditions from the start (e.g., betrayed before, secret, trauma). Triggered by words, actions, or time. Greatly influences initial attitude towards MC.
+    4. Path Tracker: Shows main story path (e.g., “Shadows Between Two Crowns”). This path can change based on key decisions. Paths can contain hidden sub-paths.
+    5. Locked Story Paths: Some paths open only if certain conditions met (high/low trust, flags triggered, secret actions, specific DNA Profile).
+    6. Trust Dynamic Update: Only appears for significant changes. Format: 🔸 Althea: +2.1, 🟡 Kael: -1.2 → “You broke it again?”, ⚠️ Shadow Guild: -4.0 → [Considers you a threat].
+    7. Title / Achievement System: Player gets titles based on moral choices, play style, and ending. Example: 🗡️ Bloody Hand, 👑 Forgiving Hero, 🕷️ Master Deceiver. Titles can unlock unique dialogues or hidden paths.
+    8. Inner Wound / Trauma System: Heavy decisions/events can trigger trauma on MC/characters. Effects: trust changes, locking choices, different emotional dialogues.
+    9. Dynamic Character Dialogue: Adjusts based on Trust, Relationship Label, interaction history. Characters remember past actions.
+    10. Character Relationship Label System: Stores labels like: Friend, Old Enemy, Hidden Love, Former Alliance. Changes based on choices and trust. Affects special dialogues, exclusive events, betrayal/sacrifice potential.
+    11. Dynamic Time Event System: Events tied to time (morning, noon, night, specific hour). Each action advances time. Some events only appear at certain times. Format: 🕒 Time: Day 3, Night; ⏳ Countdown: 1 time left before South Gate closes; 📍 Active Event: Kael's Execution (terjadi saat fajar).
+    12. Choice DNA / Decision Root System: Tracks player's moral patterns: Moral, Honesty, Empathy, Decision Style. This DNA affects: secret paths, automatic trust, hidden endings.
+    13. MC Dialogue Choice System: MC speaks with characters. Dialogue can trigger trust changes, emotions, or story paths. Choices are provided. Example: 💬 What will you say to Kael? a. “I promise to return” b. “If you die, it's not my business.” c. (Remain silent).
+    14. Action / Behavior Choice System: Not all choices are dialogue. Some are direct actions. Actions can trigger new scenes, paths, or flags. Example: 🧭 What will you do? a. Go investigate the dungeon b. Report to the General c. Hide and observe from afar. Can be combined with dialogue.
 
-    **Game Progression:**
-    - The story should naturally progress through scenes. After approximately 2-3 scenes within a chapter (or at a narrative breakpoint), **advance the `currentChapter` in `dynamicSystemUpdates.notes`**. For example, "Catatan: Bab 2 dimulai setelah ini!" atau "Notes: Chapter 2 starts after this!"
-    - If `gameProgress.currentScene` reaches 3, consider generating content for `gameProgress.currentChapter + 1`. This means the *next* prompt to the AI after `handleChoice` will be for the *new chapter*.
+    Format the output strictly as JSON according to the provided schema. Use ${selectedLanguage === 'id' ? 'Indonesian' : 'English'} for all content.
 
-    Ensure the JSON output strictly adheres to the schema. The content (chapterTitle, content, choices, etc.) must be in ${selectedLanguage === 'id' ? 'Indonesian' : 'English'}.
-    The overall tone and themes must remain consistent with the story's selected genres, subgenres, and rating.
-    REMEMBER: No explicit sexual content. No LGBTQ+, Yuri, Yaoi, Harem, Reverse Harem themes. Violence and harsh language only for 16+, 18+, 21+.
-    (Timestamp: ${Date.now()})
+    For the "choices" emotes, ONLY use these specific characters: '💬' (dialogue), '🦶' (action/movement), '🧊' (silence/inaction), '✨' (magic/supernatural), '🗡️' (combat/threat), '❤️' (affection/emotion), '🧠' (thought/analysis), '🔍' (investigation/discovery), '⏳' (time-related action), '📜' (reading/lore). Do NOT use descriptive words like 'confused', 'question', 'silent'.
+    Make sure all numerical trust changes are represented with positive or negative values like "+2.1" or "-1.2".
+    Include at least 3 choices per step.
+    Focus on creating a compelling and interactive story with clear progression. **Ensure narrative continuity, building directly on the previous chapter's events and the previous choice made. Avoid jumping in plot or introducing unrelated elements. The story must progress naturally from where it left off.**
+    If a character dies, the AI should indicate "MC mati" (MC died) or a specific character's death in the narrative/notes, which will trigger the game over logic.
+    Do NOT include the "🎮 Sistem Aktif:" block in the chapter output, only provide the individual dynamic updates in the "dynamicUpdates" object.
+    Always provide a "consequenceNote" explaining what the choices will affect (e.g., Kepercayaan sang Permaisuri, Jalur cerita aktif, DNA Pilihan).
+
+    Rating Guidelines for this chapter (must adhere to story's overall rating of ${rating}):
+    - SU: Suitable for all audiences. No violence, no harsh language, no suggestive themes.
+    - PG-13: Parental guidance suggested. May contain mild violence, some suggestive themes, or brief strong language.
+    - 16+: Contains mature themes, moderate violence, strong language, and/or suggestive themes.
+    - 18+: Contains mature themes, stronger violence, harsh language, and/or **non-explicit suggestive themes (implied sexual tension, romance, or situations without explicit detail)**.
+    - 21+: Contains explicit violence, strong language, and mature themes (excluding explicit sexual content).
+    Explicit sexual content (e.g., graphic descriptions of sexual acts, nudity intended to arouse): STRICTLY FORBIDDEN.
+    Themes related to LGBTQ+, Yuri, Yaoi, Harem, and Reverse Harem are STRICTLY FORBIDDEN.
+    Violence, harsh language, murder, crime, accusation: Permitted only for ratings 16+, 18+, and 21+.
     `;
 
     const chapterData = await callGeminiAPI(
@@ -1468,187 +1450,230 @@ async function generateChapter(chapterNum, previousChoiceText = null) {
         gameLoadingOverlay,
         gameLoadingOverlay.querySelector('span'),
         gameLoadingAdditionalText,
-        null
+        null // No button to disable for this loading
     );
 
     if (chapterData) {
-        displayChapter(chapterData);
+        renderGameContent(chapterData);
         gameLoadingOverlay.style.display = 'none';
-        gamePlayScreen.style.display = 'flex';
+        chapterContentDisplay.style.display = 'block';
         gamePlayScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
-        showMessageBox(selectedLanguage === 'id' ? 'Kesalahan Bab' : 'Chapter Error', selectedLanguage === 'id' ? 'Tidak dapat menghasilkan bab. Cerita mungkin berakhir atau ada kesalahan.' : 'Could not generate chapter. Story might have ended or there was an error.');
-        showScreen('game-over-screen'); // Arahkan ke game over jika chapter tidak dapat dihasilkan
+        showMessageBox(selectedLanguage === 'id' ? 'Kesalahan Bab' : 'Chapter Error', selectedLanguage === 'id' ? 'Tidak dapat menghasilkan bab. Coba lagi.' : 'Could not generate chapter. Please try again.');
+        showScreen('game-over-screen');
     }
 }
 
-function displayChapter(chapterData) {
-    chapterContentDisplay.innerHTML = `
-        <div class="chapter-header-card p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 mb-6 text-center">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">📖 Chapter ${gameProgress.currentChapter}: ${chapterData.chapterTitle}</h2>
-            <p class="chapter-meta text-sm text-gray-600 dark:text-gray-400">${chapterData.chapterMeta.mcDisplay}</p>
-            <p class="chapter-meta text-sm text-gray-600 dark:text-gray-400">${chapterData.chapterMeta.activePath}</p>
-        </div>
-        <div class="narrative-content w-full">
-            ${chapterData.chapterContent.map(block => {
-                if (block.type === 'narrative') {
-                    return `<p class="text-gray-700 dark:text-gray-300 text-base leading-relaxed mb-4 text-justify">${block.text}</p>`;
-                } else if (block.type === 'dialogue') {
-                    const speakerName = block.speaker.trim();
-                    const isMC = (speakerName === selectedMainCharacter.name);
-                    const dialogueClass = isMC ? 'mc-dialogue-card' : 'other-dialogue-card';
-                    const displayedSpeaker = isMC ? `${selectedMainCharacter.name} [Aku]` : speakerName;
-                    return `
-                        <div class="character-dialogue-card ${dialogueClass} p-4 rounded-lg shadow-sm border border-gray-300 dark:border-gray-600 mb-4">
-                            <strong class="speaker-name text-gray-900 dark:text-gray-100">${displayedSpeaker}:</strong>
-                            <span class="text-gray-700 dark:text-gray-300">${block.text}</span>
-                        </div>
-                    `;
+function renderGameContent(chapterData) {
+    chapterContentDisplay.innerHTML = '';
+
+    const chapterHeaderCard = document.createElement('div');
+    chapterHeaderCard.className = 'chapter-header-card p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 mb-6 text-center';
+    chapterHeaderCard.innerHTML = `
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">🩸 ${chapterData.chapterTitle}</h2>
+        <p class="chapter-meta text-sm text-gray-600 dark:text-gray-400">
+            <span class="font-medium text-gray-800 dark:text-gray-200">🎭 MC:</span> ${chapterData.chapterMeta.mcDisplay} <br>
+            <span class="font-medium text-gray-800 dark:text-gray-200">🔒 Jalur Aktif:</span> ${chapterData.chapterMeta.activePath} <br>
+            <span class="font-medium text-gray-800 dark:text-gray-200">⭐ Rating:</span> ${chapterData.rating}
+        </p>
+    `;
+    chapterContentDisplay.appendChild(chapterHeaderCard);
+
+    const narrativeContainer = document.createElement('div');
+    narrativeContainer.className = 'narrative-content w-full';
+    chapterContentDisplay.appendChild(narrativeContainer);
+
+
+    chapterData.chapterContent.forEach(block => {
+        if (block.type === 'narrative') {
+            const p = document.createElement('p');
+            p.innerHTML = block.text.split('\n').filter(Boolean).map(line => {
+                if (line.trim().startsWith('> ')) {
+                    return `<p class="chapter-quote text-gray-700 dark:text-gray-300 italic border-l-4 border-gray-300 dark:border-gray-600 pl-4 my-4 text-center">${line.trim().substring(2)}</p>`;
                 }
-                return '';
-            }).join('')}
-        </div>
-    `;
-    chapterContentDisplay.style.display = 'block';
-    prologContentDisplay.style.display = 'none';
+                return `<p class="text-gray-700 dark:text-gray-300 text-base leading-relaxed mb-4 text-justify">${line.trim()}</p>`;
+            }).join('');
+            narrativeContainer.appendChild(p);
+        } else if (block.type === 'dialogue') {
+            const dialogueCard = document.createElement('div');
+            let speakerNameDisplay = block.speaker;
+            let dialogueText = block.text;
 
-    renderDynamicSystems(chapterData.dynamicSystemUpdates);
-    renderChoices(chapterData.choices);
+            if (block.speaker === selectedMainCharacter.name) {
+                dialogueCard.className = 'character-dialogue-card p-4 rounded-lg mb-3 shadow-sm transition-all duration-300 ease-in-out mc-dialogue-card ml-auto';
+                speakerNameDisplay = `${selectedMainCharacter.name} [Aku]`;
+            } else {
+                dialogueCard.className = 'character-dialogue-card p-4 rounded-lg mb-3 shadow-sm transition-all duration-300 ease-in-out other-dialogue-card mr-auto';
+            }
+
+            dialogueCard.innerHTML = `
+                <strong class="speaker-name text-sm font-semibold">${speakerNameDisplay}:</strong>
+                <span class="text-gray-700 dark:text-gray-300 text-base">${dialogueText}</span>
+            `;
+            narrativeContainer.appendChild(dialogueCard);
+        }
+    });
+
+    if (chapterData.dynamicUpdates) {
+        const updates = chapterData.dynamicUpdates;
+
+        if (updates.trustUpdates) {
+            updates.trustUpdates.forEach(tu => {
+                if (!gameProgress.trustPoints[tu.character]) {
+                    gameProgress.trustPoints[tu.character] = 0;
+                }
+                gameProgress.trustPoints[tu.character] += tu.change;
+            });
+        }
+
+        if (updates.flagsTriggered) {
+            updates.flagsTriggered.forEach(flag => {
+                if (!gameProgress.flagAwal[flag]) {
+                    gameProgress.flagAwal[flag] = true;
+                }
+            });
+        }
+
+        if (updates.newAchievements) {
+            updates.newAchievements.forEach(achievement => {
+                if (!gameProgress.achievements.some(a => a.title === achievement.title)) {
+                    gameProgress.achievements.push(achievement);
+                }
+            });
+        }
+
+        if (updates.dnaProfileChanges) {
+            gameProgress.dnaProfile = { ...gameProgress.dnaProfile, ...updates.dnaProfileChanges };
+        }
+
+        if (updates.timeUpdate) {
+            gameProgress.timeSystem.display = updates.timeUpdate;
+        }
+
+        if (updates.activeEvents) {
+            gameProgress.timeSystem.activeEvents = updates.activeEvents;
+        }
+
+        if (updates.pathTrackerChange) {
+            gameProgress.pathTracker = updates.pathTrackerChange;
+        }
+
+        if (updates.lockedPathsInfo) {
+            // This is more of a note, not a true state change for lockedPaths array
+        }
+    }
+
+    renderDynamicSystems(chapterData.dynamicUpdates);
+
+    choiceContainer.innerHTML = '';
+    chapterData.choices.forEach(choice => {
+        const choiceCard = document.createElement('div');
+        choiceCard.className = 'choice-card p-4 rounded-lg border border-blue-300 dark:border-blue-600 shadow-md cursor-pointer hover:shadow-lg transition-all duration-300 ease-in-out flex items-center gap-3 bg-blue-50 dark:bg-blue-900 text-gray-900 dark:text-gray-100';
+        choiceCard.innerHTML = `<span class="choice-emote text-lg">${choice.emote}</span> <span class="text-base font-semibold">${choice.text}</span>`;
+        choiceCard.addEventListener('click', () => handleChoice(choice));
+        choiceContainer.appendChild(choiceCard);
+    });
+
+    if (chapterData.consequenceNote) {
+        const consequenceP = document.createElement('p');
+        consequenceP.className = 'text-sm mt-4 text-gray-600 dark:text-gray-400 text-center italic';
+        consequenceP.textContent = chapterData.consequenceNote;
+        choiceContainer.appendChild(consequenceP);
+    }
 }
 
-function renderDynamicSystems(updates, isProlog = false) {
-    dynamicSystemsDisplay.innerHTML = `
-        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-3 text-center">🎮 Sistem Aktif:</h3>
-    `;
+function renderDynamicSystems(updates, isInitial = false) {
+    dynamicSystemsDisplay.innerHTML = `<h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-3 text-center">🎮 Sistem Aktif:</h3>`;
 
-    // Trust System
-    let trustHtml = `<p class="system-item mb-2"><span class="system-title text-gray-800 dark:text-gray-200 font-semibold">🧠 Sistem Kepercayaan:</span>`;
-    if (Object.keys(gameProgress.trustPoints).length > 0) {
-        trustHtml += `<ul class="list-disc list-inside ml-4 mt-1">`;
-        for (const charId in gameProgress.trustPoints) {
-            const character = generatedCharacters.find(c => c.id === charId);
-            if (character) {
-                const trustValue = gameProgress.trustPoints[charId];
-                let trustColorClass = 'text-amber-500'; // Netral
-                if (trustValue >= 70) trustColorClass = 'text-green-500'; // Tinggi
-                else if (trustValue <= 30) trustColorClass = 'text-red-500'; // Rendah
-                trustHtml += `<li class="text-sm text-gray-700 dark:text-gray-300">- ${character.name}: <span class="${trustColorClass}">${trustValue}</span></li>`;
-            }
+    const appendSystemLine = (icon, title, value) => {
+        if (value) {
+            const p = document.createElement('p');
+            p.className = 'text-sm text-gray-700 dark:text-gray-300 mb-1';
+            p.innerHTML = `<span class="font-medium text-gray-800 dark:text-gray-200">${icon} ${title}:</span> ${value}`;
+            dynamicSystemsDisplay.appendChild(p);
         }
-        trustHtml += `</ul>`;
-    } else {
-        trustHtml += ` Tidak ada data kepercayaan.`;
-    }
-    trustHtml += `</p>`;
-    dynamicSystemsDisplay.innerHTML += trustHtml;
+    };
 
-    // Death Trigger
-    const deathTriggerP = document.createElement('p');
-    deathTriggerP.className = 'system-item mb-2';
-    deathTriggerP.innerHTML = `<span class="system-title text-gray-800 dark:text-gray-200 font-semibold">🩸 Pemicu Kematian:</span> ${updates.deathTrigger || 'Aktif'}`;
-    dynamicSystemsDisplay.appendChild(deathTriggerP);
+    appendSystemLine('🧠', 'Trust System', selectedLanguage === 'id' ? 'Setiap karakter memiliki poin kepercayaan terhadap MC.' : 'Each character has trust points towards MC.');
+    appendSystemLine('🩸', 'Death Trigger', selectedLanguage === 'id' ? 'MC atau karakter penting bisa mati jika pemain mengambil pilihan tertentu.' : 'MC or important characters can die based on choices.');
 
-    // Flag Awal
-    let flagHtml = `<p class="system-item mb-2"><span class="system-title text-gray-800 dark:text-gray-200 font-semibold">🎭 Flag Awal:</span>`;
-    if (Object.keys(gameProgress.flagAwal).length > 0) {
-        flagHtml += `<ul class="list-disc list-inside ml-4 mt-1">`;
-        for (const flagName in gameProgress.flagAwal) {
-            const flagStatus = gameProgress.flagAwal[flagName];
-            flagHtml += `<li class="text-sm text-gray-700 dark:text-gray-300">- ${flagName}: ${flagStatus ? 'Aktif' : 'Tidak Aktif'}</li>`;
+    if (gameProgress.flagAwal) {
+        if (typeof gameProgress.flagAwal === 'object' && Object.keys(gameProgress.flagAwal).length > 0) {
+            const flagStrings = Object.keys(gameProgress.flagAwal).map(key => `${key}`);
+            appendSystemLine('🎭', 'Flag Awal', flagStrings.join(', '));
+        } else if (typeof gameProgress.flagAwal === 'string' && gameProgress.flagAwal.trim() !== "") {
+            appendSystemLine('🎭', 'Flag Awal', gameProgress.flagAwal);
         }
-        flagHtml += `</ul>`;
-    } else {
-        flagHtml += ` Tidak ada flag aktif.`;
     }
-    flagHtml += `</p>`;
-    dynamicSystemsDisplay.innerHTML += flagHtml;
+    if (gameProgress.pathTracker) {
+        appendSystemLine('🔒', 'Path Tracker', gameProgress.pathTracker);
+    }
+    if (gameProgress.lockedPaths && gameProgress.lockedPaths.length > 0) {
+        appendSystemLine('🕊️', 'Jalur Cerita Terkunci Potensial', gameProgress.lockedPaths.join(', '));
+    }
 
-    // Path Tracker
-    const pathTrackerP = document.createElement('p');
-    pathTrackerP.className = 'system-item mb-2';
-    pathTrackerP.innerHTML = `<span class="system-title text-gray-800 dark:text-gray-200 font-semibold">🔒 Pelacak Jalur:</span> ${gameProgress.pathTracker}`;
-    dynamicSystemsDisplay.appendChild(pathTrackerP);
+    if (gameProgress.timeSystem.display) {
+        appendSystemLine('⏳', 'Waktu & Event', gameProgress.timeSystem.display);
+    } else if (gameProgress.timeSystem.day) {
+        appendSystemLine('⏳', 'Waktu', `${selectedLanguage === 'id' ? 'Hari ke-' : 'Day '}${gameProgress.timeSystem.day}, ${gameProgress.timeSystem.partOfDay}`);
+    }
 
-    // Locked Paths
-    const lockedPathsP = document.createElement('p');
-    lockedPathsP.className = 'system-item mb-2';
-    lockedPathsP.innerHTML = `<span class="system-title text-gray-800 dark:text-gray-200 font-semibold">🕊️ Jalur Cerita Terkunci Potensial:</span> ${gameProgress.lockedPaths.length > 0 ? gameProgress.lockedPaths.join(', ') : 'Tidak ada'}`;
-    dynamicSystemsDisplay.appendChild(lockedPathsP);
+    // Display current DNA Profile
+    if (gameProgress.dnaProfile) {
+        const dnaText = `Moral: <span class="${getDnaColorClass(gameProgress.dnaProfile.moral)}">${gameProgress.dnaProfile.moral}</span>, Kejujuran: <span class="${getDnaColorClass(gameProgress.dnaProfile.honesty)}">${gameProgress.dnaProfile.honesty}</span>, Empati: <span class="${getDnaColorClass(gameProgress.dnaProfile.empathy)}">${gameProgress.dnaProfile.empathy}</span>, Gaya: <span class="${getDnaColorClass(gameProgress.dnaProfile.style)}">${gameProgress.dnaProfile.style}</span>`;
+        appendSystemLine('🧬', 'Profil Keputusan', dnaText);
+    }
 
-    // Achievements
-    let achievementsHtml = `<p class="system-item mb-2"><span class="system-title text-gray-800 dark:text-gray-200 font-semibold">🏆 Pencapaian:</span>`;
-    if (gameProgress.achievements.length > 0) {
-        achievementsHtml += `<ul class="list-disc list-inside ml-4 mt-1">`;
-        gameProgress.achievements.forEach(achievement => {
-            achievementsHtml += `<li class="text-sm text-gray-700 dark:text-gray-300">- ${achievement.name}: ${achievement.description}</li>`;
+    if (updates && updates.trustUpdates && updates.trustUpdates.length > 0) {
+        const trustUpdateTitle = document.createElement('p');
+        trustUpdateTitle.className = 'font-bold text-gray-800 dark:text-gray-200 mt-2 text-sm';
+        trustUpdateTitle.textContent = 'Trust Update:';
+        dynamicSystemsDisplay.appendChild(trustUpdateTitle);
+
+        updates.trustUpdates.forEach(tu => {
+            const trustItem = document.createElement('p');
+            let icon = '🟡';
+            let textColorClass = 'text-amber-500';
+            if (tu.change > 0) { icon = '🔸'; textColorClass = 'text-green-500'; }
+            else if (tu.change < 0) { icon = '⚠️'; textColorClass = 'text-red-500'; }
+
+            trustItem.className = `text-sm text-gray-700 dark:text-gray-300 ${textColorClass}`;
+            trustItem.innerHTML = `${icon} ${tu.character}: <span class="font-semibold">${tu.change > 0 ? '+' : ''}${tu.change}</span>${tu.reason ? ` → "${tu.reason}"` : ''}`;
+            dynamicSystemsDisplay.appendChild(trustItem);
         });
-        achievementsHtml += `</ul>`;
-    } else {
-        achievementsHtml += ` Belum ada pencapaian.`;
     }
-    achievementsHtml += `</p>`;
-    dynamicSystemsDisplay.innerHTML += achievementsHtml;
 
-    // Trauma System
-    let traumaHtml = `<p class="system-item mb-2"><span class="system-title text-gray-800 dark:text-gray-200 font-semibold">💔 Sistem Trauma:</span>`;
-    if (Object.keys(gameProgress.traumaSystem).length > 0) {
-        traumaHtml += `<ul class="list-disc list-inside ml-4 mt-1">`;
-        for (const charId in gameProgress.traumaSystem) {
-            const character = generatedCharacters.find(c => c.id === charId);
-            if (character) {
-                const traumaStatus = gameProgress.traumaSystem[charId];
-                traumaHtml += `<li class="text-sm text-gray-700 dark:text-gray-300">- ${character.name}: ${traumaStatus.triggered ? `Terpicu (${traumaStatus.details})` : 'Tidak Terpicu'}</li>`;
-            }
-        }
-        traumaHtml += `</ul>`;
-    } else {
-        traumaHtml += ` Tidak ada trauma aktif.`;
+    if (updates && updates.flagsTriggered && updates.flagsTriggered.length > 0) {
+         const flagTriggeredTitle = document.createElement('p');
+         flagTriggeredTitle.className = 'font-bold text-gray-800 dark:text-gray-200 mt-2 text-sm';
+         flagTriggeredTitle.textContent = 'Flag Terpicu:';
+         dynamicSystemsDisplay.appendChild(flagTriggeredTitle);
+
+         updates.flagsTriggered.forEach(flag => {
+            const flagItem = document.createElement('p');
+            flagItem.className = 'text-sm text-gray-700 dark:text-gray-300';
+            flagItem.textContent = `🧩 ${flag}`;
+            dynamicSystemsDisplay.appendChild(flagItem);
+         });
     }
-    traumaHtml += `</p>`;
-    dynamicSystemsDisplay.innerHTML += traumaHtml;
 
-    // Relationship Labels
-    let relationshipHtml = `<p class="system-item mb-2"><span class="system-title text-gray-800 dark:text-gray-200 font-semibold">💞 Label Hubungan:</span>`;
-    if (Object.keys(gameProgress.relationshipLabels).length > 0) {
-        relationshipHtml += `<ul class="list-disc list-inside ml-4 mt-1">`;
-        for (const charId in gameProgress.relationshipLabels) {
-            const character = generatedCharacters.find(c => c.id === charId);
-            if (character) {
-                const label = gameProgress.relationshipLabels[charId];
-                relationshipHtml += `<li class="text-sm text-gray-700 dark:text-gray-300">- ${character.name}: ${label}</li>`;
-            }
-        }
-        relationshipHtml += `</ul>`;
-    } else {
-        relationshipHtml += ` Tidak ada label hubungan.`;
+    if (updates && updates.newAchievements && updates.newAchievements.length > 0) {
+        const achievementTitle = document.createElement('p');
+        achievementTitle.className = 'font-bold text-gray-800 dark:text-gray-200 mt-2 text-sm';
+        achievementTitle.textContent = '🎖️ Gelar Baru:';
+        dynamicSystemsDisplay.appendChild(achievementTitle);
+
+        updates.newAchievements.forEach(ach => {
+            const achievementItem = document.createElement('p');
+            achievementItem.className = 'text-sm text-gray-700 dark:text-gray-300';
+            achievementItem.innerHTML = `<strong>${ach.title}</strong>: ${ach.description}`;
+            dynamicSystemsDisplay.appendChild(achievementItem);
+        });
     }
-    relationshipHtml += `</p>`;
-    dynamicSystemsDisplay.appendChild(relationshipHtml);
 
-    // Time System
-    const timeSystemP = document.createElement('p');
-    timeSystemP.className = 'system-item mb-2';
-    timeSystemP.innerHTML = `<span class="system-title text-gray-800 dark:text-gray-200 font-semibold">⏰ Sistem Waktu:</span> Hari ${gameProgress.timeSystem.day}, ${gameProgress.timeSystem.partOfDay}${gameProgress.timeSystem.countdown !== null ? `, Hitung Mundur: ${gameProgress.timeSystem.countdown}` : ''}`;
-    dynamicSystemsDisplay.appendChild(timeSystemP);
-
-    // DNA Profile
-    const dnaProfileP = document.createElement('p');
-    dnaProfileP.className = 'system-item mb-2';
-    dnaProfileP.innerHTML = `
-        <span class="system-title text-gray-800 dark:text-gray-200 font-semibold">🧬 DNA Profil MC:</span>
-        <ul class="list-disc list-inside ml-4 mt-1">
-            <li class="text-sm text-gray-700 dark:text-gray-300">- Moral: <span class="${getDnaColorClass(gameProgress.dnaProfile.moral)}">${gameProgress.dnaProfile.moral}</span></li>
-            <li class="text-sm text-gray-700 dark:text-gray-300">- Kejujuran: <span class="${getDnaColorClass(gameProgress.dnaProfile.honesty)}">${gameProgress.dnaProfile.honesty}</span></li>
-            <li class="text-sm text-gray-700 dark:text-gray-300">- Empati: <span class="${getDnaColorClass(gameProgress.dnaProfile.empathy)}">${gameProgress.dnaProfile.empathy}</span></li>
-            <li class="text-sm text-gray-700 dark:text-gray-300">- Gaya: <span class="${getDnaColorClass(gameProgress.dnaProfile.style)}">${gameProgress.dnaProfile.style}</span></li>
-        </ul>
-    `;
-    dynamicSystemsDisplay.appendChild(dnaProfileP);
-
-    // Notes
-    if (updates.notes) {
+    if (isInitial && updates && updates.notes) {
         const notesP = document.createElement('p');
-        notesP.className = 'system-item text-gray-700 dark:text-gray-200 mt-2 text-sm';
+        notesP.className = 'font-bold text-gray-800 dark:text-gray-200 mt-2 text-sm';
         notesP.textContent = `🎯 Catatan: ${updates.notes}`;
         dynamicSystemsDisplay.appendChild(notesP);
     }
@@ -1683,48 +1708,7 @@ async function handleChoice(choice) {
         choiceText: choice.text
     });
 
-    // Perbarui gameProgress berdasarkan efek pilihan
-    if (choice.effect) {
-        if (choice.effect.trustChanges) {
-            choice.effect.trustChanges.forEach(tc => {
-                gameProgress.trustPoints[tc.characterId] = (gameProgress.trustPoints[tc.characterId] || 0) + tc.change;
-                // Pastikan nilai kepercayaan tidak melebihi 100 atau kurang dari 0
-                gameProgress.trustPoints[tc.characterId] = Math.max(0, Math.min(100, gameProgress.trustPoints[tc.characterId]));
-            });
-        }
-        if (choice.effect.newFlags) {
-            choice.effect.newFlags.forEach(flag => {
-                gameProgress.flagAwal[flag] = true;
-            });
-        }
-        if (choice.effect.unlockPaths) {
-            choice.effect.unlockPaths.forEach(path => {
-                if (!gameProgress.lockedPaths.includes(path)) {
-                    gameProgress.lockedPaths.push(path); // Atau hapus dari lockedPaths jika itu adalah daftar jalur yang terkunci
-                }
-            });
-        }
-        if (choice.effect.dnaDecision) {
-            Object.assign(gameProgress.dnaProfile, choice.effect.dnaDecision);
-        }
-        if (choice.effect.gameOver) {
-            showGameOver(choice.effect.gameOverMessage, choice.effect.gameOverAnalysis);
-            return;
-        }
-    }
-
     gameProgress.currentScene++;
-
-    // Logika untuk beralih bab
-    // Jika sudah melewati 3 adegan dalam bab saat ini, atau jika ini adalah akhir bab secara naratif (disesuaikan berdasarkan kebutuhan cerita)
-    // AI akan diberikan instruksi untuk secara otomatis meningkatkan nomor bab di "notes" jika mencapai titik naratif yang sesuai.
-    // Kita akan memeriksa notes yang terakhir diberikan oleh AI di renderDynamicSystems atau chapterData.dynamicSystemUpdates.notes.
-    // Untuk tujuan demonstrasi dan memastikan progres, kita akan memaksakan perpindahan bab setiap 3 adegan.
-    if (gameProgress.currentScene > 3) {
-        gameProgress.currentChapter++;
-        gameProgress.currentScene = 1; // Reset adegan untuk bab baru
-        showMessageBox(selectedLanguage === 'id' ? 'Bab Baru!' : 'New Chapter!', `${selectedLanguage === 'id' ? 'Anda telah memasuki Bab ' : 'You have entered Chapter '}${gameProgress.currentChapter}!`);
-    }
 
     choiceContainer.innerHTML = '';
     gameLoadingOverlay.classList.add('loading-indicator'); // Apply base loading styles
@@ -1732,25 +1716,6 @@ async function handleChoice(choice) {
 
     await generateChapter(gameProgress.currentChapter, choice.text);
 }
-
-
-function renderChoices(choices) {
-    choiceContainer.innerHTML = '';
-    choices.forEach(choice => {
-        const choiceCard = document.createElement('button');
-        choiceCard.className = 'choice-card btn btn-secondary w-full py-3 text-lg font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out flex items-center justify-center text-left';
-        choiceCard.innerHTML = `<span class="choice-emote mr-3">${choice.emote}</span> ${choice.text}`;
-        choiceCard.addEventListener('click', () => handleChoice(choice));
-        choiceContainer.appendChild(choiceCard);
-    });
-}
-
-function showGameOver(message, analysis) {
-    gameOverMessage.textContent = message;
-    gameOverAnalysis.textContent = analysis;
-    showScreen('game-over-screen');
-}
-
 
 // --- Initialization ---
 window.onload = () => {
@@ -1762,8 +1727,7 @@ window.onload = () => {
         showScreen('api-key-screen');
         setMainButtonsEnabled(false);
     }
-    updateLanguageText(); // Perbarui teks bahasa saat memuat
+    updateLanguageText();
+    applyStoredTheme();
 };
-
-
 
